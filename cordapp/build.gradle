@@ -2,8 +2,6 @@ repositories {
     mavenLocal()
     jcenter()
     mavenCentral()
-    maven { url 'https://jitpack.io' }
-    maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda-releases' }
 }
 
 apply plugin: 'kotlin'
@@ -26,7 +24,7 @@ sourceSets {
         kotlin {
             compileClasspath += main.output + test.output
             runtimeClasspath += main.output + test.output
-            srcDir file('src/integration-test/kotlin')
+            srcDir file('src/integrationTest/kotlin')
         }
     }
 }
@@ -56,6 +54,9 @@ dependencies {
     // CorDapp dependencies
     // Specify your CorDapp's dependencies below, including dependent CorDapps.
     cordapp project(":cordapp-contracts-states")
+
+    // Ripple library.
+    compile 'com.ripple:ripple-core:0.0.1-SNAPSHOT'
 }
 
 task integrationTest(type: Test, dependsOn: []) {

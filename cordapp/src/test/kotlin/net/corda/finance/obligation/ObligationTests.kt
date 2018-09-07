@@ -1,10 +1,16 @@
-package net.corda.finance.obligation
+package net.corda.finance.obligation.tests
 
 import com.ripple.core.coretypes.AccountID
 import net.corda.core.utilities.getOrThrow
+import net.corda.finance.obligation.MockNetworkTest
+import net.corda.finance.obligation.contracts.Obligation
+import net.corda.finance.obligation.types.DigitalCurrency
+import net.corda.finance.obligation.types.RippleSettlementInstructions
+import net.corda.finance.obligation.types.XRP
 import net.corda.testing.node.internal.TestStartedNode
 import org.junit.Before
 import org.junit.Test
+import java.net.URI
 import java.util.concurrent.CompletableFuture
 import kotlin.test.assertEquals
 
@@ -43,7 +49,8 @@ class ObligationTests : MockNetworkTest(numberOfNodes = 3) {
 
         // Add settlement instructions.
         val rippleAddress = AccountID.fromString("rNmkj4AtjEHJh3D9hMRC4rS3CXQ9mX4S4b")
-        val settlementInstructions = RippleSettlementInstructions(rippleAddress)
+        val acceptableServers = listOf(URI("http://s.altnet.rippletest.net:51234"))
+        val settlementInstructions = RippleSettlementInstructions(rippleAddress, acceptableServers)
 
         // Add the settlement instructions.
         val updatedObligation = B.addSettlementInstructions(obligationId, settlementInstructions).getOrThrow()
@@ -53,6 +60,32 @@ class ObligationTests : MockNetworkTest(numberOfNodes = 3) {
         val aObligation = A.watchForTransaction(transactionHash).toCompletableFuture()
         val bObligation = B.watchForTransaction(transactionHash).toCompletableFuture()
         CompletableFuture.allOf(aObligation, bObligation)
+    }
+
+    @Test
+    fun `create new obligation and add settlement instructions then make payment`() {
+        // Create obligation.
+        val newObligation = A.createObligation(10000.XRP, B, CreateObligation.InitiatorRole.OBLIGOR).getOrThrow()
+        val obligation = newObligation.singleOutput<Obligation.State<DigitalCurrency>>()
+        val obligationId = obligation.linearId()
+
+        // Add settlement instructions.
+        val rippleAddress = AccountID.fromString("ra6mzL1Xy9aN5eRdjzn9CHTMwcczG1uMpN")
+        val acceptableServers = listOf(URI("http://s.altnet.rippletest.net:51234"))
+        val settlementInstructions = RippleSettlementInstructions(rippleAddress, acceptableServers)
+
+        // Add the settlement instructions.
+        B.addSettlementInstructions(obligationId, settlementInstructions).getOrThrow()
+
+        // Make the payment.
+        val obligationWithPaymentMade = A.makePayment(obligationId).getOrThrow()
+        val transactionHash = obligationWithPaymentMade.id
+
+        // Wait for the updates on both nodes.
+        val aObligation = A.watchForTransaction(transactionHash).toCompletableFuture()
+        val bObligation = B.watchForTransaction(transactionHash).toCompletableFuture()
+        CompletableFuture.allOf(aObligation, bObligation)
+        println(obligationWithPaymentMade.singleOutput<Obligation.State<*>>().state.data.settlementInstructions)
     }
 
 }

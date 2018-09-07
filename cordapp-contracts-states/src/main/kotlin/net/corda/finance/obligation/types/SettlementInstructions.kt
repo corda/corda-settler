@@ -3,6 +3,7 @@ package net.corda.finance.obligation.types
 import com.ripple.core.coretypes.AccountID
 import net.corda.core.crypto.SecureHash
 import net.corda.core.serialization.CordaSerializable
+import java.net.URI
 
 /** Generic terms which provide a day by when the obligation must be settled. */
 @CordaSerializable
@@ -22,6 +23,7 @@ interface OffLedgerSettlementTerms : SettlementInstructions {
 /**
  * Terms specific to settling with XRP. In this case, parties must agree on:
  * - which ripple address the payment must be made to
+ * - which servers should be used to check the payment was successful
  *
  * The terms can be updated with:
  * - the hash of the ripple transaction when the ripple payment is submitted
@@ -29,9 +31,17 @@ interface OffLedgerSettlementTerms : SettlementInstructions {
  */
 data class RippleSettlementInstructions(
         override val accountToPay: AccountID,
+        val acceptableServers: List<URI>,
         val paymentStatus: PaymentStatus = PaymentStatus.NOT_SENT,
         val rippleTransactionHash: SecureHash? = null
 ) : OffLedgerSettlementTerms {
     @CordaSerializable
     enum class PaymentStatus { NOT_SENT, SENT, ACCEPTED, REJECTED }
+
+    fun addRippleTransactionHash(hash: SecureHash): RippleSettlementInstructions {
+        return copy(
+                rippleTransactionHash = hash,
+                paymentStatus = PaymentStatus.SENT
+        )
+    }
 }

@@ -9,6 +9,8 @@ import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.toFuture
 import net.corda.core.transactions.SignedTransaction
 import net.corda.finance.obligation.contracts.Obligation
+import net.corda.finance.obligation.flows.AddSettlementInstructions
+import net.corda.finance.obligation.types.DigitalCurrency
 import net.corda.finance.obligation.types.SettlementInstructions
 import net.corda.testing.node.internal.InternalMockNetwork
 import net.corda.testing.node.internal.TestStartedNode
@@ -69,6 +71,11 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
     ): CordaFuture<SignedTransaction> {
         val flow = AddSettlementInstructions(linearId, settlementInstructions)
         return services.startFlow(flow).resultFuture
+    }
+
+    /** Add settlement instructions to existing obligation. */
+    fun TestStartedNode.makePayment(linearId: UniqueIdentifier): CordaFuture<SignedTransaction> {
+        return services.startFlow(SettleObligation(linearId)).resultFuture
     }
 
     /** From a transaction which produces a single output, retrieve that output. */

@@ -7,7 +7,6 @@ repositories {
 apply plugin: 'kotlin'
 apply plugin: 'net.corda.plugins.cordapp'
 apply plugin: 'net.corda.plugins.cordformation'
-apply plugin: 'net.corda.plugins.quasar-utils'
 
 sourceSets {
     main {
@@ -39,24 +38,14 @@ dependencies {
     testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
     testCompile "junit:junit:$junit_version"
 
-    // Corda integration dependencies
-    cordaCompile "$corda_release_group:corda-core:$corda_release_version"
-    cordaCompile "$corda_release_group:corda-finance:$corda_release_version"
-    cordaCompile "$corda_release_group:corda-jackson:$corda_release_version"
-    cordaCompile "$corda_release_group:corda-rpc:$corda_release_version"
-    cordaCompile "$corda_release_group:corda-node-api:$corda_release_version"
-    cordaCompile "$corda_release_group:corda-webserver-impl:$corda_release_version"
-    cordaRuntime "$corda_release_group:corda:$corda_release_version"
-    cordaRuntime "$corda_release_group:corda-webserver:$corda_release_version"
-
-    testCompile "$corda_release_group:corda-node-driver:$corda_release_version"
-
-    // CorDapp dependencies
-    // Specify your CorDapp's dependencies below, including dependent CorDapps.
-    cordapp project(":cordapp-contracts-states")
+    // Jackson.
+    compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.9.5"
 
     // Ripple library.
-    compile project(":ripple")
+    compile 'com.ripple:ripple-core:0.0.1-SNAPSHOT'
+
+    // Typesafe config.
+    compile 'com.typesafe:config:1.2.1'
 }
 
 task integrationTest(type: Test, dependsOn: []) {

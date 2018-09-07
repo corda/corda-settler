@@ -1,4 +1,4 @@
-package net.corda.finance.obligation
+package net.corda.finance.obligation.flows
 
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.confidential.SwapIdentitiesFlow

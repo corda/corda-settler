@@ -1,4 +1,4 @@
-package net.corda.finance.obligation
+package net.corda.finance.obligation.types
 
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.TokenizableAssetInfo
@@ -23,11 +23,11 @@ data class DigitalCurrency(
 }
 
 @JvmField
-val XRP: DigitalCurrency = DigitalCurrency.getInstance("XRP")
+val Ripple: DigitalCurrency = DigitalCurrency.getInstance("XRP")
 
-fun RIPPLES(amount: Int): Amount<DigitalCurrency> = AMOUNT(amount, XRP)
-fun RIPPLES(amount: Long): Amount<DigitalCurrency> = AMOUNT(amount, XRP)
-fun RIPPLES(amount: Double): Amount<DigitalCurrency> = AMOUNT(amount, XRP)
+fun RIPPLES(amount: Int): Amount<DigitalCurrency> = AMOUNT(amount, Ripple)
+fun RIPPLES(amount: Long): Amount<DigitalCurrency> = AMOUNT(amount, Ripple)
+fun RIPPLES(amount: Double): Amount<DigitalCurrency> = AMOUNT(amount, Ripple)
 
 val Int.XRP: Amount<DigitalCurrency> get() = RIPPLES(this)
 val Long.XRP: Amount<DigitalCurrency> get() = RIPPLES(this)

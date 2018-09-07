@@ -19,12 +19,12 @@ class Obligation : Contract {
             val amount: Amount<T>,
             val obligor: AbstractParty,
             val obligee: AbstractParty,
-            val settlementTerms: SettlementInstructions? = null,
+            val settlementInstructions: SettlementInstructions? = null,
             override val linearId: UniqueIdentifier = UniqueIdentifier()
     ) : LinearState {
         override val participants: List<AbstractParty> get() = listOf(obligee, obligor)
 
-        fun withSettlementTerms(settlementTerms: SettlementInstructions) = copy(settlementTerms = settlementTerms)
+        fun withSettlementTerms(settlementTerms: SettlementInstructions) = copy(settlementInstructions = settlementTerms)
 
         private fun resolveParty(services: ServiceHub, abstractParty: AbstractParty): Party {
             return abstractParty as? Party ?: services.identityService.requireWellKnownPartyFromAnonymous(abstractParty)

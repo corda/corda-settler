@@ -1,4 +1,4 @@
-package net.corda.finance.obligation.flows
+package net.corda.finance.obligation.client.flows
 
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.confidential.SwapIdentitiesFlow
@@ -12,7 +12,7 @@ import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
 import net.corda.core.utilities.seconds
-import net.corda.finance.obligation.contracts.Obligation
+import net.corda.finance.obligation.client.contracts.Obligation
 import java.security.PublicKey
 
 object CreateObligation {

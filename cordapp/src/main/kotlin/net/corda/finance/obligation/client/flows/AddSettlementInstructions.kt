@@ -1,4 +1,4 @@
-package net.corda.finance.obligation.flows
+package net.corda.finance.obligation.client.flows
 
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.core.contracts.TokenizableAssetInfo
@@ -7,9 +7,9 @@ import net.corda.core.flows.*
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
-import net.corda.finance.obligation.contracts.Obligation
-import net.corda.finance.obligation.getLinearStateById
-import net.corda.finance.obligation.types.SettlementInstructions
+import net.corda.finance.obligation.client.contracts.Obligation
+import net.corda.finance.obligation.client.getLinearStateById
+import net.corda.finance.obligation.client.types.SettlementInstructions
 
 @InitiatingFlow
 @StartableByRPC

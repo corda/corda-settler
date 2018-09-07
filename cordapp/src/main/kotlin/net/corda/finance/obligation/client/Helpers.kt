@@ -1,4 +1,4 @@
-package net.corda.finance.obligation
+package net.corda.finance.obligation.client
 
 import com.ripple.core.coretypes.hash.Hash256
 import net.corda.core.contracts.Amount

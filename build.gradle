@@ -83,7 +83,10 @@ dependencies {
     // We've defined Cash as a dependent CorDapp as an example.
     cordapp project(":cordapp")
     cordapp project(":cordapp-contracts-states")
+    cordapp project(":oracle")
     cordapp "$corda_release_group:corda-finance:$corda_release_version"
+
+    testCompile project(path: ':cordapp', configuration: 'testOutput')
 }
 
 task integrationTest(type: Test, dependsOn: []) {

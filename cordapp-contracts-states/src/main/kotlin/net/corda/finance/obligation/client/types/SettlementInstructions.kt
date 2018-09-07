@@ -1,7 +1,8 @@
-package net.corda.finance.obligation.types
+package net.corda.finance.obligation.client.types
 
 import com.ripple.core.coretypes.AccountID
 import net.corda.core.crypto.SecureHash
+import net.corda.core.identity.Party
 import net.corda.core.serialization.CordaSerializable
 import java.net.URI
 
@@ -32,6 +33,7 @@ interface OffLedgerSettlementTerms : SettlementInstructions {
 data class RippleSettlementInstructions(
         override val accountToPay: AccountID,
         val acceptableServers: List<URI>,
+        val settlementOracle: Party,
         val paymentStatus: PaymentStatus = PaymentStatus.NOT_SENT,
         val rippleTransactionHash: SecureHash? = null
 ) : OffLedgerSettlementTerms {

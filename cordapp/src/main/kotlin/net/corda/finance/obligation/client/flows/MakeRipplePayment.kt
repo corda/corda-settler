@@ -1,4 +1,4 @@
-package net.corda.finance.obligation.flows
+package net.corda.finance.obligation.client.flows
 
 import co.paralleluniverse.fibers.Suspendable
 import com.ripple.core.coretypes.AccountID
@@ -8,14 +8,15 @@ import net.corda.core.crypto.SecureHash
 import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.FlowException
 import net.corda.core.flows.FlowLogic
+import net.corda.core.flows.SendTransactionFlow
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
-import net.corda.finance.obligation.DEFAULT_RIPPLE_FEE
-import net.corda.finance.obligation.contracts.Obligation
-import net.corda.finance.obligation.toRippleAmount
-import net.corda.finance.obligation.toRippleHash
-import net.corda.finance.obligation.types.RippleSettlementInstructions
+import net.corda.finance.obligation.client.DEFAULT_RIPPLE_FEE
+import net.corda.finance.obligation.client.contracts.Obligation
+import net.corda.finance.obligation.client.toRippleAmount
+import net.corda.finance.obligation.client.toRippleHash
+import net.corda.finance.obligation.client.types.RippleSettlementInstructions
 import net.corda.finance.ripple.RippleClientForPayment
 import net.corda.finance.ripple.types.SubmitPaymentResponse
 import com.ripple.core.coretypes.Amount as RippleAmount
@@ -41,14 +42,18 @@ class MakeRipplePayment(val obligationStateAndRef: StateAndRef<Obligation.State<
         val rippleClient = RippleClientForPayment("ripple.conf")
 
         object INITIALISING : ProgressTracker.Step("Performing initial steps.")
-        object BUILDING : ProgressTracker.Step("Building and verifying transaction.")
+        object CHECKING_BALANCE : ProgressTracker.Step("Checking for sufficient XRP balance.")
+        object MAKING_PAYMENT : ProgressTracker.Step("Making XRP payment.")
+        object BUILDING : ProgressTracker.Step("Building and verifying Corda transaction.")
         object SIGNING : ProgressTracker.Step("signing transaction.")
 
         object FINALISING : ProgressTracker.Step("Finalising transaction.") {
             override fun childProgressTracker() = FinalityFlow.tracker()
         }
 
-        fun tracker() = ProgressTracker(INITIALISING, BUILDING, SIGNING, FINALISING)
+        object ORACLE : ProgressTracker.Step("Sending to settlement Oracle.")
+
+        fun tracker() = ProgressTracker(INITIALISING, CHECKING_BALANCE, MAKING_PAYMENT, BUILDING, SIGNING, FINALISING, ORACLE)
     }
 
     private fun checkBalance(requiredAmount: Amount<*>) {
@@ -85,6 +90,8 @@ class MakeRipplePayment(val obligationStateAndRef: StateAndRef<Obligation.State<
     @Suspendable
     override fun call(): SignedTransaction {
         // 1. This flow should only be started by the beneficiary.
+        progressTracker.currentStep = INITIALISING
+
         val obligation = obligationStateAndRef.state.data
         val obligor = obligation.withWellKnownIdentities(serviceHub).obligor
         check(ourIdentity == obligor) { "This flow can only be started by the obligee. " }
@@ -94,6 +101,7 @@ class MakeRipplePayment(val obligationStateAndRef: StateAndRef<Obligation.State<
         val accountToPay = settlementInstructions.accountToPay
 
         // Check that the specified account has enough XRP to pay.
+        progressTracker.currentStep = CHECKING_BALANCE
         checkBalance(obligation.amount)
 
         // 3. Check that the payment hasn't already been made.
@@ -102,6 +110,7 @@ class MakeRipplePayment(val obligationStateAndRef: StateAndRef<Obligation.State<
         }
 
         // 4. Make payment.
+        progressTracker.currentStep = MAKING_PAYMENT
         val response = makePayment(accountToPay, obligation)
 
         // 5. Add payment hash to settlement instructions.
@@ -110,6 +119,7 @@ class MakeRipplePayment(val obligationStateAndRef: StateAndRef<Obligation.State<
         val obligationWithUpdatedSettlementInstructions = obligation.withSettlementTerms(updatedSettlementInstructions)
 
         // 6. Add updated settlement terms to obligation.
+        progressTracker.currentStep = BUILDING
         val signingKey = listOf(obligation.obligor.owningKey)
         val notary = serviceHub.networkMapCache.notaryIdentities.firstOrNull()
                 ?: throw FlowException("No available notary.")
@@ -120,10 +130,19 @@ class MakeRipplePayment(val obligationStateAndRef: StateAndRef<Obligation.State<
         }
 
         // 7. Sign transaction.
+        progressTracker.currentStep = SIGNING
         val stx = serviceHub.signInitialTransaction(utx, signingKey)
 
         // 8. Finalise transaction and send to participants.
-        return subFlow(FinalityFlow(stx, AddSettlementInstructions.Companion.FINALISING.childProgressTracker()))
+        progressTracker.currentStep = FINALISING
+        val ftx = subFlow(FinalityFlow(stx, FINALISING.childProgressTracker()))
+
+        // 9. Send transaction to Oracle.
+        // TODO: Is this really what we want to do?
+        val session = initiateFlow(settlementInstructions.settlementOracle)
+        subFlow(SendTransactionFlow(session, stx))
+
+        return ftx
     }
 
 }

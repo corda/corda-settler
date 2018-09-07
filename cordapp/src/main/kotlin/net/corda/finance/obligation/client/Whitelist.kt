@@ -1,4 +1,4 @@
-package net.corda.finance.obligation
+package net.corda.finance.obligation.client
 
 import net.corda.core.contracts.TokenizableAssetInfo
 import net.corda.core.serialization.SerializationWhitelist

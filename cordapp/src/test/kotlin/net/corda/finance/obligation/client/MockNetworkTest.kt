@@ -1,4 +1,4 @@
-package net.corda.finance.obligation
+package net.corda.finance.obligation.client
 
 import net.corda.core.concurrent.CordaFuture
 import net.corda.core.contracts.*
@@ -8,10 +8,12 @@ import net.corda.core.node.services.queryBy
 import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.toFuture
 import net.corda.core.transactions.SignedTransaction
-import net.corda.finance.obligation.contracts.Obligation
-import net.corda.finance.obligation.flows.AddSettlementInstructions
-import net.corda.finance.obligation.types.DigitalCurrency
-import net.corda.finance.obligation.types.SettlementInstructions
+import net.corda.finance.obligation.client.contracts.Obligation
+import net.corda.finance.obligation.client.flows.AddSettlementInstructions
+import net.corda.finance.obligation.client.flows.CreateObligation
+import net.corda.finance.obligation.client.flows.SettleObligation
+import net.corda.finance.obligation.client.types.DigitalCurrency
+import net.corda.finance.obligation.client.types.SettlementInstructions
 import net.corda.testing.node.internal.InternalMockNetwork
 import net.corda.testing.node.internal.TestStartedNode
 import net.corda.testing.node.internal.cordappsForPackages
@@ -22,7 +24,10 @@ import org.junit.Before
 abstract class MockNetworkTest(val numberOfNodes: Int) {
 
     protected val network = InternalMockNetwork(
-            cordappsForAllNodes = cordappsForPackages("net.corda.finance.obligation"),
+            cordappsForAllNodes = cordappsForPackages(
+                    "net.corda.finance.obligation",
+                    "net.corda.finance.obligation.client"
+            ),
             threadPerNode = true
     )
 

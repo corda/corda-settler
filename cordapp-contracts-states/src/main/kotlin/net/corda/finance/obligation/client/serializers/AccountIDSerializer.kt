@@ -1,4 +1,4 @@
-package net.corda.finance.obligation.serializers
+package net.corda.finance.obligation.client.serializers
 
 import com.ripple.core.coretypes.AccountID
 import net.corda.core.serialization.SerializationCustomSerializer

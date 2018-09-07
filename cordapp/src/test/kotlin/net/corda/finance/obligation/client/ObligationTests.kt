@@ -1,12 +1,12 @@
-package net.corda.finance.obligation.tests
+package net.corda.finance.obligation.client
 
 import com.ripple.core.coretypes.AccountID
 import net.corda.core.utilities.getOrThrow
-import net.corda.finance.obligation.MockNetworkTest
-import net.corda.finance.obligation.contracts.Obligation
-import net.corda.finance.obligation.types.DigitalCurrency
-import net.corda.finance.obligation.types.RippleSettlementInstructions
-import net.corda.finance.obligation.types.XRP
+import net.corda.finance.obligation.client.contracts.Obligation
+import net.corda.finance.obligation.client.flows.CreateObligation
+import net.corda.finance.obligation.client.types.DigitalCurrency
+import net.corda.finance.obligation.client.types.RippleSettlementInstructions
+import net.corda.finance.obligation.client.types.XRP
 import net.corda.testing.node.internal.TestStartedNode
 import org.junit.Before
 import org.junit.Test
@@ -14,17 +14,15 @@ import java.net.URI
 import java.util.concurrent.CompletableFuture
 import kotlin.test.assertEquals
 
-class ObligationTests : MockNetworkTest(numberOfNodes = 3) {
+class ObligationTests : MockNetworkTest(numberOfNodes = 2) {
 
     lateinit var A: TestStartedNode
     lateinit var B: TestStartedNode
-    lateinit var C: TestStartedNode
 
     @Before
     override fun initialiseNodes() {
         A = nodes[0]
         B = nodes[1]
-        C = nodes[2]
     }
 
     @Test
@@ -50,7 +48,8 @@ class ObligationTests : MockNetworkTest(numberOfNodes = 3) {
         // Add settlement instructions.
         val rippleAddress = AccountID.fromString("rNmkj4AtjEHJh3D9hMRC4rS3CXQ9mX4S4b")
         val acceptableServers = listOf(URI("http://s.altnet.rippletest.net:51234"))
-        val settlementInstructions = RippleSettlementInstructions(rippleAddress, acceptableServers)
+        // Just use party A as the oracle for now.
+        val settlementInstructions = RippleSettlementInstructions(rippleAddress, acceptableServers, A.legalIdentity())
 
         // Add the settlement instructions.
         val updatedObligation = B.addSettlementInstructions(obligationId, settlementInstructions).getOrThrow()
@@ -72,7 +71,8 @@ class ObligationTests : MockNetworkTest(numberOfNodes = 3) {
         // Add settlement instructions.
         val rippleAddress = AccountID.fromString("ra6mzL1Xy9aN5eRdjzn9CHTMwcczG1uMpN")
         val acceptableServers = listOf(URI("http://s.altnet.rippletest.net:51234"))
-        val settlementInstructions = RippleSettlementInstructions(rippleAddress, acceptableServers)
+        // Just use party A as the oracle for now.
+        val settlementInstructions = RippleSettlementInstructions(rippleAddress, acceptableServers, A.legalIdentity())
 
         // Add the settlement instructions.
         B.addSettlementInstructions(obligationId, settlementInstructions).getOrThrow()

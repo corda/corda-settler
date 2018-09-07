@@ -1,17 +1,16 @@
-package net.corda.finance.obligation.flows
+package net.corda.finance.obligation.client.flows
 
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.core.contracts.UniqueIdentifier
-import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.StartableByRPC
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.utilities.ProgressTracker
-import net.corda.finance.obligation.contracts.Obligation
-import net.corda.finance.obligation.getLinearStateById
-import net.corda.finance.obligation.types.RippleSettlementInstructions
+import net.corda.finance.obligation.client.contracts.Obligation
+import net.corda.finance.obligation.client.getLinearStateById
+import net.corda.finance.obligation.client.types.RippleSettlementInstructions
 
 @StartableByRPC
-class SettleObligation(val linearId: UniqueIdentifier) : FlowLogic<SignedTransaction>() {
+class SettleObligation(val linearId: UniqueIdentifier) : AbstractSettleObligation() {
 
     override val progressTracker: ProgressTracker = ProgressTracker()
 

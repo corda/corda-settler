@@ -1,11 +1,11 @@
 package net.corda.finance.ripple.types
 
 import com.ripple.core.coretypes.AccountID
-import net.corda.core.crypto.SecureHash
 import net.corda.core.identity.Party
-import net.corda.finance.obligation.flows.MakeOffLedgerPayment
-import net.corda.finance.obligation.types.OffLedgerSettlementTerms
+import net.corda.finance.obligation.types.OffLedgerSettlementInstructions
+import net.corda.finance.obligation.types.PaymentReference
 import net.corda.finance.obligation.types.PaymentStatus
+import net.corda.finance.ripple.flows.MakeRipplePayment
 
 /**
  * Terms specific to settling with XRP. In this case, parties must agree on:
@@ -16,14 +16,14 @@ import net.corda.finance.obligation.types.PaymentStatus
  * - the hash of the ripple transaction when the ripple payment is submitted
  * - a payment status
  */
-data class RippleSettlementInstructions<T : MakeOffLedgerPayment>(
+data class RippleSettlementInstructions(
         override val accountToPay: AccountID,
         override val settlementOracle: Party,
-        override val paymentFlow: T,
-        val paymentStatus: PaymentStatus = PaymentStatus.NOT_SENT,
-        val rippleTransactionHash: SecureHash? = null
-) : OffLedgerSettlementTerms<T> {
-    fun addRippleTransactionHash(hash: SecureHash): RippleSettlementInstructions<T> {
-        return copy(rippleTransactionHash = hash, paymentStatus = PaymentStatus.SENT)
+        override val paymentFlow: Class<MakeRipplePayment> = MakeRipplePayment::class.java,
+        override val paymentStatus: PaymentStatus = PaymentStatus.NOT_SENT,
+        override val paymentReference: PaymentReference? = null
+) : OffLedgerSettlementInstructions<MakeRipplePayment> {
+    override fun addPaymentReference(ref: PaymentReference): OffLedgerSettlementInstructions<MakeRipplePayment> {
+        return copy(paymentReference = ref, paymentStatus = PaymentStatus.SENT)
     }
 }

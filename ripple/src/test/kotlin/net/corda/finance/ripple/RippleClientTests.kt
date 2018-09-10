@@ -3,7 +3,6 @@ package net.corda.finance.ripple
 import com.ripple.core.coretypes.AccountID
 import com.ripple.core.coretypes.Amount
 import com.ripple.core.coretypes.hash.Hash256
-import net.corda.finance.ripple.clients.ReadWriteRippleClient
 import org.junit.Test
 import java.net.URI
 
@@ -14,7 +13,7 @@ class RippleClientTests {
     companion object {
         @JvmStatic
         private val nodeUri = URI("http://s.altnet.rippletest.net:51234")
-        // Credentials for an account on the Ripple test net.
+        // Credentials for an account on the RippleService test net.
         @JvmStatic
         private val client = TestRippleClient(
                 nodeUri = nodeUri,

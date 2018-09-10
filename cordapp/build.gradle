@@ -53,9 +53,6 @@ dependencies {
 
     // CorDapp dependencies
     // Specify your CorDapp's dependencies below, including dependent CorDapps.
-    cordapp project(":cordapp-contracts-states")
-
-    // Ripple library.
     compile project(":ripple")
 }
 

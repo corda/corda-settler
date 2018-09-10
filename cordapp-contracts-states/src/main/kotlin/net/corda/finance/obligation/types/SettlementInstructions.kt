@@ -15,8 +15,12 @@ interface OnLedgerSettlementTerms : SettlementInstructions
  * Terms specific to off-ledger settlement. Here some kind of account must be specified. The account might be in the
  * form of a bank account number or a crypto currency address.
  */
-interface OffLedgerSettlementTerms<T : MakeOffLedgerPayment> : SettlementInstructions {
+interface OffLedgerSettlementInstructions<T : MakeOffLedgerPayment> : SettlementInstructions {
     val accountToPay: Any
     val settlementOracle: Party
-    val paymentFlow: T
+    val paymentFlow: Class<T>
+    val paymentStatus: PaymentStatus
+    val paymentReference: PaymentReference?
+
+    fun addPaymentReference(ref: PaymentReference): OffLedgerSettlementInstructions<T>
 }

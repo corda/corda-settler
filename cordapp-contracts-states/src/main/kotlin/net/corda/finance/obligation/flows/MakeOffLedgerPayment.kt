@@ -1,5 +1,6 @@
 package net.corda.finance.obligation.flows
 
+import co.paralleluniverse.fibers.Suspendable
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.FinalityFlow
@@ -9,8 +10,13 @@ import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
 import net.corda.finance.obligation.contracts.Obligation
+import net.corda.finance.obligation.types.OffLedgerSettlementInstructions
+import net.corda.finance.obligation.types.PaymentReference
 
-abstract class MakeOffLedgerPayment(val obligationStateAndRef: StateAndRef<Obligation.State<*>>) : FlowLogic<SignedTransaction>() {
+abstract class MakeOffLedgerPayment(
+        val obligationStateAndRef: StateAndRef<Obligation.State<*>>,
+        open val settlementInstructions: OffLedgerSettlementInstructions<*>
+) : FlowLogic<SignedTransaction>() {
 
     override val progressTracker: ProgressTracker = tracker()
 
@@ -30,16 +36,32 @@ abstract class MakeOffLedgerPayment(val obligationStateAndRef: StateAndRef<Oblig
 
     abstract fun checkBalance(requiredAmount: Amount<*>)
 
-    abstract fun makePayment(obligation: Obligation.State<*>)
+    abstract fun makePayment(obligation: Obligation.State<*>): PaymentReference
 
+    abstract fun checkPaymentNotAlreadyMade(obligation: Obligation.State<*>)
+
+    @Suspendable
     override fun call(): SignedTransaction {
-        progressTracker.currentStep = INITIALISING
-
         // 1. This flow should only be started by the beneficiary.
+        progressTracker.currentStep = INITIALISING
         val obligation = obligationStateAndRef.state.data
         val obligor = obligation.withWellKnownIdentities(serviceHub).obligor
         check(ourIdentity == obligor) { "This flow can only be started by the obligor. " }
 
+        // 2. Check balance.
+        progressTracker.currentStep = CHECKING_BALANCE
+        checkBalance(obligation.amount)
+
+        // 3. Check payment has not already been made.
+        checkPaymentNotAlreadyMade(obligation)
+
+        // 4. Make payment.
+        progressTracker.currentStep = MAKING_PAYMENT
+        val paymentReference = makePayment(obligation)
+
+        // 5. Add payment reference to settlement instructions and update state.
+        val updatedSettlementInstructions = settlementInstructions.addPaymentReference(paymentReference)
+        val obligationWithUpdatedSettlementInstructions = obligation.withSettlementTerms(updatedSettlementInstructions)
 
         // 6. Add updated settlement terms to obligation.
         progressTracker.currentStep = BUILDING

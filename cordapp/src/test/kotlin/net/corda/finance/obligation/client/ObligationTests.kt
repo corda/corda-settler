@@ -6,6 +6,7 @@ import net.corda.finance.obligation.client.flows.CreateObligation
 import net.corda.finance.obligation.contracts.Obligation
 import net.corda.finance.obligation.types.DigitalCurrency
 import net.corda.finance.obligation.types.XRP
+import net.corda.finance.ripple.types.RippleSettlementInstructions
 import net.corda.testing.node.internal.TestStartedNode
 import org.junit.Before
 import org.junit.Test

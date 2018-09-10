@@ -26,7 +26,8 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
     protected val network = InternalMockNetwork(
             cordappsForAllNodes = cordappsForPackages(
                     "net.corda.finance.obligation",
-                    "net.corda.finance.obligation.client"
+                    "net.corda.finance.obligation.client",
+                    "net.corda.finance.ripple"
             ),
             threadPerNode = true
     )

@@ -3,6 +3,7 @@ package net.corda.finance.ripple
 import com.ripple.core.coretypes.AccountID
 import com.ripple.core.coretypes.Amount
 import com.ripple.core.coretypes.hash.Hash256
+import net.corda.finance.ripple.clients.ReadWriteRippleClient
 import org.junit.Test
 import java.net.URI
 

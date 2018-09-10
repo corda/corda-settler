@@ -12,7 +12,7 @@ import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
 import net.corda.core.utilities.seconds
-import net.corda.finance.obligation.client.contracts.Obligation
+import net.corda.finance.obligation.contracts.Obligation
 import java.security.PublicKey
 
 object CreateObligation {
@@ -26,10 +26,10 @@ object CreateObligation {
     @InitiatingFlow
     @StartableByRPC
     class Initiator<T : TokenizableAssetInfo>(
-            val amount: Amount<T>,
-            val role: InitiatorRole,
-            val counterparty: Party,
-            val anonymous: Boolean = true
+            private val amount: Amount<T>,
+            private val role: InitiatorRole,
+            private val counterparty: Party,
+            private val anonymous: Boolean = true
     ) : FlowLogic<SignedTransaction>() {
 
         companion object {

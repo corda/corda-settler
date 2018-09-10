@@ -7,18 +7,17 @@ import net.corda.core.flows.FlowSession
 import net.corda.core.flows.InitiatedBy
 import net.corda.core.flows.ReceiveTransactionFlow
 import net.corda.core.node.StatesToRecord
-import net.corda.finance.obligation.client.contracts.Obligation
-import net.corda.finance.obligation.client.flows.AbstractSettleObligation
-import net.corda.finance.obligation.client.types.RippleSettlementInstructions
-import net.corda.finance.ripple.RippleClientForVerification
-import net.corda.finance.ripple.utilities.hasSucceeded
-import java.net.URI
+import net.corda.finance.obligation.contracts.Obligation
+import net.corda.finance.obligation.oracle.services.Service
 
 @InitiatedBy(AbstractSettleObligation::class)
 class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
 
-    private fun checkPaymentSettled(transactionHash: SecureHash, rippleNodes: List<URI>) {
-        val rippleClient = RippleClientForVerification(rippleNodes.first())
+    private fun checkPaymentSettled(transactionHash: SecureHash) {
+        val service = serviceHub.cordaService(Service::class.java)
+        val nodes = service.nodes
+        val rippleClient = RippleClientForVerification(nodes.first())
+        //val rippleClient = RippleClientForVerification(rippleNodes.first())
         val transactionData = rippleClient.transaction(transactionHash.toString())
         transactionData.hasSucceeded()
         // TODO: Check it is paid to the specified account.
@@ -36,7 +35,7 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
     private fun handleRippleSettlement(obligation: Obligation.State<*>, settlementInstructions: RippleSettlementInstructions) {
         val transactionHash = settlementInstructions.rippleTransactionHash
                 ?: throw IllegalStateException("No transaction hash has been specified yet.")
-        checkPaymentSettled(transactionHash, settlementInstructions.acceptableServers)
+        checkPaymentSettled(transactionHash)
     }
 
     @Suspendable

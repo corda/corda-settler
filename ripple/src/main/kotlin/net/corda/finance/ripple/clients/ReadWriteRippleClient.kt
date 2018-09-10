@@ -1,4 +1,4 @@
-package net.corda.finance.ripple
+package net.corda.finance.ripple.clients
 
 import com.ripple.core.coretypes.AccountID
 import com.ripple.core.coretypes.Amount
@@ -35,17 +35,6 @@ interface ReadWriteRippleClient : ReadOnlyRippleClient {
             fee(fee)
             invoiceID(linearId)
         }
-    }
-
-    fun createAndSignPayment(
-            source: AccountID,
-            destination: AccountID,
-            amount: Amount,
-            fee: Amount,
-            linearId: Hash256
-    ): SignedTransaction {
-        val payment = createPayment(source, destination, amount, fee, linearId)
-        return signPayment(payment)
     }
 
 }

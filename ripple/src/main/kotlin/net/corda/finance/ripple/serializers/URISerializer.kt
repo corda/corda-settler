@@ -1,4 +1,4 @@
-package net.corda.finance.obligation.client.serializers
+package net.corda.finance.ripple.serializers
 
 import net.corda.core.serialization.SerializationCustomSerializer
 import java.net.URI

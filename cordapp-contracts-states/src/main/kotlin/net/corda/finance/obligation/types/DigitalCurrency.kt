@@ -1,4 +1,4 @@
-package net.corda.finance.obligation.client.types
+package net.corda.finance.obligation.types
 
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.TokenizableAssetInfo

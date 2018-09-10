@@ -1,4 +1,4 @@
-package net.corda.finance.ripple
+package net.corda.finance.ripple.clients
 
 import com.ripple.core.coretypes.AccountID
 import com.typesafe.config.Config

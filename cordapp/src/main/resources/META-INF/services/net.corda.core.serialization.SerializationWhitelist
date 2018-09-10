@@ -1,1 +1,1 @@
-net.corda.finance.obligation.client.Whitelist
+net.corda.finance.obligation.serialization.Whitelist

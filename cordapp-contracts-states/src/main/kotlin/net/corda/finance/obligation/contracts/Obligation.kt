@@ -1,4 +1,4 @@
-package net.corda.finance.obligation.client.contracts
+package net.corda.finance.obligation.contracts
 
 import net.corda.core.contracts.*
 import net.corda.core.crypto.toStringShort
@@ -6,7 +6,7 @@ import net.corda.core.identity.AbstractParty
 import net.corda.core.identity.Party
 import net.corda.core.node.ServiceHub
 import net.corda.core.transactions.LedgerTransaction
-import net.corda.finance.obligation.client.types.SettlementInstructions
+import net.corda.finance.obligation.types.SettlementInstructions
 
 class Obligation : Contract {
 

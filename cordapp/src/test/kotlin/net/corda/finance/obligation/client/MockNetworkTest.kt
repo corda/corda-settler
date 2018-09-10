@@ -8,12 +8,12 @@ import net.corda.core.node.services.queryBy
 import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.toFuture
 import net.corda.core.transactions.SignedTransaction
-import net.corda.finance.obligation.client.contracts.Obligation
 import net.corda.finance.obligation.client.flows.AddSettlementInstructions
 import net.corda.finance.obligation.client.flows.CreateObligation
-import net.corda.finance.obligation.client.flows.SettleObligation
-import net.corda.finance.obligation.client.types.DigitalCurrency
-import net.corda.finance.obligation.client.types.SettlementInstructions
+import net.corda.finance.obligation.client.flows.OffLedgerSettleObligation
+import net.corda.finance.obligation.contracts.Obligation
+import net.corda.finance.obligation.types.DigitalCurrency
+import net.corda.finance.obligation.types.SettlementInstructions
 import net.corda.testing.node.internal.InternalMockNetwork
 import net.corda.testing.node.internal.TestStartedNode
 import net.corda.testing.node.internal.cordappsForPackages
@@ -80,7 +80,7 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
 
     /** Add settlement instructions to existing obligation. */
     fun TestStartedNode.makePayment(linearId: UniqueIdentifier): CordaFuture<SignedTransaction> {
-        return services.startFlow(SettleObligation(linearId)).resultFuture
+        return services.startFlow(OffLedgerSettleObligation(linearId)).resultFuture
     }
 
     /** From a transaction which produces a single output, retrieve that output. */

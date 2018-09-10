@@ -46,6 +46,8 @@ dependencies {
 
     // Typesafe config.
     compile 'com.typesafe:config:1.2.1'
+
+    cordapp project(":cordapp-contracts-states")
 }
 
 task integrationTest(type: Test, dependsOn: []) {

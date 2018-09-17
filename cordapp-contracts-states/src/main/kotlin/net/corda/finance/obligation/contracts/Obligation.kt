@@ -4,7 +4,6 @@ import net.corda.core.contracts.*
 import net.corda.core.crypto.toStringShort
 import net.corda.core.identity.AbstractParty
 import net.corda.core.identity.Party
-import net.corda.core.node.ServiceHub
 import net.corda.core.transactions.LedgerTransaction
 import net.corda.finance.obligation.types.SettlementInstructions
 
@@ -15,7 +14,7 @@ class Obligation : Contract {
         val CONTRACT_REF: ContractClassName = "net.corda.finance.obligation.contracts.Obligation"
     }
 
-    data class State<T : TokenizableAssetInfo>(
+    data class State<T : Any>(
             val amount: Amount<T>,
             val obligor: AbstractParty,
             val obligee: AbstractParty,
@@ -26,12 +25,12 @@ class Obligation : Contract {
 
         fun withSettlementTerms(settlementTerms: SettlementInstructions) = copy(settlementInstructions = settlementTerms)
 
-        private fun resolveParty(services: ServiceHub, abstractParty: AbstractParty): Party {
-            return abstractParty as? Party ?: services.identityService.requireWellKnownPartyFromAnonymous(abstractParty)
+        private fun resolveParty(resolver: (AbstractParty) -> Party, abstractParty: AbstractParty): Party {
+            return abstractParty as? Party ?: resolver(abstractParty)
         }
 
-        fun withWellKnownIdentities(services: ServiceHub): State<T> {
-            return copy(obligee = resolveParty(services, obligee), obligor = resolveParty(services, obligor))
+        fun withWellKnownIdentities(resolver: (AbstractParty) -> Party): State<T> {
+            return copy(obligee = resolveParty(resolver, obligee), obligor = resolveParty(resolver, obligor))
         }
 
         override fun toString(): String {

@@ -25,6 +25,18 @@ class OffLedgerSettleObligation(private val linearId: UniqueIdentifier) : FlowLo
 
     override val progressTracker: ProgressTracker = tracker()
 
+    private fun getFlowInstance(
+            settlementInstructions: OffLedgerSettlementInstructions<*>,
+            obligationStateAndRef: StateAndRef<Obligation.State<*>>
+    ): FlowLogic<SignedTransaction> {
+        val paymentFlowClass = settlementInstructions.paymentFlow
+        val paymentFlowClassConstructor = paymentFlowClass.getDeclaredConstructor(
+                StateAndRef::class.java,
+                OffLedgerSettlementInstructions::class.java
+        )
+        return paymentFlowClassConstructor.newInstance(obligationStateAndRef, settlementInstructions)
+    }
+
     @Suspendable
     override fun call(): SignedTransaction {
         // The settlement instructions determine how this obligation should be settled.
@@ -35,22 +47,18 @@ class OffLedgerSettleObligation(private val linearId: UniqueIdentifier) : FlowLo
         val settlementInstructions = obligationState.settlementInstructions
 
         progressTracker.currentStep = SETTLING
-        return when (settlementInstructions) {
+        val ftx = when (settlementInstructions) {
             is OnLedgerSettlementTerms -> throw IllegalStateException("Obligation to be settled on-ledger. Aborting ")
-            is OffLedgerSettlementInstructions<*> -> {
-                // Run the flow which in the supplied settlement instructions.
-                val paymentFlowClass = settlementInstructions.paymentFlow
-                val paymentFlowClassConstructor = paymentFlowClass.getDeclaredConstructor(StateAndRef::class.java, OffLedgerSettlementInstructions::class.java)
-                val newInstance = paymentFlowClassConstructor.newInstance(obligationStateAndRef, settlementInstructions)
-                subFlow(newInstance)
-            }
+            is OffLedgerSettlementInstructions<*> -> subFlow(getFlowInstance(settlementInstructions, obligationStateAndRef))
             else -> throw IllegalStateException("No settlement instructions added to obligation.")
         }
-//        progressTracker.currentStep = CHECKING
-//        val potentiallySettledObligation = ftx.tx.outRefsOfType<Obligation.State<*>>().single()
-//        potentiallySettledObligation.state.data.settlementInstructions
-//        // Checks the payment settled.
-//        subFlow(SendToSettlementOracle(potentiallySettledObligation))
+
+        progressTracker.currentStep = CHECKING
+        val potentiallySettledObligation = ftx.tx.outRefsOfType<Obligation.State<*>>().single()
+        potentiallySettledObligation.state.data.settlementInstructions
+        // Checks the payment settled.
+        // We only supply the linear ID because this flow can be called from the shell on its own.
+        return subFlow(SendToSettlementOracle(linearId))
     }
 
 }

@@ -3,7 +3,6 @@ package net.corda.finance.obligation.client.flows
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.confidential.SwapIdentitiesFlow
 import net.corda.core.contracts.Amount
-import net.corda.core.contracts.TokenizableAssetInfo
 import net.corda.core.flows.*
 import net.corda.core.identity.AbstractParty
 import net.corda.core.identity.Party
@@ -25,7 +24,7 @@ object CreateObligation {
 
     @InitiatingFlow
     @StartableByRPC
-    class Initiator<T : TokenizableAssetInfo>(
+    class Initiator<T : Any>(
             private val amount: Amount<T>,
             private val role: InitiatorRole,
             private val counterparty: Party,

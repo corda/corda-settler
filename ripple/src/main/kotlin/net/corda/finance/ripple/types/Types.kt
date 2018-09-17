@@ -88,24 +88,16 @@ data class TransactionInfoResponse(
         @JsonProperty("Destination") val destination: AccountID,
         @JsonProperty("Fee") val fee: Amount,
         @JsonProperty("Flags") val flags: String,
+        @JsonProperty("InvoiceID") val invoiceId: String,
         @JsonProperty("Sequence") val sequence: Int,
         @JsonProperty("SigningPubKey") val signingPubKey: String,
         @JsonProperty("TransactionType") val transactionType: String,
         @JsonProperty("TxnSignature") val txnSignature: String,
-        @JsonProperty("date") val date: String,
         @JsonProperty("hash") val hash: String,
         @JsonProperty("inLedger") val inLedger: Int,
         @JsonProperty("ledger_index") val ledgerIndex: Int,
-        @JsonProperty("meta") val meta: TransactionMetadata,
         @JsonProperty("status") val status: String,
         @JsonProperty("validated") val validated: Boolean
-)
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class TransactionMetadata(
-        @JsonProperty("TransactionIndex") val transactionIndex: Int,
-        @JsonProperty("TransactionResult") val transactionResult: String,
-        @JsonProperty("delivered_amount") val deliveredAmount: Amount
 )
 
 /** Server status. */

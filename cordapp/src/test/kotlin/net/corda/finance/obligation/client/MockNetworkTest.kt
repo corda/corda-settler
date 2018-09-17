@@ -1,7 +1,10 @@
 package net.corda.finance.obligation.client
 
 import net.corda.core.concurrent.CordaFuture
-import net.corda.core.contracts.*
+import net.corda.core.contracts.Amount
+import net.corda.core.contracts.LinearState
+import net.corda.core.contracts.StateAndRef
+import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.crypto.SecureHash
 import net.corda.core.identity.CordaX500Name
 import net.corda.core.node.services.queryBy
@@ -61,7 +64,7 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
     fun TestStartedNode.legalIdentity() = info.legalIdentities.first()
 
     /** Create a new obligation with the supplied parameters. */
-    fun <T : TokenizableAssetInfo> TestStartedNode.createObligation(
+    fun <T : Any> TestStartedNode.createObligation(
             amount: Amount<T>,
             counterparty: TestStartedNode,
             role: CreateObligation.InitiatorRole

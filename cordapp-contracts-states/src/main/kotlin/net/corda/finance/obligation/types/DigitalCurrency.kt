@@ -8,7 +8,7 @@ import java.math.BigDecimal
 
 @CordaSerializable
 data class DigitalCurrency(
-        val commodityCode: String,
+        val currencyCode: String,
         val displayName: String,
         val defaultFractionDigits: Int = 0
 ) : TokenizableAssetInfo {

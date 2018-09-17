@@ -59,30 +59,4 @@ class ObligationTests : MockNetworkTest(numberOfNodes = 2) {
         CompletableFuture.allOf(aObligation, bObligation)
     }
 
-    @Test
-    fun `create new obligation and add settlement instructions then make payment`() {
-        // Create obligation.
-        val newObligation = A.createObligation(10000.XRP, B, CreateObligation.InitiatorRole.OBLIGOR).getOrThrow()
-        val obligation = newObligation.singleOutput<Obligation.State<DigitalCurrency>>()
-        val obligationId = obligation.linearId()
-
-        // Add settlement instructions.
-        val rippleAddress = AccountID.fromString("ra6mzL1Xy9aN5eRdjzn9CHTMwcczG1uMpN")
-        // Just use party A as the oracle for now.
-        val settlementInstructions = RippleSettlementInstructions(rippleAddress, A.legalIdentity())
-
-        // Add the settlement instructions.
-        B.addSettlementInstructions(obligationId, settlementInstructions).getOrThrow()
-
-        // Make the payment.
-        val obligationWithPaymentMade = A.makePayment(obligationId).getOrThrow()
-        val transactionHash = obligationWithPaymentMade.id
-
-        // Wait for the updates on both nodes.
-        val aObligation = A.watchForTransaction(transactionHash).toCompletableFuture()
-        val bObligation = B.watchForTransaction(transactionHash).toCompletableFuture()
-        CompletableFuture.allOf(aObligation, bObligation)
-        println(obligationWithPaymentMade.singleOutput<Obligation.State<*>>().state.data.settlementInstructions)
-    }
-
 }

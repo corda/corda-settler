@@ -1,9 +1,9 @@
 package net.corda.finance.obligation.client.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import net.corda.core.contracts.TokenizableAssetInfo
 import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.flows.*
+import net.corda.core.identity.AbstractParty
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
@@ -36,12 +36,15 @@ class AddSettlementInstructions(
     override fun call(): SignedTransaction {
         // 1. Retrieve obligation.
         progressTracker.currentStep = INITIALISING
-        val obligationStateAndRef = getLinearStateById<Obligation.State<TokenizableAssetInfo>>(linearId, serviceHub)
+        val obligationStateAndRef = getLinearStateById<Obligation.State<Any>>(linearId, serviceHub)
                 ?: throw IllegalArgumentException("LinearId not recognised.")
         val obligation = obligationStateAndRef.state.data
 
         // 2. This flow should only be started by the beneficiary.
-        val obligee = obligation.withWellKnownIdentities(serviceHub).obligee
+        val identityResolver = { abstractParty: AbstractParty ->
+            serviceHub.identityService.requireWellKnownPartyFromAnonymous(abstractParty)
+        }
+        val obligee = obligation.withWellKnownIdentities(identityResolver).obligee
         check(ourIdentity == obligee) { "This flow can only be started by the obligee. " }
 
         // 3. Add settlement instructions.

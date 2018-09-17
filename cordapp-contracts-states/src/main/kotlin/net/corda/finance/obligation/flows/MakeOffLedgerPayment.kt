@@ -6,6 +6,7 @@ import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.FlowException
 import net.corda.core.flows.FlowLogic
+import net.corda.core.identity.AbstractParty
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
@@ -45,7 +46,10 @@ abstract class MakeOffLedgerPayment(
         // 1. This flow should only be started by the beneficiary.
         progressTracker.currentStep = INITIALISING
         val obligation = obligationStateAndRef.state.data
-        val obligor = obligation.withWellKnownIdentities(serviceHub).obligor
+        val identityResolver = { abstractParty: AbstractParty ->
+            serviceHub.identityService.requireWellKnownPartyFromAnonymous(abstractParty)
+        }
+        val obligor = obligation.withWellKnownIdentities(identityResolver).obligor
         check(ourIdentity == obligor) { "This flow can only be started by the obligor. " }
 
         // 2. Check balance.

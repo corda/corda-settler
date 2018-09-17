@@ -9,7 +9,7 @@ import net.corda.finance.obligation.flows.MakeOffLedgerPayment
 interface SettlementInstructions
 
 /** Terms specific to on-ledger settlement. */
-interface OnLedgerSettlementTerms : SettlementInstructions
+open class OnLedgerSettlementTerms : SettlementInstructions
 
 /**
  * Terms specific to off-ledger settlement. Here some kind of account must be specified. The account might be in the

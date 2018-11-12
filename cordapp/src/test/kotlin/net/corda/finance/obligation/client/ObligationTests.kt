@@ -46,8 +46,10 @@ class ObligationTests : MockNetworkTest(numberOfNodes = 2) {
 
         // Add settlement instructions.
         val rippleAddress = AccountID.fromString("rNmkj4AtjEHJh3D9hMRC4rS3CXQ9mX4S4b")
+        // After 20 ledgers, if a payment is not made, settlement will be considered failed.
+        val lastLedgerSequence = A.ledgerIndex() + 20
         // Just use party A as the oracle for now.
-        val settlementInstructions = XRPSettlementInstructions(rippleAddress, A.legalIdentity())
+        val settlementInstructions = XRPSettlementInstructions(rippleAddress, A.legalIdentity(), lastLedgerSequence)
 
         // Add the settlement instructions.
         val updatedObligation = B.addSettlementInstructions(obligationId, settlementInstructions).getOrThrow()

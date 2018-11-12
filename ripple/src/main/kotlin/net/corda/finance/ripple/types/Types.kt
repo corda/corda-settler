@@ -111,3 +111,12 @@ data class ServerStateResponse(val state: ServerState, val status: String) {
             @JsonProperty("complete_ledgers") val completeLedgers: String
     )
 }
+
+/** Ledger current. */
+
+data class LedgerCurrentIndexResponseObject(@JsonProperty("result") override val result: LedgerCurrentIndexResponse) : ResultObject
+
+data class LedgerCurrentIndexResponse(
+        @JsonProperty("ledger_current_index") val ledgerCurrentIndex: Long,
+        @JsonProperty("status") val status: String
+)

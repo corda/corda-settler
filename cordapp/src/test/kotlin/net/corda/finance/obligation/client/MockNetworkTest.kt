@@ -17,6 +17,7 @@ import net.corda.finance.obligation.client.flows.OffLedgerSettleObligation
 import net.corda.finance.obligation.contracts.Obligation
 import net.corda.finance.obligation.types.DigitalCurrency
 import net.corda.finance.obligation.types.SettlementInstructions
+import net.corda.finance.ripple.services.XRPService
 import net.corda.testing.node.MockNetwork
 import net.corda.testing.node.StartedMockNode
 import org.junit.After
@@ -79,6 +80,11 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
             val flow = AddSettlementInstructions(linearId, settlementInstructions)
             startFlow(flow)
         }
+    }
+
+    fun StartedMockNode.ledgerIndex(): Long {
+        val xrpService = services.cordaService(XRPService::class.java)
+        return xrpService.client.ledgerIndex().ledgerCurrentIndex
     }
 
     /** Add settlement instructions to existing obligation. */

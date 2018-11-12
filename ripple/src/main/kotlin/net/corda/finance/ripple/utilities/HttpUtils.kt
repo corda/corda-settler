@@ -39,5 +39,9 @@ inline fun <reified T : ResultObject> makeRequest(uri: URI, requestType: String,
     val requestObject = RequestObject(requestType, listOf(request))
     val serializedRequest = mapper.writeValueAsString(requestObject)
     val response = jsonRpcRequest(uri, serializedRequest)
+    // TODO: hack to catch any error responses.
+    if (response.contains("error")) {
+        throw IllegalStateException("Request $requestType returned an error.")
+    }
     return mapper.readValue(response, T::class.java)
 }

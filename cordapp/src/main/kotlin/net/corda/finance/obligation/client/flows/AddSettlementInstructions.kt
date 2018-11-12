@@ -7,8 +7,8 @@ import net.corda.core.identity.AbstractParty
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
-import net.corda.finance.obligation.client.getLinearStateById
 import net.corda.finance.obligation.contracts.Obligation
+import net.corda.finance.obligation.getLinearStateById
 import net.corda.finance.obligation.types.SettlementInstructions
 
 @InitiatingFlow

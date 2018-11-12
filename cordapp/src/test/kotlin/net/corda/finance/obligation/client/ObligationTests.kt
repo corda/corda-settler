@@ -5,9 +5,9 @@ import net.corda.core.utilities.getOrThrow
 import net.corda.finance.obligation.client.flows.CreateObligation
 import net.corda.finance.obligation.contracts.Obligation
 import net.corda.finance.obligation.types.DigitalCurrency
-import net.corda.finance.obligation.types.XRP
-import net.corda.finance.ripple.types.RippleSettlementInstructions
-import net.corda.testing.node.internal.TestStartedNode
+import net.corda.finance.ripple.types.XRPSettlementInstructions
+import net.corda.finance.ripple.utilities.XRP
+import net.corda.testing.node.StartedMockNode
 import org.junit.Before
 import org.junit.Test
 import java.util.concurrent.CompletableFuture
@@ -15,8 +15,8 @@ import kotlin.test.assertEquals
 
 class ObligationTests : MockNetworkTest(numberOfNodes = 2) {
 
-    lateinit var A: TestStartedNode
-    lateinit var B: TestStartedNode
+    lateinit var A: StartedMockNode
+    lateinit var B: StartedMockNode
 
     @Before
     override fun initialiseNodes() {
@@ -47,7 +47,7 @@ class ObligationTests : MockNetworkTest(numberOfNodes = 2) {
         // Add settlement instructions.
         val rippleAddress = AccountID.fromString("rNmkj4AtjEHJh3D9hMRC4rS3CXQ9mX4S4b")
         // Just use party A as the oracle for now.
-        val settlementInstructions = RippleSettlementInstructions(rippleAddress, A.legalIdentity())
+        val settlementInstructions = XRPSettlementInstructions(rippleAddress, A.legalIdentity())
 
         // Add the settlement instructions.
         val updatedObligation = B.addSettlementInstructions(obligationId, settlementInstructions).getOrThrow()

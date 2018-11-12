@@ -7,14 +7,14 @@ import net.corda.finance.obligation.contracts.Obligation
 import net.corda.finance.obligation.flows.MakeOffLedgerPayment
 import net.corda.finance.obligation.types.OffLedgerSettlementInstructions
 import net.corda.finance.obligation.types.PaymentReference
-import net.corda.finance.ripple.services.RippleService
-import net.corda.finance.ripple.types.RippleSettlementInstructions
-import net.corda.finance.ripple.utilities.DEFAULT_RIPPLE_FEE
-import net.corda.finance.ripple.utilities.toRippleAmount
-import net.corda.finance.ripple.utilities.toRippleHash
+import net.corda.finance.ripple.services.XRPService
+import net.corda.finance.ripple.types.XRPSettlementInstructions
+import net.corda.finance.ripple.utilities.DEFAULT_XRP_FEE
+import net.corda.finance.ripple.utilities.toXRPAmount
+import net.corda.finance.ripple.utilities.toXRPHash
 import com.ripple.core.coretypes.Amount as RippleAmount
 
-/*
+/**
 
 For testing...
 
@@ -26,40 +26,40 @@ Address     rNmkj4AtjEHJh3D9hMRC4rS3CXQ9mX4S4b
 Secret      ssn8cYYksFFexYq97sw9UnvLnMKgh
 Balance     10,000 XRP
  */
-class MakeRipplePayment(
+class MakeXRPPayment(
         obligationStateAndRef: StateAndRef<Obligation.State<*>>,
         override val settlementInstructions: OffLedgerSettlementInstructions<*>
 ) : MakeOffLedgerPayment(obligationStateAndRef, settlementInstructions) {
 
     override fun checkBalance(requiredAmount: Amount<*>) {
-        // Get a RippleService client.
-        val rippleClient = serviceHub.cordaService(RippleService::class.java).client
+        // Get a XRPService client.
+        val xrpClient = serviceHub.cordaService(XRPService::class.java).client
 
-        // Check the balance on the supplied RippleService address.
-        val ourAccountInfo = rippleClient.accountInfo(rippleClient.address)
+        // Check the balance on the supplied XRPService address.
+        val ourAccountInfo = xrpClient.accountInfo(xrpClient.address)
         val balance = ourAccountInfo.accountData.balance
-        check(balance > requiredAmount.toRippleAmount()) {
+        check(balance > requiredAmount.toXRPAmount()) {
             "You do not have enough XRP to make the payment."
         }
     }
 
     // We don't want to serialise any of this stuff not @Suspendable.
     override fun makePayment(obligation: Obligation.State<*>): PaymentReference {
-        // Get a RippleService client.
-        val rippleClient = serviceHub.cordaService(RippleService::class.java).client
+        // Get a XRPService client.
+        val xrpClient = serviceHub.cordaService(XRPService::class.java).client
 
         // 1. Create a new payment.
-        val payment = rippleClient.createPayment(
-                source = rippleClient.address,
-                destination = (settlementInstructions as RippleSettlementInstructions).accountToPay,
-                amount = obligation.amount.toRippleAmount(),
-                fee = DEFAULT_RIPPLE_FEE,
-                linearId = SecureHash.sha256(obligation.linearId.id.toString()).toRippleHash()
+        val payment = xrpClient.createPayment(
+                source = xrpClient.address,
+                destination = (settlementInstructions as XRPSettlementInstructions).accountToPay,
+                amount = obligation.faceAmount.toXRPAmount(),
+                fee = DEFAULT_XRP_FEE,
+                linearId = SecureHash.sha256(obligation.linearId.id.toString()).toXRPHash()
         )
 
         // 2. Sign and submit the payment.
-        val signedPayment = rippleClient.signPayment(payment)
-        val paymentResponse = rippleClient.submitTransaction(signedPayment)
+        val signedPayment = xrpClient.signPayment(payment)
+        val paymentResponse = xrpClient.submitTransaction(signedPayment)
 
         // 3. Return the payment hash.
         return paymentResponse.txJson.hash

@@ -5,7 +5,7 @@ import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 import java.net.URI
 
-open class RippleClientForPayment(configFileName: String) : ReadWriteRippleClient {
+open class XRPClientForPayment(configFileName: String) : ReadWriteXRPClient {
 
     private val config: Config = ConfigFactory.parseResources(configFileName)
     override val nodeUri: URI get() = URI(config.getString("server"))

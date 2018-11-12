@@ -61,6 +61,7 @@ object CreateObligation {
         }
 
         private fun createObligation(us: AbstractParty, them: AbstractParty): Pair<Obligation.State<T>, PublicKey> {
+            check(us != them) { "You cannot create an obligation to yourself" }
             val obligation = when (role) {
                 InitiatorRole.OBLIGEE -> Obligation.State(amount, them, us)
                 InitiatorRole.OBLIGOR -> Obligation.State(amount, us, them)

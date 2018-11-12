@@ -11,10 +11,10 @@ import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.identity.Party
 import net.corda.core.node.NodeInfo
 import net.corda.core.node.services.NetworkMapCache
-import net.corda.finance.obligation.client.flows.AddSettlementInstructions
 import net.corda.finance.obligation.types.OnLedgerSettlementTerms
-import net.corda.finance.ripple.types.RippleSettlementInstructions
+import net.corda.finance.ripple.types.XRPSettlementInstructions
 import tornadofx.*
+import net.corda.finance.obligation.client.flows.AddSettlementInstructions as AddSettlementInstructionsFlow
 
 class AddSettlementInstructions : Fragment("Add settlement instructions") {
 
@@ -65,10 +65,11 @@ class AddSettlementInstructions : Fragment("Add settlement instructions") {
                 button("Submit") {
                     action {
                         val account = AccountID.fromString(model.address.value)
-                        val settlementInstructions = RippleSettlementInstructions(account, model.oracle.value)
+                        val settlementInstructions = XRPSettlementInstructions(account, model.oracle.value)
                         model.commit {
-                            cordaRpcOps!!.startFlowDynamic(AddSettlementInstructions::class.java, linearId.get(), settlementInstructions)
+                            cordaRpcOps!!.startFlowDynamic(AddSettlementInstructionsFlow::class.java, linearId.get(), settlementInstructions)
                         }
+                        scene.window.hide()
                     }
                 }
             }
@@ -79,7 +80,8 @@ class AddSettlementInstructions : Fragment("Add settlement instructions") {
                     text = "If settling on ledger, there's no need to do anything here."
                 }
                 button("Submit").action {
-                    cordaRpcOps!!.startFlowDynamic(AddSettlementInstructions::class.java, linearId.get(), OnLedgerSettlementTerms())
+                    cordaRpcOps!!.startFlowDynamic(AddSettlementInstructionsFlow::class.java, linearId.get(), OnLedgerSettlementTerms())
+                    scene.window.hide()
                 }
             }
         }

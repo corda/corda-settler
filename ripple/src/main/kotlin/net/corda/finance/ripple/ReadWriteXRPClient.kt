@@ -11,7 +11,10 @@ import net.corda.finance.ripple.types.SubmitPaymentResponse
 import net.corda.finance.ripple.types.SubmitPaymentResultObject
 import net.corda.finance.ripple.utilities.makeRequest
 
-interface ReadWriteRippleClient : ReadOnlyRippleClient {
+/**
+ * An XRP client which can create and sign payment transactions for a specified account.
+ */
+interface ReadWriteXRPClient : ReadOnlyXRPClient {
 
     val secret: String
     val address: AccountID

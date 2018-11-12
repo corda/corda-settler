@@ -1,7 +1,7 @@
 buildscript {
     ext.corda_release_group = 'net.corda'
-    ext.corda_release_version = '4.0-SNAPSHOT'
-    ext.corda_gradle_plugins_version = '4.0.29'
+    ext.corda_release_version = '3.3-corda'
+    ext.corda_gradle_plugins_version = '3.2.1'
     ext.kotlin_version = '1.2.51'
     ext.junit_version = '4.12'
     ext.quasar_version = '0.7.9'
@@ -10,7 +10,6 @@ buildscript {
         mavenLocal()
         mavenCentral()
         jcenter()
-        maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda' }
     }
 
     dependencies {
@@ -26,7 +25,6 @@ allprojects {
         mavenLocal()
         jcenter()
         mavenCentral()
-        maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda' }
         maven { url 'https://jitpack.io' }
     }
 }
@@ -80,6 +78,7 @@ dependencies {
     // Specify your CorDapp's dependencies below, including dependent CorDapps.
     // We've defined Cash as a dependent CorDapp as an example.
     cordapp project(":cordapp")
+    cordapp project(":cordapp-contracts-states")
     cordapp project(":ripple")
     cordapp project(":oracle")
     cordapp "$corda_release_group:corda-finance:$corda_release_version"
@@ -112,6 +111,7 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
             adminAddress("localhost:10043")
         }
         cordapps = []
+        rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
     }
     node {
         name "O=PartyA,L=London,C=GB"
@@ -121,6 +121,8 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
             adminAddress("localhost:10046")
         }
         cordapps = [
+                "$project.group:ripple:$project.version",
+                "$project.group:cordapp-contracts-states:$project.version",
                 "$project.group:cordapp:$project.version",
                 "$corda_release_group:corda-finance:$corda_release_version"
         ]
@@ -134,19 +136,23 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
             adminAddress("localhost:10049")
         }
         cordapps = [
+                "$project.group:ripple:$project.version",
+                "$project.group:cordapp-contracts-states:$project.version",
                 "$project.group:cordapp:$project.version",
                 "$corda_release_group:corda-finance:$corda_release_version"
         ]
         rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
     }
     node {
-        name "O=Ripple Oracle ,L=New York,C=US"
+        name "O=Oracle ,L=New York,C=US"
         p2pPort 10011
         rpcSettings {
             address("localhost:10012")
             adminAddress("localhost:10052")
         }
         cordapps = [
+                "$project.group:ripple:$project.version",
+                "$project.group:cordapp-contracts-states:$project.version",
                 "$project.group:oracle:$project.version",
                 "$corda_release_group:corda-finance:$corda_release_version"
         ]

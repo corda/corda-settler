@@ -6,16 +6,16 @@ import com.ripple.core.coretypes.hash.Hash256
 import org.junit.Test
 import java.net.URI
 
-class TestRippleClient(override val nodeUri: URI, override val secret: String, override val address: AccountID) : ReadWriteRippleClient
+class TestXRPClient(override val nodeUri: URI, override val secret: String, override val address: AccountID) : ReadWriteXRPClient
 
 class RippleClientTests {
 
     companion object {
         @JvmStatic
         private val nodeUri = URI("http://s.altnet.rippletest.net:51234")
-        // Credentials for an account on the RippleService test net.
+        // Credentials for an account on the XRPService test net.
         @JvmStatic
-        private val client = TestRippleClient(
+        private val client = TestXRPClient(
                 nodeUri = nodeUri,
                 secret = "ssn8cYYksFFexYq97sw9UnvLnMKgh",
                 address = AccountID.fromString("rNmkj4AtjEHJh3D9hMRC4rS3CXQ9mX4S4b")

@@ -4,12 +4,13 @@ import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleStringProperty
 import tornadofx.*
 
-class LoginView : Fragment("Login") {
+class LoginView : View("Login") {
     private val model = object : ViewModel() {
         val host = bind { SimpleStringProperty() }
         val port = bind { SimpleIntegerProperty() }
         val username = bind { SimpleStringProperty() }
         val password = bind { SimpleStringProperty() }
+        val configFile = bind { SimpleStringProperty() }
     }
 
     override val root = form {
@@ -40,6 +41,12 @@ class LoginView : Fragment("Login") {
                     text = "test"
                 }
             }
+            field("Ripple Config File") {
+                textfield(model.configFile) {
+                    required()
+                    text = "ripple.conf"
+                }
+            }
         }
 
         button("Submit") {
@@ -51,7 +58,8 @@ class LoginView : Fragment("Login") {
                         password = model.password.value
                 )
                 find(LoginView::class).close()
-                find(ObligationView::class).openWindow()
+                println(model.configFile.value.toString())
+                find<ObligationView>(mapOf(ObligationView::configFile to model.configFile.value.toString())).openWindow()
             }
         }
     }

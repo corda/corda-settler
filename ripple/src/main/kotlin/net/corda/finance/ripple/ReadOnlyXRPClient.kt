@@ -5,7 +5,8 @@ import net.corda.finance.ripple.types.*
 import net.corda.finance.ripple.utilities.makeRequest
 import java.net.URI
 
-interface ReadOnlyRippleClient {
+/** An XRP client which can obtain account and transaction information for any account. */
+interface ReadOnlyXRPClient {
 
     val nodeUri: URI
 

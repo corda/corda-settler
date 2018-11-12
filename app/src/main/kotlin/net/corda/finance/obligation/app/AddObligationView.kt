@@ -78,17 +78,23 @@ class AddObligationView : Fragment("Add obligation") {
 
             action {
                 model.commit {
-                    val token: Any = when (model.currency.value) {
-                        "XRP" -> DigitalCurrency.getInstance(model.currency.value)
-                        else -> Currency.getInstance(model.currency.value)
+                    val currency = model.currency.value
+                    val amount = when (currency) {
+                        "XRP" -> {
+                            val rippleAmount = model.amount.value.toLong() * 1000000
+                            Amount(rippleAmount, DigitalCurrency.getInstance(currency))
+                        }
+                        else -> {
+                            Amount(model.amount.value.toLong(), Currency.getInstance(currency))
+                        }
                     }
 
-                    val amount = Amount(model.amount.value.toLong(), token)
                     val role = CreateObligation.InitiatorRole.valueOf(model.role.value.toUpperCase())
                     val counterparty = model.counterparty.value
                     val anonymous = model.anonymous.value
 
                     cordaRpcOps!!.startFlowDynamic(CreateObligation.Initiator::class.java, amount, role, counterparty, anonymous)
+                    scene.window.hide()
                 }
             }
         }

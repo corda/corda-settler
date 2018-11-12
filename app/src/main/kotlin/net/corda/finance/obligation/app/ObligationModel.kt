@@ -25,5 +25,5 @@ fun Obligation.State<*>.toUiModel(): ObligationModel<*> {
     val us = cordaRpcOps!!.nodeInfo().legalIdentities.first()
     val counterparty = if (wellKnown.obligor == us) wellKnown.obligee else wellKnown.obligor
     val isPayer = wellKnown.obligor == us
-    return ObligationModel(linearId, amount, counterparty as Party, isPayer, settlementInstructions)
+    return ObligationModel(linearId, faceAmount, counterparty as Party, isPayer, settlementInstructions)
 }

@@ -5,6 +5,7 @@ import net.corda.core.crypto.toStringShort
 import net.corda.core.identity.AbstractParty
 import net.corda.core.identity.Party
 import net.corda.core.transactions.LedgerTransaction
+import net.corda.finance.obligation.types.ObligationStatus
 import net.corda.finance.obligation.types.SettlementInstructions
 
 class Obligation : Contract {
@@ -15,15 +16,26 @@ class Obligation : Contract {
     }
 
     data class State<T : Any>(
-            val amount: Amount<T>,
+            val faceAmount: Amount<T>,
             val obligor: AbstractParty,
             val obligee: AbstractParty,
+            val paid: Amount<T> = Amount(0L, faceAmount.token),
             val settlementInstructions: SettlementInstructions? = null,
+            val status: ObligationStatus = ObligationStatus.UNSETTLED,
             override val linearId: UniqueIdentifier = UniqueIdentifier()
     ) : LinearState {
         override val participants: List<AbstractParty> get() = listOf(obligee, obligor)
 
         fun withSettlementTerms(settlementTerms: SettlementInstructions) = copy(settlementInstructions = settlementTerms)
+
+        fun settle(amount: Amount<T>): Obligation.State<T> {
+            val newAmount = paid + amount
+            return when {
+                newAmount >= faceAmount -> copy(paid = newAmount, status = ObligationStatus.SETTLED)
+                newAmount < faceAmount -> copy(paid = newAmount, status = ObligationStatus.UNSETTLED)
+                else -> throw IllegalStateException("This shouldn't happen!")
+            }
+        }
 
         private fun resolveParty(resolver: (AbstractParty) -> Party, abstractParty: AbstractParty): Party {
             return abstractParty as? Party ?: resolver(abstractParty)
@@ -36,7 +48,7 @@ class Obligation : Contract {
         override fun toString(): String {
             val obligeeString = (obligee as? Party)?.name?.organisation ?: obligee.owningKey.toStringShort()
             val obligorString = (obligor as? Party)?.name?.organisation ?: obligor.owningKey.toStringShort()
-            return "Obligation($linearId): $obligorString owes $obligeeString $amount."
+            return "Obligation($linearId): $obligorString owes $obligeeString $faceAmount."
         }
     }
 
@@ -47,5 +59,6 @@ class Obligation : Contract {
         class Extinguish : TypeOnlyCommandData()
     }
 
+    // TODO: Write contract code.
     override fun verify(tx: LedgerTransaction) = Unit
 }

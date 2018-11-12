@@ -54,4 +54,10 @@ class RippleClientTests {
         println(result)
     }
 
+    @Test
+    fun `get ledger current index`() {
+        val result = client.ledgerIndex()
+        println(result)
+    }
+
 }

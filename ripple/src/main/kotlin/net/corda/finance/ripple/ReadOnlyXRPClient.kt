@@ -24,4 +24,8 @@ interface ReadOnlyXRPClient {
         return makeRequest<ServerStateResponseObject>(nodeUri, "server_state", Unit).result
     }
 
+    fun ledgerIndex(): LedgerCurrentIndexResponse {
+        return makeRequest<LedgerCurrentIndexResponseObject>(nodeUri, "ledger_current", Unit).result
+    }
+
 }

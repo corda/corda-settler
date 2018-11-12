@@ -17,18 +17,21 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
 
     override val progressTracker: ProgressTracker = ProgressTracker()
 
+    enum class VerifyResult { TIMEOUT, SUCCESS, PENDING }
+
     @Suspendable
-    fun handleXRPSettlement(obligation: Obligation.State<DigitalCurrency>, settlementInstructions: XRPSettlementInstructions) {
+    fun verifySettlement(obligation: Obligation.State<DigitalCurrency>, settlementInstructions: XRPSettlementInstructions): VerifyResult {
         val oracleService = serviceHub.cordaService(RippleOracleService::class.java)
         while (true) {
             logger.info("Checking for settlement...")
-            val hasPaymentSettled = oracleService.hasPaymentSettled(settlementInstructions, obligation)
-            if (hasPaymentSettled) break
-
-            // Sleep for five seconds before we try again. The Oracle might receive the request to verify payment
-            // before the payment succeed. Also it takes a bit of time for all the nodes to receive the new ledger
-            // version. Note: sleep is a suspendable operation.
-            sleep(Duration.ofSeconds(5))
+            val result = oracleService.hasPaymentSettled(settlementInstructions, obligation)
+            when (result) {
+                VerifyResult.SUCCESS, VerifyResult.TIMEOUT -> return result
+                // Sleep for five seconds before we try again. The Oracle might receive the request to verify payment
+                // before the payment succeed. Also it takes a bit of time for all the nodes to receive the new ledger
+                // version. Note: sleep is a suspendable operation.
+                VerifyResult.PENDING -> sleep(Duration.ofSeconds(5))
+            }
         }
     }
 
@@ -43,9 +46,14 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
         check(settlementInstructions != null) { "This obligation has no settlement instructions." }
 
         // 3. Handle different settlement methods.
-        when (settlementInstructions) {
-            is XRPSettlementInstructions -> handleXRPSettlement(obligation, settlementInstructions)
+        val verifyResult = when (settlementInstructions) {
+            is XRPSettlementInstructions -> verifySettlement(obligation, settlementInstructions)
             else -> throw IllegalStateException("This Oracle only handles XRP settlement.")
+        }
+
+        if (verifyResult == VerifyResult.TIMEOUT) {
+            println("TIMEOUT")
+            return
         }
 
         // 4. Update settlement instructions.

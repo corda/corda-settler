@@ -19,6 +19,7 @@ import net.corda.finance.ripple.flows.MakeXRPPayment
 data class XRPSettlementInstructions(
         override val accountToPay: AccountID,
         override val settlementOracle: Party,
+        val lastLedgerSequence: Long,
         override val paymentFlow: Class<MakeXRPPayment> = MakeXRPPayment::class.java,
         override val paymentStatus: PaymentStatus = PaymentStatus.NOT_SENT,
         override val paymentReference: PaymentReference? = null

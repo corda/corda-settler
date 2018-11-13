@@ -13,6 +13,7 @@ import net.corda.testing.node.StartedMockNode
 import org.junit.Before
 import org.junit.Test
 import java.util.concurrent.CompletableFuture
+import kotlin.test.assertFailsWith
 
 class ObligationTestsWithOracle : MockNetworkTest(numberOfNodes = 3) {
 
@@ -35,9 +36,9 @@ class ObligationTestsWithOracle : MockNetworkTest(numberOfNodes = 3) {
         val obligationId = obligation.linearId()
 
         // Add settlement instructions.
-        val rippleAddress = AccountID.fromString("ra6mzL1Xy9aN5eRdjzn9CHTMwcczG1uMpN")
+        val xrpAddress = AccountID.fromString("ra6mzL1Xy9aN5eRdjzn9CHTMwcczG1uMpN")
         val lastLedgerSequence = A.ledgerIndex() + 20
-        val settlementInstructions = XRPSettlementInstructions(rippleAddress, O.legalIdentity(), lastLedgerSequence)
+        val settlementInstructions = XRPSettlementInstructions(xrpAddress, O.legalIdentity(), lastLedgerSequence)
 
         // Add the settlement instructions.
         B.addSettlementInstructions(obligationId, settlementInstructions).getOrThrow()
@@ -50,30 +51,32 @@ class ObligationTestsWithOracle : MockNetworkTest(numberOfNodes = 3) {
         val aObligation = A.watchForTransaction(transactionHash).toCompletableFuture()
         val bObligation = B.watchForTransaction(transactionHash).toCompletableFuture()
         CompletableFuture.allOf(aObligation, bObligation)
-        println(obligationWithPaymentMade.singleOutput<Obligation.State<DigitalCurrency>>())
+
+        // Print settled obligation info.
+        val settledObligation = A.queryObligationById(obligationId)
+        println(settledObligation.state.data)
+        println(settledObligation.state.data.settlementInstructions as XRPSettlementInstructions)
     }
 
     @Test
-    fun `ledger sequence timeout`() {
+    fun `last ledger sequence is reached`() {
         // Create obligation.
         val newObligation = A.createObligation(10000.XRP, B, CreateObligation.InitiatorRole.OBLIGOR).getOrThrow()
         val obligation = newObligation.singleOutput<Obligation.State<DigitalCurrency>>()
         val obligationId = obligation.linearId()
 
-        // Add settlement instructions and a fake payment reference to pass the oracle's checks.
-        val rippleAddress = AccountID.fromString("ra6mzL1Xy9aN5eRdjzn9CHTMwcczG1uMpN")
-        val lastLedgerSequence = A.ledgerIndex() + 5
-        val settlementInstructions = XRPSettlementInstructions(rippleAddress, O.legalIdentity(), lastLedgerSequence,
-                paymentReference = "8D0E506405714C8C768035D5FBAA8526610568E3CF025283CC632F66DDBBAAED"
-        )
+        // Add settlement instructions.
+        val xrpAddress = AccountID.fromString("ra6mzL1Xy9aN5eRdjzn9CHTMwcczG1uMpN")
+        val lastLedgerSequence = A.ledgerIndex()
+        val settlementInstructions = XRPSettlementInstructions(xrpAddress, O.legalIdentity(), lastLedgerSequence)
 
         // Add the settlement instructions.
         B.addSettlementInstructions(obligationId, settlementInstructions).getOrThrow()
 
-        // Never make payment.
-
-        // Send to Oracle.
-        B.startFlow(SendToSettlementOracle(obligation.linearId())).getOrThrow()
+        // Wait for the updates on both nodes.
+        assertFailsWith<IllegalStateException>("Payment wasn't made by the deadline.") {
+            B.startFlow(SendToSettlementOracle(obligationId)).getOrThrow()
+        }
     }
 
 }

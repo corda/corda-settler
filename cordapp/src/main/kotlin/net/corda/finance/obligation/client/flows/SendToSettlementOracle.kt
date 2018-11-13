@@ -9,6 +9,7 @@ import net.corda.core.transactions.SignedTransaction
 import net.corda.core.utilities.unwrap
 import net.corda.finance.obligation.contracts.Obligation
 import net.corda.finance.obligation.flows.AbstractSendToSettlementOracle
+import net.corda.finance.obligation.flows.OracleResult
 import net.corda.finance.obligation.getLinearStateById
 import net.corda.finance.obligation.types.OffLedgerSettlementInstructions
 
@@ -29,9 +30,18 @@ class SendToSettlementOracle(val linearId: UniqueIdentifier) : AbstractSendToSet
         val session = initiateFlow(settlementInstructions.settlementOracle)
         subFlow(SendStateAndRefFlow(session, listOf(obligationStateAndRef)))
 
-        // Receive a SignedTransaction from the oracle that exits the obligation.
-        val stx = session.receive<SignedTransaction>().unwrap { it }
-        return subFlow(FinalityFlow(stx))
+        // Receive a SignedTransaction from the oracle that exits the obligation, or throw an exception if we timed out.
+        return session.receive<OracleResult>().unwrap {
+            when (it) {
+                is OracleResult.Success -> {
+                    val stx = it.stx
+                    subFlow(FinalityFlow(stx))
+                }
+                is OracleResult.Failure -> {
+                    throw IllegalStateException(it.message)
+                }
+            }
+        }
     }
 
 }

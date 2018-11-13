@@ -48,7 +48,7 @@ class Obligation : Contract {
         override fun toString(): String {
             val obligeeString = (obligee as? Party)?.name?.organisation ?: obligee.owningKey.toStringShort()
             val obligorString = (obligor as? Party)?.name?.organisation ?: obligor.owningKey.toStringShort()
-            return "Obligation($linearId): $obligorString owes $obligeeString $faceAmount."
+            return "Obligation($linearId): $obligorString owes $obligeeString $faceAmount ($paid paid)."
         }
     }
 

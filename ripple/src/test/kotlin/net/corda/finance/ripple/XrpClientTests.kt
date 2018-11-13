@@ -8,7 +8,7 @@ import java.net.URI
 
 class TestXRPClient(override val nodeUri: URI, override val secret: String, override val address: AccountID) : ReadWriteXRPClient
 
-class RippleClientTests {
+class XrpClientTests {
 
     companion object {
         @JvmStatic

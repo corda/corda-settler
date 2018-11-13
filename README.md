@@ -1,70 +1,14 @@
 # Obligation settler
 
-TODO:
+## Settlement types:
 
-0. Figure out what the obligation contract and state looks like. it can be
-   settled on or off ledger. either way we need some settlement instruction
-   which includes what needs to happen. Which currency or which mechanism for settlement
-
-    on:
-        - currency
-        - digital currency
-        - barter of some token type
-    off:
-        - SWIFT
-        - Ripple
-            - UUID
-            - Oracle
-            - Ripple ledger number
-            - payment address
-            - NOTE: much of this can be abstracted into an interface
-
-
-1. figure out how to query a ripple server on the internet.
-2. build this in to a web api of our own.
-3. figure out what the process of submitting and tracking the ripple
-   transaction looks like
-
-currently we use the ledger number as the timeout on the transaction but
-we do not know when this ledger number will occur in time. Instead we
-probably just need to use an instant in time. We can still add a ledger
-number which estimates a day from now or whatever.
-
-The ripple API gives us back a transaction hash. However, the transaction
-we submit still has a UUID in it
-
-Options for doing this:
-
-1. create obligation.
-2. Add settlement instructions by updating the obligation
-3. Make the ripple payment (and get back a hash)
-4. Add the hash to the settlement instructions (update the obligation)
-5. Submit the obligation to the oracle.
-
-Questions:
-
-1. Who creates the obligation?
-2. Who needs to sign when the settlement details are added?
-3. How is the ripple payment made? Through a flow. Corda independent?
-   Via a flow would be nice. Could call into some API then update the
-   obligation with the ripple transaction hash.
-
-   Can we rely on the ripple transaction hash only? I don't think so as
-   the payment could be for the right amount but from a different party.
-   So we still need the UUID which is generated when the obligation
-   settlement instructions are added. The UUID should really be the
-   LinearID of the obligation.
-
-   The hash doesn't HAVE to be added. However it makes things easier
-   if we do add it. As we can search for the transaction by hash.
-
-4. What is the best way to query for the transaction?
-5. how doe fees affect the payment amount?
-
-
-Amendments:
-
-* Add settlement instructions separately.
+* on:
+    * currency
+    * digital currency
+    * barter of some token type
+* off:
+    * SWIFT
+    * Ripple
 
 ## Requirements
 
@@ -236,24 +180,12 @@ the transaction proposal. At this point, either Alice or Bob can send
 the obligation to the Notary for notarisation. NOTE: Alice and Bob do
 not need to sign.
 
-## Issues
+## Notes/Issues
 
-1. Race between Ripple transaction being committed and the ledger number passing.
-
-
-
-
-
-
-
-The create obligation flow should:
-        * Figure out which Ripple ledger number is sensible to expect settlement by.
-            * Flow will need access to this data.
-        * Generate a UUID which will be used to track the Ripple transaction.
-        * Specify which Ripple Oracle should be used to track settlement.
-* Make the settlement payment by generating the tx specified above.
-* Confirm settlement.
-
+* We use xrp ledger number to specify when the payment should be made by.
+  Note that each ledger number takes about 3-5 seconds.
+* Fix conversion of Corda Amount to Ripple Amount. Need to multiply Corda
+  amount by 10000 to get the equivalent ripple amount.
 
 
 

@@ -1,14 +1,13 @@
-package net.corda.finance.obligation
+package com.r3.corda.finance.obligation
 
+import com.r3.corda.finance.obligation.client.MockNetworkTest
+import com.r3.corda.finance.obligation.client.flows.CreateObligation
+import com.r3.corda.finance.obligation.client.flows.SendToSettlementOracle
+import com.r3.corda.finance.obligation.contracts.Obligation
+import com.r3.corda.finance.ripple.types.XRPSettlementInstructions
+import com.r3.corda.finance.ripple.utilities.XRP
 import com.ripple.core.coretypes.AccountID
 import net.corda.core.utilities.getOrThrow
-import net.corda.finance.obligation.client.MockNetworkTest
-import net.corda.finance.obligation.client.flows.CreateObligation
-import net.corda.finance.obligation.client.flows.SendToSettlementOracle
-import net.corda.finance.obligation.contracts.Obligation
-import net.corda.finance.obligation.types.DigitalCurrency
-import net.corda.finance.ripple.types.XRPSettlementInstructions
-import net.corda.finance.ripple.utilities.XRP
 import net.corda.testing.node.StartedMockNode
 import org.junit.Before
 import org.junit.Test
@@ -44,7 +43,7 @@ class ObligationTestsWithOracle : MockNetworkTest(numberOfNodes = 3) {
         B.addSettlementInstructions(obligationId, settlementInstructions).getOrThrow()
 
         // Make the payment.
-        val obligationWithPaymentMade = A.makePayment(obligationId).getOrThrow()
+        val obligationWithPaymentMade = A.transaction { A.makePayment(obligationId).getOrThrow() }
         val transactionHash = obligationWithPaymentMade.id
 
         // Wait for the updates on both nodes.

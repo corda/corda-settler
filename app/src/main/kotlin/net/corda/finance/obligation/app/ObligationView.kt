@@ -8,14 +8,8 @@ import javafx.stage.StageStyle
 import net.corda.client.jfx.utils.map
 import net.corda.client.jfx.utils.observeOnFXThread
 import net.corda.core.messaging.vaultTrackBy
-import net.corda.core.utilities.getOrThrow
 import net.corda.finance.GBP
 import net.corda.finance.USD
-import net.corda.finance.obligation.client.flows.SendToSettlementOracle
-import net.corda.finance.obligation.contracts.Obligation
-import net.corda.finance.obligation.flows.UpdateObligationWithPaymentRef
-import net.corda.finance.obligation.types.DigitalCurrency
-import net.corda.finance.ripple.XRPClientForPayment
 import tornadofx.*
 import java.time.LocalDateTime
 import java.util.*

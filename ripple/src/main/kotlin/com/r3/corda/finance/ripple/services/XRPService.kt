@@ -10,6 +10,4 @@ class XRPService(val services: AppServiceHub) : SingletonSerializeAsToken() {
     // Config file defaulted to this name.
     private val configFileName = "xrp.conf"
     val client: XRPClientForPayment by lazy { XRPClientForPayment(configFileName) }
-
-    val deduplicationId = client.nextSequenceNumber(client.address)
 }

@@ -1,4 +1,4 @@
-package net.corda.finance.obligation.app
+package com.r3.corda.finance.obligation.app
 
 import com.ripple.core.coretypes.AccountID
 import javafx.beans.property.SimpleObjectProperty
@@ -11,8 +11,6 @@ import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.identity.Party
 import net.corda.core.node.NodeInfo
 import net.corda.core.node.services.NetworkMapCache
-import net.corda.finance.obligation.types.OnLedgerSettlementTerms
-import net.corda.finance.ripple.types.XRPSettlementInstructions
 import tornadofx.*
 import net.corda.finance.obligation.client.flows.AddSettlementInstructions as AddSettlementInstructionsFlow
 
@@ -58,7 +56,10 @@ class AddSettlementInstructions : Fragment("Add settlement instructions") {
                     field("Oracle") {
                         choicebox<Party>(model.oracle) {
                             items = parties.map { it.singleIdentityAndCert().party }
-                            converter = stringConverter { it?.let { PartyNameFormatter.short.format(it.name) } ?: "" }
+                            converter = stringConverter {
+                                it?.let { PartyNameFormatter.short.format(it.name) }
+                                        ?: ""
+                            }
                         }
                     }
                 }

@@ -15,7 +15,7 @@ data class DigitalCurrency(
     override val displayTokenSize: BigDecimal get() = BigDecimal.ONE.scaleByPowerOfTen(-defaultFractionDigits)
 
     companion object {
-        private val registry = mapOf(Pair("XRP", DigitalCurrency("XRP", "Ripple")))
+        private val registry = mapOf(Pair("XRP", DigitalCurrency("XRP", "Ripple", 6)))
         fun getInstance(currencyCode: String): DigitalCurrency {
             return registry[currencyCode] ?: throw IllegalArgumentException("$currencyCode doesn't exist.")
         }

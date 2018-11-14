@@ -10,7 +10,7 @@ import com.ripple.core.coretypes.Amount as XRPAmount
 
 fun TransactionInfoResponse.hasSucceeded() = status == "success" && validated
 
-fun Amount<*>.toXRPAmount(): XRPAmount = XRPAmount.fromString((quantity * 100).toString())
+fun Amount<*>.toXRPAmount(): XRPAmount = XRPAmount.fromString(quantity.toString())
 
 fun SecureHash.toXRPHash(): Hash256 = Hash256.fromHex(toString())
 

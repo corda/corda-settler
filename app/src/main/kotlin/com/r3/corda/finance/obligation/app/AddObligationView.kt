@@ -1,4 +1,4 @@
-package net.corda.finance.obligation.app
+package com.r3.corda.finance.obligation.app
 
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
@@ -11,8 +11,6 @@ import net.corda.core.contracts.Amount
 import net.corda.core.identity.Party
 import net.corda.core.node.NodeInfo
 import net.corda.core.node.services.NetworkMapCache
-import net.corda.finance.obligation.client.flows.CreateObligation
-import net.corda.finance.obligation.types.DigitalCurrency
 import tornadofx.*
 import java.util.*
 
@@ -65,7 +63,9 @@ class AddObligationView : Fragment("Add obligation") {
             field("Counterparty") {
                 choicebox<Party>(model.counterparty) {
                     items = parties.map { it.singleIdentityAndCert().party }
-                    converter = stringConverter { it?.let { PartyNameFormatter.short.format(it.name) } ?: "" }
+                    converter = stringConverter {
+                        it?.let { PartyNameFormatter.short.format(it.name) } ?: ""
+                    }
                 }
             }
             field("Anonymous") {

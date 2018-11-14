@@ -1,11 +1,9 @@
-package net.corda.finance.obligation.app
+package com.r3.corda.finance.obligation.app
 
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.identity.AbstractParty
 import net.corda.core.identity.Party
-import net.corda.finance.obligation.contracts.Obligation
-import net.corda.finance.obligation.types.SettlementInstructions
 import tornadofx.*
 
 class ObligationModel<T : Any>(linearId: UniqueIdentifier, amount: Amount<T>, counterparty: Party, payer: Boolean, settlementInstructions: SettlementInstructions?) {

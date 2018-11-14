@@ -3,15 +3,20 @@ package com.r3.corda.finance.ripple
 import com.r3.corda.finance.ripple.services.ReadWriteXRPClient
 import com.r3.corda.finance.ripple.services.XRPClientForVerification
 import com.r3.corda.finance.ripple.utilities.IncorrectSequenceNumberException
+import com.r3.corda.finance.ripple.utilities.Ripple
 import com.r3.corda.finance.ripple.utilities.TransactionNotFoundException
+import com.r3.corda.finance.ripple.utilities.toXRPAmount
 import com.ripple.core.coretypes.AccountID
 import com.ripple.core.coretypes.Amount
 import com.ripple.core.coretypes.hash.Hash256
 import com.ripple.core.coretypes.uint.UInt32
 import com.ripple.core.types.known.tx.signed.SignedTransaction
 import org.junit.Test
+import java.math.BigDecimal
 import java.net.URI
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import net.corda.core.contracts.Amount as CordaAmount
 
 class TestXRPClient(override val nodeUri: URI, override val secret: String, override val address: AccountID) : ReadWriteXRPClient
 
@@ -87,6 +92,16 @@ class XrpClientTests {
     @Test
     fun `get ledger current index`() {
         println(client.ledgerIndex())
+    }
+
+    @Test
+    fun `corda to ripple amount`() {
+        val oneDrop = CordaAmount.fromDecimal(BigDecimal("0.000001"), Ripple)
+        var cordaAmount = CordaAmount.zero(Ripple)
+        (1..1000000).forEach { cordaAmount += oneDrop }
+        val xrpAmount = cordaAmount.toXRPAmount()
+        val normalisedCordaAmount = cordaAmount.displayTokenSize * BigDecimal.valueOf(cordaAmount.quantity)
+        assertEquals(normalisedCordaAmount.toLong(), xrpAmount.toLong())
     }
 
 }

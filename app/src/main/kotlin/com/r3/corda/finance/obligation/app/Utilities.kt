@@ -1,4 +1,4 @@
-package net.corda.finance.obligation.app
+package com.r3.corda.finance.obligation.app
 
 import javafx.collections.ObservableList
 import javafx.util.StringConverter

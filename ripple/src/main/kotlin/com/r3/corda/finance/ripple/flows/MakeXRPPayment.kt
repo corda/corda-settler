@@ -3,6 +3,7 @@ package com.r3.corda.finance.ripple.flows
 import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.finance.obligation.OffLedgerSettlementInstructions
 import com.r3.corda.finance.obligation.PaymentReference
+import com.r3.corda.finance.obligation.PaymentStatus
 import com.r3.corda.finance.obligation.client.flows.MakeOffLedgerPayment
 import com.r3.corda.finance.obligation.contracts.Obligation
 import com.r3.corda.finance.ripple.services.XRPService
@@ -88,7 +89,7 @@ class MakeXRPPayment(
 
     @Suspendable
     override fun makePayment(obligation: Obligation.State<*>): PaymentReference {
-        check(settlementInstructions.paymentReference == null) {
+        check(settlementInstructions.paymentStatus == PaymentStatus.NOT_SENT) {
             "An XRP payment payment has already been made to settle this obligation."
         }
 

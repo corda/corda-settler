@@ -1,12 +1,6 @@
-package net.corda.finance.obligation.app
+package com.r3.corda.finance.obligation.app
 
 import net.corda.core.crypto.SecureHash
-import net.corda.finance.obligation.types.PaymentReference
-import net.corda.finance.ripple.XRPClientForPayment
-import net.corda.finance.ripple.types.XRPSettlementInstructions
-import net.corda.finance.ripple.utilities.DEFAULT_XRP_FEE
-import net.corda.finance.ripple.utilities.toXRPAmount
-import net.corda.finance.ripple.utilities.toXRPHash
 
 /*
 

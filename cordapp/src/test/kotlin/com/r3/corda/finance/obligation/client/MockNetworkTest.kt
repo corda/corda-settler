@@ -6,7 +6,6 @@ import com.r3.corda.finance.obligation.client.flows.AddSettlementInstructions
 import com.r3.corda.finance.obligation.client.flows.CreateObligation
 import com.r3.corda.finance.obligation.client.flows.OffLedgerSettleObligation
 import com.r3.corda.finance.obligation.contracts.Obligation
-import com.r3.corda.finance.ripple.services.XRPService
 import net.corda.core.concurrent.CordaFuture
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.LinearState
@@ -80,11 +79,6 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
             val flow = AddSettlementInstructions(linearId, settlementInstructions)
             startFlow(flow)
         }
-    }
-
-    fun StartedMockNode.ledgerIndex(): Long {
-        val xrpService = services.cordaService(XRPService::class.java)
-        return xrpService.client.ledgerIndex().ledgerCurrentIndex
     }
 
     /** Add settlement instructions to existing obligation. */

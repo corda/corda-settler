@@ -29,9 +29,7 @@ fun connectToCordaRpc(hostAndPort: String, username: String, password: String): 
     println("Connecting to Issuer node $hostAndPort.")
     val nodeAddress = NetworkHostAndPort.parse(hostAndPort)
     val client = CordaRPCClient(nodeAddress)
-    val cordaRpcOps = client.start(username, password).proxy
-    println("Connected!")
-    return cordaRpcOps
+    return client.start(username, password).proxy
 }
 
 fun <T> stringConverter(fromStringFunction: ((String?) -> T)? = null, toStringFunction: (T) -> String): StringConverter<T> {

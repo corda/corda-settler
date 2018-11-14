@@ -1,15 +1,5 @@
 # Obligation settler
 
-## Settlement types:
-
-* on:
-    * currency
-    * digital currency
-    * barter of some token type
-* off:
-    * SWIFT
-    * Ripple
-
 ## Requirements
 
 Obligations which arise on a Corda ledger can be settled individually,
@@ -27,9 +17,12 @@ will add an additional property called `settlementInstructions` of some
 interface type.
 
 Settlement can either be on-ledger or off-ledger. For on-ledger we can
-specify cash states from which issuers are acceptable. For off-ledger,
-there will be only one option for now: Ripple network settlement.
-Different implementations can be used for each method.
+specify token states from which issuers are acceptable. Note, that this
+is not implemented in this project. For off-ledger, there will be only
+one option for now: XRP settlement. Different implementations can be
+used for each method. The settler CorDapp is settlement rail agnostic.
+To add support for more rails just add a CorDapp that sub-classes the
+payment flow and adds settlement instructions for that settlement type.
 
 In addition. I'll create a flow which allows the parties to the
 obligation to add settlement instructions. For now, this flow will start
@@ -119,7 +112,7 @@ Assuming the new transaction is included in the calculated ledgers of a
 super-majority of nodes on the Ripple network, then the transaction will
 be included in a validated ledger instance.
 
-The Ripple payment is actually made via a Corda flow which calls out
+The XRP payment is actually made via a Corda flow which calls out
 to a Ripple node. When Alice receives the transaction hash, she adds
 it to the Corda obligation along with a ledger number which the payment
 should be expected by. We do this because it is easier for the Oracle
@@ -184,8 +177,6 @@ not need to sign.
 
 * We use xrp ledger number to specify when the payment should be made by.
   Note that each ledger number takes about 3-5 seconds.
-* Fix conversion of Corda Amount to Ripple Amount. Need to multiply Corda
-  amount by 10000 to get the equivalent ripple amount.
 
 
 

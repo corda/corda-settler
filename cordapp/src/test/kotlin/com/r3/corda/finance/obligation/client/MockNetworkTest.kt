@@ -1,11 +1,11 @@
 package com.r3.corda.finance.obligation.client
 
 import com.r3.corda.finance.obligation.DigitalCurrency
+import com.r3.corda.finance.obligation.Obligation
 import com.r3.corda.finance.obligation.SettlementInstructions
 import com.r3.corda.finance.obligation.client.flows.AddSettlementInstructions
 import com.r3.corda.finance.obligation.client.flows.CreateObligation
 import com.r3.corda.finance.obligation.client.flows.OffLedgerSettleObligation
-import com.r3.corda.finance.obligation.contracts.Obligation
 import net.corda.core.concurrent.CordaFuture
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.LinearState
@@ -93,10 +93,10 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
 
     inline fun <reified T : LinearState> StateAndRef<T>.linearId() = state.data.linearId
 
-    fun StartedMockNode.queryObligationById(linearId: UniqueIdentifier): StateAndRef<Obligation.State<DigitalCurrency>> {
+    fun StartedMockNode.queryObligationById(linearId: UniqueIdentifier): StateAndRef<Obligation<DigitalCurrency>> {
         return transaction {
             val query = QueryCriteria.LinearStateQueryCriteria(linearId = listOf(linearId))
-            services.vaultService.queryBy<Obligation.State<DigitalCurrency>>(query).states.single()
+            services.vaultService.queryBy<Obligation<DigitalCurrency>>(query).states.single()
         }
     }
 

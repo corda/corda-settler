@@ -1,3 +1,5 @@
+package com.r3.corda.finance.obligation.app.old
+
 //package com.r3.corda.finance.obligation.app
 //
 //import net.corda.core.crypto.SecureHash

@@ -3,7 +3,6 @@ package com.r3.corda.finance.obligation
 import com.r3.corda.finance.obligation.client.MockNetworkTest
 import com.r3.corda.finance.obligation.client.flows.CreateObligation
 import com.r3.corda.finance.obligation.client.flows.SendToSettlementOracle
-import com.r3.corda.finance.obligation.contracts.Obligation
 import com.r3.corda.finance.ripple.services.XRPService
 import com.r3.corda.finance.ripple.types.XRPSettlementInstructions
 import com.r3.corda.finance.ripple.utilities.XRP
@@ -38,7 +37,7 @@ class ObligationTestsWithOracle : MockNetworkTest(numberOfNodes = 3) {
     fun `newly created obligation is stored in vaults of participants`() {
         // Create obligation.
         val newTransaction = A.createObligation(10000.XRP, B, CreateObligation.InitiatorRole.OBLIGOR).getOrThrow()
-        val obligation = newTransaction.singleOutput<Obligation.State<DigitalCurrency>>()
+        val obligation = newTransaction.singleOutput<Obligation<DigitalCurrency>>()
         val obligationId = obligation.linearId()
 
         // Check both parties have the same obligation.
@@ -51,7 +50,7 @@ class ObligationTestsWithOracle : MockNetworkTest(numberOfNodes = 3) {
     fun `create new obligation and add settlement instructions`() {
         // Create obligation.
         val newObligation = A.createObligation(10000.XRP, B, CreateObligation.InitiatorRole.OBLIGOR).getOrThrow()
-        val obligation = newObligation.singleOutput<Obligation.State<DigitalCurrency>>()
+        val obligation = newObligation.singleOutput<Obligation<DigitalCurrency>>()
         val obligationId = obligation.linearId()
 
         // Add settlement instructions.
@@ -75,7 +74,7 @@ class ObligationTestsWithOracle : MockNetworkTest(numberOfNodes = 3) {
     fun `end to end test`() {
         // Create obligation.
         val newObligation = A.createObligation(10.XRP, B, CreateObligation.InitiatorRole.OBLIGOR).getOrThrow()
-        val obligation = newObligation.singleOutput<Obligation.State<DigitalCurrency>>()
+        val obligation = newObligation.singleOutput<Obligation<DigitalCurrency>>()
         val obligationId = obligation.linearId()
 
         // Add settlement instructions.
@@ -105,7 +104,7 @@ class ObligationTestsWithOracle : MockNetworkTest(numberOfNodes = 3) {
     fun `last ledger sequence is reached`() {
         // Create obligation.
         val newObligation = A.createObligation(10000.XRP, B, CreateObligation.InitiatorRole.OBLIGOR).getOrThrow()
-        val obligation = newObligation.singleOutput<Obligation.State<DigitalCurrency>>()
+        val obligation = newObligation.singleOutput<Obligation<DigitalCurrency>>()
         val obligationId = obligation.linearId()
 
         // Add settlement instructions.

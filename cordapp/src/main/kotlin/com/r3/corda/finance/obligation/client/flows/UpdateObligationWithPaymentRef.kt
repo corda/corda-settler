@@ -1,8 +1,8 @@
 package com.r3.corda.finance.obligation.client.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.OffLedgerSettlementInstructions
-import com.r3.corda.finance.obligation.contracts.Obligation
+import com.r3.corda.finance.obligation.Obligation
+import com.r3.corda.finance.obligation.ObligationContract
 import com.r3.corda.finance.obligation.getLinearStateById
 import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.flows.FinalityFlow
@@ -18,7 +18,7 @@ class UpdateObligationWithPaymentRef(val linearId: UniqueIdentifier, val payment
 
     @Suspendable
     override fun call(): SignedTransaction {
-        val obligationStateAndRef = getLinearStateById<Obligation.State<Any>>(linearId, serviceHub)
+        val obligationStateAndRef = getLinearStateById<Obligation<Any>>(linearId, serviceHub)
                 ?: throw IllegalArgumentException("LinearId not recognised.")
         val obligation = obligationStateAndRef.state.data
 
@@ -41,8 +41,8 @@ class UpdateObligationWithPaymentRef(val linearId: UniqueIdentifier, val payment
                 ?: throw FlowException("No available notary.")
         val utx = TransactionBuilder(notary = notary).apply {
             addInputState(obligationStateAndRef)
-            addOutputState(obligationWithUpdatedSettlementInstructions, Obligation.CONTRACT_REF)
-            addCommand(Obligation.Commands.AddPaymentDetails(), signingKey)
+            addOutputState(obligationWithUpdatedSettlementInstructions, ObligationContract.CONTRACT_REF)
+            addCommand(ObligationContract.Commands.AddPaymentDetails(), signingKey)
         }
 
         // 7. Sign transaction.

@@ -1,7 +1,8 @@
 package com.r3.corda.finance.obligation.client.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.contracts.Obligation
+import com.r3.corda.finance.obligation.Obligation
+import com.r3.corda.finance.obligation.ObligationContract
 import net.corda.confidential.SwapIdentitiesFlow
 import net.corda.core.contracts.Amount
 import net.corda.core.flows.*
@@ -50,7 +51,7 @@ object CreateObligation {
         override val progressTracker: ProgressTracker = tracker()
 
         @Suspendable
-        private fun createAnonymousObligation(): Pair<Obligation.State<T>, PublicKey> {
+        private fun createAnonymousObligation(): Pair<Obligation<T>, PublicKey> {
             val txKeys = subFlow(SwapIdentitiesFlow(counterparty))
             // SwapIdentityFlow should return two keys.
             check(txKeys.size == 2) { "Something went wrong when generating confidential identities." }
@@ -60,11 +61,11 @@ object CreateObligation {
             return createObligation(us = anonymousMe, them = anonymousObligor)
         }
 
-        private fun createObligation(us: AbstractParty, them: AbstractParty): Pair<Obligation.State<T>, PublicKey> {
+        private fun createObligation(us: AbstractParty, them: AbstractParty): Pair<Obligation<T>, PublicKey> {
             check(us != them) { "You cannot create an obligation to yourself" }
             val obligation = when (role) {
-                InitiatorRole.OBLIGEE -> Obligation.State(amount, them, us)
-                InitiatorRole.OBLIGOR -> Obligation.State(amount, us, them)
+                InitiatorRole.OBLIGEE -> Obligation(amount, them, us)
+                InitiatorRole.OBLIGOR -> Obligation(amount, us, them)
             }
             return Pair(obligation, us.owningKey)
         }
@@ -84,9 +85,9 @@ object CreateObligation {
             val notary = serviceHub.networkMapCache.notaryIdentities.firstOrNull()
                     ?: throw FlowException("No available notary.")
             val utx = TransactionBuilder(notary = notary).apply {
-                addOutputState(obligation, Obligation.CONTRACT_REF)
+                addOutputState(obligation, ObligationContract.CONTRACT_REF)
                 val signers = obligation.participants.map { it.owningKey }
-                addCommand(Obligation.Commands.Create(), signers)
+                addCommand(ObligationContract.Commands.Create(), signers)
                 setTimeWindow(serviceHub.clock.instant(), 30.seconds)
             }
 

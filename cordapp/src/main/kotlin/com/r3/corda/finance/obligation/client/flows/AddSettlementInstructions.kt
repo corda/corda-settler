@@ -1,8 +1,9 @@
 package com.r3.corda.finance.obligation.client.flows
 
 import co.paralleluniverse.fibers.Suspendable
+import com.r3.corda.finance.obligation.Obligation
+import com.r3.corda.finance.obligation.ObligationContract
 import com.r3.corda.finance.obligation.SettlementInstructions
-import com.r3.corda.finance.obligation.contracts.Obligation
 import com.r3.corda.finance.obligation.getLinearStateById
 import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.flows.*
@@ -36,7 +37,7 @@ class AddSettlementInstructions(
     override fun call(): SignedTransaction {
         // 1. Retrieve obligation.
         progressTracker.currentStep = INITIALISING
-        val obligationStateAndRef = getLinearStateById<Obligation.State<Any>>(linearId, serviceHub)
+        val obligationStateAndRef = getLinearStateById<Obligation<Any>>(linearId, serviceHub)
                 ?: throw IllegalArgumentException("LinearId not recognised.")
         val obligation = obligationStateAndRef.state.data
 
@@ -57,8 +58,8 @@ class AddSettlementInstructions(
                 ?: throw FlowException("No available notary.")
         val utx = TransactionBuilder(notary = notary).apply {
             addInputState(obligationStateAndRef)
-            addOutputState(obligationWithSettlementTerms, Obligation.CONTRACT_REF)
-            addCommand(Obligation.Commands.AddSettlementTerms(), signingKey)
+            addOutputState(obligationWithSettlementTerms, ObligationContract.CONTRACT_REF)
+            addCommand(ObligationContract.Commands.AddSettlementTerms(), signingKey)
         }
 
         // 5. Sign transaction.

@@ -1,11 +1,7 @@
 package com.r3.corda.finance.obligation.oracle.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.DigitalCurrency
-import com.r3.corda.finance.obligation.PaymentStatus
-import com.r3.corda.finance.obligation.contracts.Obligation
-import com.r3.corda.finance.obligation.flows.AbstractSendToSettlementOracle
-import com.r3.corda.finance.obligation.flows.OracleResult
+import com.r3.corda.finance.obligation.*
 import com.r3.corda.finance.obligation.oracle.services.XrpOracleService
 import com.r3.corda.finance.ripple.types.XRPSettlementInstructions
 import net.corda.core.contracts.StateAndRef
@@ -23,7 +19,7 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
     enum class VerifyResult { TIMEOUT, SUCCESS, PENDING }
 
     @Suspendable
-    fun verifyXrpSettlement(obligation: Obligation.State<DigitalCurrency>, settlementInstructions: XRPSettlementInstructions): VerifyResult {
+    fun verifyXrpSettlement(obligation: Obligation<DigitalCurrency>, settlementInstructions: XRPSettlementInstructions): VerifyResult {
         val oracleService = serviceHub.cordaService(XrpOracleService::class.java)
         while (true) {
             logger.info("Checking for settlement...")
@@ -38,7 +34,7 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
         }
     }
 
-    private fun createTransaction(obligationStateAndRef: StateAndRef<Obligation.State<DigitalCurrency>>): SignedTransaction {
+    private fun createTransaction(obligationStateAndRef: StateAndRef<Obligation<DigitalCurrency>>): SignedTransaction {
         val obligation = obligationStateAndRef.state.data
         val settlementInstructions = obligation.settlementInstructions as XRPSettlementInstructions
 
@@ -56,8 +52,8 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
                 ?: throw FlowException("No available notary.")
         val utx = TransactionBuilder(notary = notary).apply {
             addInputState(obligationStateAndRef)
-            addCommand(Obligation.Commands.Extinguish(), signingKey)
-            addOutputState(obligationWithUpdatedStatus, Obligation.CONTRACT_REF)
+            addCommand(ObligationContract.Commands.Extinguish(), signingKey)
+            addOutputState(obligationWithUpdatedStatus, ObligationContract.CONTRACT_REF)
         }
 
         // 5. Sign transaction.
@@ -67,7 +63,7 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
     @Suspendable
     override fun call() {
         // 1. Receive the obligation state we are verifying settlement of.
-        val obligationStateAndRef = subFlow(ReceiveStateAndRefFlow<Obligation.State<DigitalCurrency>>(otherSession)).single()
+        val obligationStateAndRef = subFlow(ReceiveStateAndRefFlow<Obligation<DigitalCurrency>>(otherSession)).single()
         val obligation = obligationStateAndRef.state.data
         val settlementInstructions = obligation.settlementInstructions
 

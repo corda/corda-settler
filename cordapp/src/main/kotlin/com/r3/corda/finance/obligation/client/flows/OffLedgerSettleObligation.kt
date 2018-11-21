@@ -1,9 +1,7 @@
 package com.r3.corda.finance.obligation.client.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.OffLedgerSettlementInstructions
-import com.r3.corda.finance.obligation.OnLedgerSettlementTerms
-import com.r3.corda.finance.obligation.contracts.Obligation
+import com.r3.corda.finance.obligation.Obligation
 import com.r3.corda.finance.obligation.getLinearStateById
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.contracts.UniqueIdentifier
@@ -16,7 +14,7 @@ class OffLedgerSettleObligation(private val linearId: UniqueIdentifier) : FlowLo
 
     private fun getFlowInstance(
             settlementInstructions: OffLedgerSettlementInstructions<*>,
-            obligationStateAndRef: StateAndRef<Obligation.State<*>>
+            obligationStateAndRef: StateAndRef<Obligation<*>>
     ): FlowLogic<SignedTransaction> {
         val paymentFlowClass = settlementInstructions.paymentFlow
         val paymentFlowClassConstructor = paymentFlowClass.getDeclaredConstructor(
@@ -29,13 +27,13 @@ class OffLedgerSettleObligation(private val linearId: UniqueIdentifier) : FlowLo
     @Suspendable
     override fun call(): SignedTransaction {
         // The settlement instructions determine how this obligation should be settled.
-        val obligationStateAndRef = getLinearStateById<Obligation.State<*>>(linearId, serviceHub)
+        val obligationStateAndRef = getLinearStateById<Obligation<*>>(linearId, serviceHub)
                 ?: throw IllegalArgumentException("LinearId not recognised.")
         val obligationState = obligationStateAndRef.state.data
         val settlementInstructions = obligationState.settlementInstructions
 
         when (settlementInstructions) {
-            is OnLedgerSettlementTerms -> throw IllegalStateException("Obligation to be settled on-ledger. Aborting...")
+            is OnLedgerSettlementTerms -> throw IllegalStateException("ObligationContract to be settled on-ledger. Aborting...")
             is OffLedgerSettlementInstructions<*> -> subFlow(getFlowInstance(settlementInstructions, obligationStateAndRef))
             else -> throw IllegalStateException("No settlement instructions added to obligation.")
         }

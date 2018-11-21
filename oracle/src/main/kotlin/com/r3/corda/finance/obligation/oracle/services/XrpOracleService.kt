@@ -1,7 +1,7 @@
 package com.r3.corda.finance.obligation.oracle.services
 
+import com.r3.corda.finance.obligation.Obligation
 import com.r3.corda.finance.obligation.PaymentStatus
-import com.r3.corda.finance.obligation.contracts.Obligation
 import com.r3.corda.finance.obligation.oracle.flows.VerifySettlement
 import com.r3.corda.finance.ripple.services.XRPClientForVerification
 import com.r3.corda.finance.ripple.types.XRPSettlementInstructions
@@ -21,7 +21,7 @@ class XrpOracleService(val services: AppServiceHub) : SingletonSerializeAsToken(
     private val nodes by lazy { ConfigFactory.parseResources(configFileName).getStringList("nodes").mapNotNull(::URI) }
     private val clientsForVerification = nodes.map { nodeUri -> XRPClientForVerification(nodeUri) }
 
-    fun hasPaymentSettled(settlementInstructions: XRPSettlementInstructions, obligation: Obligation.State<*>): VerifySettlement.VerifyResult {
+    fun hasPaymentSettled(settlementInstructions: XRPSettlementInstructions, obligation: Obligation<*>): VerifySettlement.VerifyResult {
         val notSent = settlementInstructions.paymentStatus == PaymentStatus.NOT_SENT
 
         // Check that all nodes are up to date.

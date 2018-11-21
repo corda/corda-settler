@@ -1,17 +1,16 @@
 package com.r3.corda.finance.obligation.client.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.OffLedgerSettlementInstructions
+import com.r3.corda.finance.obligation.AbstractMakeOffLedgerPayment
+import com.r3.corda.finance.obligation.Obligation
 import com.r3.corda.finance.obligation.PaymentReference
-import com.r3.corda.finance.obligation.contracts.Obligation
-import com.r3.corda.finance.obligation.flows.AbstractMakeOffLedgerPayment
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.identity.AbstractParty
 import net.corda.core.transactions.SignedTransaction
 
 abstract class MakeOffLedgerPayment(
-        val obligationStateAndRef: StateAndRef<Obligation.State<*>>,
+        val obligationStateAndRef: StateAndRef<Obligation<*>>,
         open val settlementInstructions: OffLedgerSettlementInstructions<*>
 ) : AbstractMakeOffLedgerPayment() {
 
@@ -19,7 +18,7 @@ abstract class MakeOffLedgerPayment(
     abstract fun checkBalance(requiredAmount: Amount<*>)
 
     @Suspendable
-    abstract fun makePayment(obligation: Obligation.State<*>): PaymentReference
+    abstract fun makePayment(obligation: Obligation<*>): PaymentReference
 
     @Suspendable
     abstract fun setup()

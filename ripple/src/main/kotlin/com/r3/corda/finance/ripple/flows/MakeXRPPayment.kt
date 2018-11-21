@@ -1,11 +1,10 @@
 package com.r3.corda.finance.ripple.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.OffLedgerSettlementInstructions
+import com.r3.corda.finance.obligation.Obligation
 import com.r3.corda.finance.obligation.PaymentReference
 import com.r3.corda.finance.obligation.PaymentStatus
 import com.r3.corda.finance.obligation.client.flows.MakeOffLedgerPayment
-import com.r3.corda.finance.obligation.contracts.Obligation
 import com.r3.corda.finance.ripple.services.XRPService
 import com.r3.corda.finance.ripple.types.SubmitPaymentResponse
 import com.r3.corda.finance.ripple.types.XRPSettlementInstructions
@@ -31,7 +30,7 @@ Secret      ssn8cYYksFFexYq97sw9UnvLnMKgh
 Balance     10,000 XRP
  */
 class MakeXRPPayment(
-        obligationStateAndRef: StateAndRef<Obligation.State<*>>,
+        obligationStateAndRef: StateAndRef<Obligation<*>>,
         override val settlementInstructions: OffLedgerSettlementInstructions<*>
 ) : MakeOffLedgerPayment(obligationStateAndRef, settlementInstructions) {
 
@@ -66,7 +65,7 @@ class MakeXRPPayment(
     }
 
     /** Don't want to serialize this. */
-    private fun createAndSignAndSubmitPayment(obligation: Obligation.State<*>): SubmitPaymentResponse {
+    private fun createAndSignAndSubmitPayment(obligation: Obligation<*>): SubmitPaymentResponse {
         val xrpService = serviceHub.cordaService(XRPService::class.java).client
         // 1. Create a new payment.
         // This function will always use the sequence number which was obtained before the flow check-point.
@@ -88,7 +87,7 @@ class MakeXRPPayment(
     }
 
     @Suspendable
-    override fun makePayment(obligation: Obligation.State<*>): PaymentReference {
+    override fun makePayment(obligation: Obligation<*>): PaymentReference {
         check(settlementInstructions.paymentStatus == PaymentStatus.NOT_SENT) {
             "An XRP payment payment has already been made to settle this obligation."
         }

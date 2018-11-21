@@ -1,10 +1,9 @@
 package com.r3.corda.finance.obligation.client.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.OffLedgerSettlementInstructions
-import com.r3.corda.finance.obligation.contracts.Obligation
-import com.r3.corda.finance.obligation.flows.AbstractSendToSettlementOracle
-import com.r3.corda.finance.obligation.flows.OracleResult
+import com.r3.corda.finance.obligation.AbstractSendToSettlementOracle
+import com.r3.corda.finance.obligation.Obligation
+import com.r3.corda.finance.obligation.OracleResult
 import com.r3.corda.finance.obligation.getLinearStateById
 import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.flows.FinalityFlow
@@ -19,14 +18,14 @@ class SendToSettlementOracle(val linearId: UniqueIdentifier) : AbstractSendToSet
     @Suspendable
     override fun call(): SignedTransaction {
         // Resolve the linearId to an obligation.
-        val obligationStateAndRef = getLinearStateById<Obligation.State<*>>(linearId, serviceHub)
+        val obligationStateAndRef = getLinearStateById<Obligation<*>>(linearId, serviceHub)
                 ?: throw IllegalArgumentException("LinearId not recognised.")
 
         // Get the Oracle from the settlement instructions.
         val obligationState = obligationStateAndRef.state.data
         val settlementInstructions = obligationState.settlementInstructions as OffLedgerSettlementInstructions<*>
 
-        // Send the Oracle the Obligation state.
+        // Send the Oracle the ObligationContract state.
         val session = initiateFlow(settlementInstructions.settlementOracle)
         subFlow(SendStateAndRefFlow(session, listOf(obligationStateAndRef)))
 

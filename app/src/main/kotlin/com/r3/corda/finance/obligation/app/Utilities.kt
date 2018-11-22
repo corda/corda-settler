@@ -64,7 +64,7 @@ fun formatAmount(amount: Amount<*>): String {
     val token = amount.token
     return when (token) {
         is DigitalCurrency -> {
-            val symbol = token.currencyCode
+            val symbol = token.symbol
             val quantity = BigDecimal.valueOf(amount.quantity, 0) * token.displayTokenSize
             "$symbol $quantity"
         }

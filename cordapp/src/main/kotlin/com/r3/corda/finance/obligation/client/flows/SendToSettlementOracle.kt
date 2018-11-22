@@ -1,10 +1,11 @@
 package com.r3.corda.finance.obligation.client.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.AbstractSendToSettlementOracle
-import com.r3.corda.finance.obligation.Obligation
-import com.r3.corda.finance.obligation.OracleResult
-import com.r3.corda.finance.obligation.getLinearStateById
+import com.r3.corda.finance.obligation.OffLedgerPayment
+import com.r3.corda.finance.obligation.SettlementOracleResult
+import com.r3.corda.finance.obligation.client.getLinearStateById
+import com.r3.corda.finance.obligation.flows.AbstractSendToSettlementOracle
+import com.r3.corda.finance.obligation.states.Obligation
 import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.SendStateAndRefFlow
@@ -23,20 +24,20 @@ class SendToSettlementOracle(val linearId: UniqueIdentifier) : AbstractSendToSet
 
         // Get the Oracle from the settlement instructions.
         val obligationState = obligationStateAndRef.state.data
-        val settlementInstructions = obligationState.settlementInstructions as OffLedgerSettlementInstructions<*>
+        val settlementInstructions = obligationState.settlementMethod as OffLedgerPayment<*>
 
         // Send the Oracle the ObligationContract state.
         val session = initiateFlow(settlementInstructions.settlementOracle)
         subFlow(SendStateAndRefFlow(session, listOf(obligationStateAndRef)))
 
         // Receive a SignedTransaction from the oracle that exits the obligation, or throw an exception if we timed out.
-        return session.receive<OracleResult>().unwrap {
+        return session.receive<SettlementOracleResult>().unwrap {
             when (it) {
-                is OracleResult.Success -> {
+                is SettlementOracleResult.Success -> {
                     val stx = it.stx
                     subFlow(FinalityFlow(stx))
                 }
-                is OracleResult.Failure -> {
+                is SettlementOracleResult.Failure -> {
                     throw IllegalStateException(it.message)
                 }
             }

@@ -19,8 +19,8 @@ enum class Role { OBLIGOR, OBLIGEE }
 //        faceAmount: Amount<*>,
 //        counterparty: Party,
 //        role: Role,
-//        status: ObligationStatus,
-//        settlementInstructions: SettlementInstructions?
+//        settlementStatus: SettlementStatus,
+//        settlementMethod: SettlementInstructions?
 //) {
 //
 //    val linearIdProperty = SimpleStringProperty()
@@ -36,10 +36,10 @@ enum class Role { OBLIGOR, OBLIGEE }
 //    var counterparty by counterpartyProperty
 //
 //    val statusProperty = SimpleStringProperty()
-//    var status by statusProperty
+//    var settlementStatus by statusProperty
 //
 //    val settlementInstructionsProperty = SimpleObjectProperty<SettlementInstructions>()
-//    var settlementInstructions by settlementInstructionsProperty
+//    var settlementMethod by settlementInstructionsProperty
 //}
 
 //class ObligationModel : ItemViewModel<ObligationContract>() {
@@ -47,8 +47,8 @@ enum class Role { OBLIGOR, OBLIGEE }
 //    val amount = bind(ObligationContract::amount)
 //    val paid = bind(ObligationContract::role)
 //    val counterparty = bind(ObligationContract::counterparty)
-//    val status = bind(ObligationContract::status)
-//    val settlementInstructions = bind(ObligationContract::settlementInstructions)
+//    val settlementStatus = bind(ObligationContract::settlementStatus)
+//    val settlementMethod = bind(ObligationContract::settlementMethod)
 //}
 //
 //fun ObligationContract.State<*>.toModel(cordaRpcOps: CordaRPCOps): ObligationContract {
@@ -62,5 +62,5 @@ enum class Role { OBLIGOR, OBLIGEE }
 //    val isPayer = if (wellKnown.obligor == us) Role.OBLIGOR else Role.OBLIGEE
 //
 //    // Return an obligation model.
-//    return ObligationContract(linearId, faceAmount, counterparty as Party, isPayer, status, settlementInstructions)
+//    return ObligationContract(linearId, faceAmount, counterparty as Party, isPayer, settlementStatus, settlementMethod)
 //}

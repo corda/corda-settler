@@ -1,6 +1,6 @@
 package com.r3.corda.finance.obligation.app.controllers
 
-import com.r3.corda.finance.obligation.Obligation
+import com.r3.corda.finance.obligation.states.Obligation
 import javafx.collections.FXCollections
 import net.corda.client.jfx.utils.observeOnFXThread
 import net.corda.core.contracts.StateAndRef

@@ -1,14 +1,19 @@
 package com.r3.corda.finance.ripple.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.Obligation
+import com.r3.corda.finance.obligation.Money
+import com.r3.corda.finance.obligation.OffLedgerPayment
 import com.r3.corda.finance.obligation.PaymentReference
-import com.r3.corda.finance.obligation.PaymentStatus
 import com.r3.corda.finance.obligation.client.flows.MakeOffLedgerPayment
+import com.r3.corda.finance.obligation.states.Obligation
 import com.r3.corda.finance.ripple.services.XRPService
+import com.r3.corda.finance.ripple.types.AlreadysubmittedException
+import com.r3.corda.finance.ripple.types.IncorrectSequenceNumberException
 import com.r3.corda.finance.ripple.types.SubmitPaymentResponse
-import com.r3.corda.finance.ripple.types.XRPSettlementInstructions
-import com.r3.corda.finance.ripple.utilities.*
+import com.r3.corda.finance.ripple.types.XrpSettlement
+import com.r3.corda.finance.ripple.utilities.DEFAULT_XRP_FEE
+import com.r3.corda.finance.ripple.utilities.toXRPAmount
+import com.r3.corda.finance.ripple.utilities.toXRPHash
 import com.ripple.core.coretypes.uint.UInt32
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.StateAndRef
@@ -17,22 +22,22 @@ import net.corda.core.flows.FlowException
 import java.time.Duration
 import com.ripple.core.coretypes.Amount as RippleAmount
 
-/**
 
-For testing...
+// For testing.
+//
+// Address     ra6mzL1Xy9aN5eRdjzn9CHTMwcczG1uMpN
+// Secret      sasKgJbTbka3ahFew2BZybfNg494C
+// Balance     10,000 XRP
+//
+// Address     rNmkj4AtjEHJh3D9hMRC4rS3CXQ9mX4S4b
+// Secret      ssn8cYYksFFexYq97sw9UnvLnMKgh
+// Balance     10,000 XRP
 
-Address     ra6mzL1Xy9aN5eRdjzn9CHTMwcczG1uMpN
-Secret      sasKgJbTbka3ahFew2BZybfNg494C
-Balance     10,000 XRP
-
-Address     rNmkj4AtjEHJh3D9hMRC4rS3CXQ9mX4S4b
-Secret      ssn8cYYksFFexYq97sw9UnvLnMKgh
-Balance     10,000 XRP
- */
-class MakeXRPPayment(
+class MakeXrpPayment<T : Money>(
+        amount: Amount<T>,
         obligationStateAndRef: StateAndRef<Obligation<*>>,
-        override val settlementInstructions: OffLedgerSettlementInstructions<*>
-) : MakeOffLedgerPayment(obligationStateAndRef, settlementInstructions) {
+        override val settlementMethod: OffLedgerPayment<*>
+) : MakeOffLedgerPayment<T>(amount, obligationStateAndRef, settlementMethod) {
 
     var seqNo: UInt32? = null
 
@@ -48,8 +53,8 @@ class MakeXRPPayment(
         // Get a new sequence number.
         seqNo = getSequenceNumber()
         // Checkpoint the flow here.
-        // * If the flow dies before payment, the payment should still happen.
-        // * If the flow dies after payment and is replayed from this point, then the second payment will fail.
+        // - If the flow dies before payment, the payment should still happen.
+        // - If the flow dies after payment and is replayed from this point, then the second payment will fail.
         sleep(Duration.ofMillis(1))
     }
 
@@ -65,7 +70,7 @@ class MakeXRPPayment(
     }
 
     /** Don't want to serialize this. */
-    private fun createAndSignAndSubmitPayment(obligation: Obligation<*>): SubmitPaymentResponse {
+    private fun createAndSignAndSubmitPayment(obligation: Obligation<*>, amount: Amount<T>): SubmitPaymentResponse {
         val xrpService = serviceHub.cordaService(XRPService::class.java).client
         // 1. Create a new payment.
         // This function will always use the sequence number which was obtained before the flow check-point.
@@ -75,8 +80,8 @@ class MakeXRPPayment(
                 // Always use the sequence number provided. It will never be null at this point.
                 sequence = seqNo!!,
                 source = xrpService.address,
-                destination = (settlementInstructions as XRPSettlementInstructions).accountToPay,
-                amount = obligation.faceAmount.toXRPAmount(),
+                destination = (settlementMethod as XrpSettlement).accountToPay,
+                amount = amount.toXRPAmount(),
                 fee = DEFAULT_XRP_FEE,
                 linearId = SecureHash.sha256(obligation.linearId.id.toString()).toXRPHash()
         )
@@ -87,22 +92,18 @@ class MakeXRPPayment(
     }
 
     @Suspendable
-    override fun makePayment(obligation: Obligation<*>): PaymentReference {
-        check(settlementInstructions.paymentStatus == PaymentStatus.NOT_SENT) {
-            "An XRP payment payment has already been made to settle this obligation."
-        }
-
+    override fun makePayment(obligation: Obligation<*>, amount: Amount<T>): PaymentReference {
         // Create, sign and submit a payment request then store the transaction hash and checkpoint.
         // Fail if there is any exception as
         val paymentResponse = try {
-            createAndSignAndSubmitPayment(obligation)
+            createAndSignAndSubmitPayment(obligation, amount)
         } catch (e: AlreadysubmittedException) {
             logger.warn(e.message)
             throw FlowException("The transaction was already submitted. However, " +
                     "the node failed before check-pointing the transaction hash. " +
                     "Please check your XRP payments to obtain the transaction hash " +
                     "so you can update the obligation state with the payment reference " +
-                    "by starting the UpdateObligationWithPaymentRef flow.")
+                    "by starting the UpdateObligationWithPayment flow.")
         } catch (e: IncorrectSequenceNumberException) {
             logger.warn(e.message)
             throw FlowException("An incorrect sequence number was used. This could be " +

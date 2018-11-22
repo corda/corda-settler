@@ -74,7 +74,7 @@
 //                columnResizePolicy = SmartResize.POLICY
 //                readonlyColumn("ObligationContract ID", ObligationModel<*>::linearId)
 //                readonlyColumn("Currency", ObligationModel<*>::amount).cellFormat {
-//                    text = (it.token as? DigitalCurrency)?.currencyCode ?: (it.token as Currency).currencyCode
+//                    text = (it.token as? DigitalCurrency)?.symbol ?: (it.token as Currency).symbol
 //                }
 //                readonlyColumn("Amount", ObligationModel<*>::amount).cellFormat {
 //                    text = when (it.token) {
@@ -102,7 +102,7 @@
 //                            graphic = hbox {
 //                                style { fontSize = 8.px }
 //                                button("Add settlement instructions").action {
-//                                    find<AddSettlementInstructions>().apply {
+//                                    find<UpdateSettlementMethod>().apply {
 //                                        linearId.set(focusModel.focusedItem.linearId)
 //                                        openModal(stageStyle = StageStyle.UTILITY)
 //                                    }
@@ -121,7 +121,7 @@
 //                                    } else {
 //                                        // TODO: Check whether payment has been paid or not before proceeding.
 //                                        val transactionHash = makePayment(rippleClient, rowItem)
-//                                        val flow = cordaRpcOps!!.startFlowDynamic(UpdateObligationWithPaymentRef::class.java, rowItem.linearId, transactionHash)
+//                                        val flow = cordaRpcOps!!.startFlowDynamic(UpdateObligationWithPayment::class.java, rowItem.linearId, transactionHash)
 //                                        val flowResult = flow.returnValue.getOrThrow()
 //                                        val flowTwo = cordaRpcOps!!.startFlowDynamic(SendToSettlementOracle::class.java, rowItem.linearId)
 //                                        val resultTwo = flowTwo.returnValue.getOrThrow()

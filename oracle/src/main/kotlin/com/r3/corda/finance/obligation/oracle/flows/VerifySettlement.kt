@@ -1,9 +1,15 @@
 package com.r3.corda.finance.obligation.oracle.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.*
+import com.r3.corda.finance.obligation.DigitalCurrency
+import com.r3.corda.finance.obligation.PaymentStatus
+import com.r3.corda.finance.obligation.SettlementOracleResult
+import com.r3.corda.finance.obligation.commands.ObligationCommands
+import com.r3.corda.finance.obligation.contracts.ObligationContract
+import com.r3.corda.finance.obligation.flows.AbstractSendToSettlementOracle
 import com.r3.corda.finance.obligation.oracle.services.XrpOracleService
-import com.r3.corda.finance.ripple.types.XRPSettlementInstructions
+import com.r3.corda.finance.obligation.states.Obligation
+import com.r3.corda.finance.ripple.types.XrpSettlement
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.*
 import net.corda.core.transactions.SignedTransaction
@@ -19,7 +25,7 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
     enum class VerifyResult { TIMEOUT, SUCCESS, PENDING }
 
     @Suspendable
-    fun verifyXrpSettlement(obligation: Obligation<DigitalCurrency>, settlementInstructions: XRPSettlementInstructions): VerifyResult {
+    fun verifyXrpSettlement(obligation: Obligation<DigitalCurrency>, settlementInstructions: XrpSettlement): VerifyResult {
         val oracleService = serviceHub.cordaService(XrpOracleService::class.java)
         while (true) {
             logger.info("Checking for settlement...")
@@ -36,23 +42,23 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
 
     private fun createTransaction(obligationStateAndRef: StateAndRef<Obligation<DigitalCurrency>>): SignedTransaction {
         val obligation = obligationStateAndRef.state.data
-        val settlementInstructions = obligation.settlementInstructions as XRPSettlementInstructions
+        val settlementInstructions = obligation.settlementMethod as XrpSettlement
 
         // 4. Update settlement instructions.
         // For now we cannot partially settle the obligation.
         val updatedSettlementInstructions = settlementInstructions.updateStatus(PaymentStatus.ACCEPTED)
         val obligationWithUpdatedStatus = obligation
-                .withSettlementTerms(updatedSettlementInstructions)
+                .withSettlementMethod(updatedSettlementInstructions)
                 .settle(obligation.faceAmount)
 
         // 4. Build transaction.
-        // Change the payment status to accepted - this means that the obligation has settled.
+        // Change the payment settlementStatus to accepted - this means that the obligation has settled.
         val signingKey = ourIdentity.owningKey
         val notary = serviceHub.networkMapCache.notaryIdentities.firstOrNull()
                 ?: throw FlowException("No available notary.")
         val utx = TransactionBuilder(notary = notary).apply {
             addInputState(obligationStateAndRef)
-            addCommand(ObligationContract.Commands.Extinguish(), signingKey)
+            addCommand(ObligationCommands.Cancel(), signingKey)
             addOutputState(obligationWithUpdatedStatus, ObligationContract.CONTRACT_REF)
         }
 
@@ -65,26 +71,26 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
         // 1. Receive the obligation state we are verifying settlement of.
         val obligationStateAndRef = subFlow(ReceiveStateAndRefFlow<Obligation<DigitalCurrency>>(otherSession)).single()
         val obligation = obligationStateAndRef.state.data
-        val settlementInstructions = obligation.settlementInstructions
+        val settlementInstructions = obligation.settlementMethod
 
         // 2. Check there are settlement instructions.
-        check(settlementInstructions != null) { "This obligation has no settlement instructions." }
+        check(settlementInstructions != null) { "This obligation has no settlement method." }
 
         // 3. Handle different settlement methods.
         val verifyResult = when (settlementInstructions) {
-            is XRPSettlementInstructions -> verifyXrpSettlement(obligation, settlementInstructions)
+            is XrpSettlement -> verifyXrpSettlement(obligation, settlementInstructions)
             else -> throw IllegalStateException("This Oracle only handles XRP settlement.")
         }
 
         when (verifyResult) {
             VerifyResult.TIMEOUT -> {
-                otherSession.send(OracleResult.Failure("Payment wasn't made by the deadline."))
+                otherSession.send(SettlementOracleResult.Failure("Payment wasn't made by the deadline."))
                 return
             }
             VerifyResult.SUCCESS -> {
                 val stx = createTransaction(obligationStateAndRef)
                 // 6. Finalise transaction and send to participants.
-                otherSession.send(OracleResult.Success(stx))
+                otherSession.send(SettlementOracleResult.Success(stx))
             }
             else -> throw IllegalStateException("This shouldn't happen!")
         }

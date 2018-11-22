@@ -1,10 +1,12 @@
 package com.r3.corda.finance.obligation.client.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.Obligation
-import com.r3.corda.finance.obligation.ObligationContract
-import com.r3.corda.finance.obligation.SettlementInstructions
-import com.r3.corda.finance.obligation.getLinearStateById
+import com.r3.corda.finance.obligation.Money
+import com.r3.corda.finance.obligation.SettlementMethod
+import com.r3.corda.finance.obligation.client.getLinearStateById
+import com.r3.corda.finance.obligation.commands.ObligationCommands
+import com.r3.corda.finance.obligation.contracts.ObligationContract
+import com.r3.corda.finance.obligation.states.Obligation
 import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.flows.*
 import net.corda.core.identity.AbstractParty
@@ -14,9 +16,9 @@ import net.corda.core.utilities.ProgressTracker
 
 @InitiatingFlow
 @StartableByRPC
-class AddSettlementInstructions(
+class UpdateSettlementMethod(
         val linearId: UniqueIdentifier,
-        private val settlementInstructions: SettlementInstructions
+        private val settlementMethod: SettlementMethod
 ) : FlowLogic<SignedTransaction>() {
 
     companion object {
@@ -37,7 +39,7 @@ class AddSettlementInstructions(
     override fun call(): SignedTransaction {
         // 1. Retrieve obligation.
         progressTracker.currentStep = INITIALISING
-        val obligationStateAndRef = getLinearStateById<Obligation<Any>>(linearId, serviceHub)
+        val obligationStateAndRef = getLinearStateById<Obligation<Money>>(linearId, serviceHub)
                 ?: throw IllegalArgumentException("LinearId not recognised.")
         val obligation = obligationStateAndRef.state.data
 
@@ -49,7 +51,7 @@ class AddSettlementInstructions(
         check(ourIdentity == obligee) { "This flow can only be started by the obligee. " }
 
         // 3. Add settlement instructions.
-        val obligationWithSettlementTerms = obligation.withSettlementTerms(settlementInstructions)
+        val obligationWithSettlementTerms = obligation.withSettlementMethod(settlementMethod)
 
         // 4. Build transaction which adds settlement terms.
         progressTracker.currentStep = BUILDING
@@ -59,7 +61,7 @@ class AddSettlementInstructions(
         val utx = TransactionBuilder(notary = notary).apply {
             addInputState(obligationStateAndRef)
             addOutputState(obligationWithSettlementTerms, ObligationContract.CONTRACT_REF)
-            addCommand(ObligationContract.Commands.AddSettlementTerms(), signingKey)
+            addCommand(ObligationCommands.UpdateSettlementMethod(), signingKey)
         }
 
         // 5. Sign transaction.

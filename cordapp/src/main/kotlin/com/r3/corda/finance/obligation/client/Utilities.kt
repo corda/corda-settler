@@ -1,4 +1,4 @@
-package com.r3.corda.finance.obligation
+package com.r3.corda.finance.obligation.client
 
 import net.corda.core.contracts.LinearState
 import net.corda.core.contracts.StateAndRef
@@ -12,3 +12,4 @@ inline fun <reified T : LinearState> getLinearStateById(linearId: UniqueIdentifi
     val query = QueryCriteria.LinearStateQueryCriteria(linearId = listOf(linearId))
     return services.vaultService.queryBy<T>(query).states.singleOrNull()
 }
+

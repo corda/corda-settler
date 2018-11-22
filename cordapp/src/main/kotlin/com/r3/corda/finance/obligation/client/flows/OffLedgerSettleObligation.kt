@@ -1,8 +1,10 @@
 package com.r3.corda.finance.obligation.client.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.Obligation
-import com.r3.corda.finance.obligation.getLinearStateById
+import com.r3.corda.finance.obligation.OffLedgerPayment
+import com.r3.corda.finance.obligation.OnLedgerSettlement
+import com.r3.corda.finance.obligation.client.getLinearStateById
+import com.r3.corda.finance.obligation.states.Obligation
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.flows.FlowLogic
@@ -13,13 +15,13 @@ import net.corda.core.transactions.SignedTransaction
 class OffLedgerSettleObligation(private val linearId: UniqueIdentifier) : FlowLogic<SignedTransaction>() {
 
     private fun getFlowInstance(
-            settlementInstructions: OffLedgerSettlementInstructions<*>,
+            settlementInstructions: OffLedgerPayment<*>,
             obligationStateAndRef: StateAndRef<Obligation<*>>
     ): FlowLogic<SignedTransaction> {
         val paymentFlowClass = settlementInstructions.paymentFlow
         val paymentFlowClassConstructor = paymentFlowClass.getDeclaredConstructor(
                 StateAndRef::class.java,
-                OffLedgerSettlementInstructions::class.java
+                OffLedgerPayment::class.java
         )
         return paymentFlowClassConstructor.newInstance(obligationStateAndRef, settlementInstructions)
     }
@@ -30,11 +32,11 @@ class OffLedgerSettleObligation(private val linearId: UniqueIdentifier) : FlowLo
         val obligationStateAndRef = getLinearStateById<Obligation<*>>(linearId, serviceHub)
                 ?: throw IllegalArgumentException("LinearId not recognised.")
         val obligationState = obligationStateAndRef.state.data
-        val settlementInstructions = obligationState.settlementInstructions
+        val settlementMethod = obligationState.settlementMethod
 
-        when (settlementInstructions) {
-            is OnLedgerSettlementTerms -> throw IllegalStateException("ObligationContract to be settled on-ledger. Aborting...")
-            is OffLedgerSettlementInstructions<*> -> subFlow(getFlowInstance(settlementInstructions, obligationStateAndRef))
+        when (settlementMethod) {
+            is OnLedgerSettlement -> throw IllegalStateException("ObligationContract to be settled on-ledger. Aborting...")
+            is OffLedgerPayment<*> -> subFlow(getFlowInstance(settlementMethod, obligationStateAndRef))
             else -> throw IllegalStateException("No settlement instructions added to obligation.")
         }
 

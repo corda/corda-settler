@@ -1,8 +1,10 @@
 package com.r3.corda.finance.obligation.client.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.Obligation
-import com.r3.corda.finance.obligation.ObligationContract
+import com.r3.corda.finance.obligation.Money
+import com.r3.corda.finance.obligation.commands.ObligationCommands
+import com.r3.corda.finance.obligation.contracts.ObligationContract
+import com.r3.corda.finance.obligation.states.Obligation
 import net.corda.confidential.SwapIdentitiesFlow
 import net.corda.core.contracts.Amount
 import net.corda.core.flows.*
@@ -25,7 +27,7 @@ object CreateObligation {
 
     @InitiatingFlow
     @StartableByRPC
-    class Initiator<T : Any>(
+    class Initiator<T : Money>(
             private val amount: Amount<T>,
             private val role: InitiatorRole,
             private val counterparty: Party,
@@ -87,7 +89,7 @@ object CreateObligation {
             val utx = TransactionBuilder(notary = notary).apply {
                 addOutputState(obligation, ObligationContract.CONTRACT_REF)
                 val signers = obligation.participants.map { it.owningKey }
-                addCommand(ObligationContract.Commands.Create(), signers)
+                addCommand(ObligationCommands.Create(), signers)
                 setTimeWindow(serviceHub.clock.instant(), 30.seconds)
             }
 
@@ -117,7 +119,10 @@ object CreateObligation {
         override fun call(): SignedTransaction {
             val flow = object : SignTransactionFlow(otherFlow) {
                 @Suspendable
-                override fun checkTransaction(stx: SignedTransaction) = Unit // TODO: Do some checking here.
+                override fun checkTransaction(stx: SignedTransaction) {
+                    // TODO: Do some basic checking here.
+                    // Rach out to human operator when HCI is available.
+                }
             }
             val stx = subFlow(flow)
             // Suspend this flow until the transaction is committed.

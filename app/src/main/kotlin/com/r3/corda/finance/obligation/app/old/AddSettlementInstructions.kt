@@ -14,9 +14,9 @@ package com.r3.corda.finance.obligation.app.old
 //import net.corda.core.node.NodeInfo
 //import net.corda.core.node.services.NetworkMapCache
 //import tornadofx.*
-//import net.corda.finance.obligation.client.flows.AddSettlementInstructions as AddSettlementInstructionsFlow
+//import net.corda.finance.obligation.client.flows.UpdateSettlementMethod as AddSettlementInstructionsFlow
 //
-//class AddSettlementInstructions : Fragment("Add settlement instructions") {
+//class UpdateSettlementMethod : Fragment("Add settlement instructions") {
 //
 //    val linearId: SimpleObjectProperty<UniqueIdentifier> = SimpleObjectProperty()
 //
@@ -68,9 +68,9 @@ package com.r3.corda.finance.obligation.app.old
 //                button("Submit") {
 //                    action {
 //                        val account = AccountID.fromString(model.address.value)
-//                        val settlementInstructions = XRPSettlementInstructions(account, model.oracle.value)
+//                        val settlementMethod = XrpSettlement(account, model.oracle.value)
 //                        model.commit {
-//                            cordaRpcOps!!.startFlowDynamic(AddSettlementInstructionsFlow::class.java, linearId.get(), settlementInstructions)
+//                            cordaRpcOps!!.startFlowDynamic(AddSettlementInstructionsFlow::class.java, linearId.get(), settlementMethod)
 //                        }
 //                        scene.window.hide()
 //                    }

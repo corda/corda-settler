@@ -1,10 +1,10 @@
 package com.r3.corda.finance.obligation
 
-import com.r3.corda.finance.obligation.client.MockNetworkTest
 import com.r3.corda.finance.obligation.client.flows.CreateObligation
 import com.r3.corda.finance.obligation.client.flows.SendToSettlementOracle
+import com.r3.corda.finance.obligation.states.Obligation
 import com.r3.corda.finance.ripple.services.XRPService
-import com.r3.corda.finance.ripple.types.XRPSettlementInstructions
+import com.r3.corda.finance.ripple.types.XrpSettlement
 import com.r3.corda.finance.ripple.utilities.XRP
 import com.ripple.core.coretypes.AccountID
 import net.corda.core.utilities.getOrThrow
@@ -58,7 +58,7 @@ class ObligationTestsWithOracle : MockNetworkTest(numberOfNodes = 3) {
         // After 20 ledgers, if a payment is not made, settlement will be considered failed.
         val lastLedgerSequence = A.ledgerIndex() + 20
         // Just use party A as the oracle for now.
-        val settlementInstructions = XRPSettlementInstructions(rippleAddress, A.legalIdentity(), lastLedgerSequence)
+        val settlementInstructions = XrpSettlement(rippleAddress, A.legalIdentity(), lastLedgerSequence)
 
         // Add the settlement instructions.
         val updatedObligation = B.addSettlementInstructions(obligationId, settlementInstructions).getOrThrow()
@@ -80,7 +80,7 @@ class ObligationTestsWithOracle : MockNetworkTest(numberOfNodes = 3) {
         // Add settlement instructions.
         val xrpAddress = AccountID.fromString("ra6mzL1Xy9aN5eRdjzn9CHTMwcczG1uMpN")
         val lastLedgerSequence = A.ledgerIndex() + 20
-        val settlementInstructions = XRPSettlementInstructions(xrpAddress, O.legalIdentity(), lastLedgerSequence)
+        val settlementInstructions = XrpSettlement(xrpAddress, O.legalIdentity(), lastLedgerSequence)
 
         // Add the settlement instructions.
         B.addSettlementInstructions(obligationId, settlementInstructions).getOrThrow()
@@ -97,7 +97,7 @@ class ObligationTestsWithOracle : MockNetworkTest(numberOfNodes = 3) {
         // Print settled obligation info.
         val settledObligation = A.queryObligationById(obligationId)
         println(settledObligation.state.data)
-        println(settledObligation.state.data.settlementInstructions as XRPSettlementInstructions)
+        println(settledObligation.state.data.settlementMethod as XrpSettlement)
     }
 
     @Test
@@ -110,7 +110,7 @@ class ObligationTestsWithOracle : MockNetworkTest(numberOfNodes = 3) {
         // Add settlement instructions.
         val xrpAddress = AccountID.fromString("ra6mzL1Xy9aN5eRdjzn9CHTMwcczG1uMpN")
         val lastLedgerSequence = A.ledgerIndex()
-        val settlementInstructions = XRPSettlementInstructions(xrpAddress, O.legalIdentity(), lastLedgerSequence)
+        val settlementInstructions = XrpSettlement(xrpAddress, O.legalIdentity(), lastLedgerSequence)
 
         // Add the settlement instructions.
         B.addSettlementInstructions(obligationId, settlementInstructions).getOrThrow()

@@ -1,10 +1,10 @@
 package com.r3.corda.finance.obligation.app.views
 
-import com.r3.corda.finance.obligation.Obligation
 import com.r3.corda.finance.obligation.app.controllers.NetworkMapController
 import com.r3.corda.finance.obligation.app.controllers.ObligationsController
 import com.r3.corda.finance.obligation.app.formatAmount
 import com.r3.corda.finance.obligation.app.models.UserModel
+import com.r3.corda.finance.obligation.states.Obligation
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.scene.control.TableColumn

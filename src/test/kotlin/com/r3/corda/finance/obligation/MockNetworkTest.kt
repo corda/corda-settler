@@ -1,11 +1,9 @@
-package com.r3.corda.finance.obligation.client
+package com.r3.corda.finance.obligation
 
-import com.r3.corda.finance.obligation.DigitalCurrency
-import com.r3.corda.finance.obligation.Obligation
-import com.r3.corda.finance.obligation.SettlementInstructions
-import com.r3.corda.finance.obligation.client.flows.AddSettlementInstructions
 import com.r3.corda.finance.obligation.client.flows.CreateObligation
 import com.r3.corda.finance.obligation.client.flows.OffLedgerSettleObligation
+import com.r3.corda.finance.obligation.client.flows.UpdateSettlementMethod
+import com.r3.corda.finance.obligation.states.Obligation
 import net.corda.core.concurrent.CordaFuture
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.LinearState
@@ -62,7 +60,7 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
     }
 
     /** Create a new obligation with the supplied parameters. */
-    fun <T : Any> StartedMockNode.createObligation(
+    fun <T : Money> StartedMockNode.createObligation(
             faceAmount: Amount<T>,
             counterparty: StartedMockNode,
             role: CreateObligation.InitiatorRole
@@ -74,9 +72,9 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
     }
 
     /** Add settlement instructions to existing obligation. */
-    fun StartedMockNode.addSettlementInstructions(linearId: UniqueIdentifier, settlementInstructions: SettlementInstructions): CordaFuture<SignedTransaction> {
+    fun StartedMockNode.addSettlementInstructions(linearId: UniqueIdentifier, settlementMethod: SettlementMethod): CordaFuture<SignedTransaction> {
         return transaction {
-            val flow = AddSettlementInstructions(linearId, settlementInstructions)
+            val flow = UpdateSettlementMethod(linearId, settlementMethod)
             startFlow(flow)
         }
     }

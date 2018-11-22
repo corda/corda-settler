@@ -1,9 +1,14 @@
 package com.r3.corda.finance.obligation.client.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.Obligation
-import com.r3.corda.finance.obligation.ObligationContract
-import com.r3.corda.finance.obligation.getLinearStateById
+import com.r3.corda.finance.obligation.Money
+import com.r3.corda.finance.obligation.Payment
+import com.r3.corda.finance.obligation.PaymentReference
+import com.r3.corda.finance.obligation.client.getLinearStateById
+import com.r3.corda.finance.obligation.commands.ObligationCommands
+import com.r3.corda.finance.obligation.contracts.ObligationContract
+import com.r3.corda.finance.obligation.states.Obligation
+import net.corda.core.contracts.Amount
 import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.FlowException
@@ -14,11 +19,15 @@ import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 
 @StartableByRPC
-class UpdateObligationWithPaymentRef(val linearId: UniqueIdentifier, val paymentReference: String) : FlowLogic<SignedTransaction>() {
+class UpdateObligationWithPayment<T : Money>(
+        val linearId: UniqueIdentifier,
+        val amount: Amount<T>,
+        val paymentReference: PaymentReference
+) : FlowLogic<SignedTransaction>() {
 
     @Suspendable
     override fun call(): SignedTransaction {
-        val obligationStateAndRef = getLinearStateById<Obligation<Any>>(linearId, serviceHub)
+        val obligationStateAndRef = getLinearStateById<Obligation<T>>(linearId, serviceHub)
                 ?: throw IllegalArgumentException("LinearId not recognised.")
         val obligation = obligationStateAndRef.state.data
 
@@ -29,26 +38,24 @@ class UpdateObligationWithPaymentRef(val linearId: UniqueIdentifier, val payment
         val obligor = obligation.withWellKnownIdentities(identityResolver).obligor
         check(ourIdentity == obligor) { "This flow can only be started by the obligor. " }
 
-        val settlementInstructions = obligation.settlementInstructions as OffLedgerSettlementInstructions<*>
+        // 3. Add payment to obligation.
+        val newPayment = Payment(paymentReference, amount)
+        val obligationWithNewPayment = obligation.withPayment(newPayment)
 
-        // 5. Add payment reference to settlement instructions and update state.
-        val updatedSettlementInstructions = settlementInstructions.addPaymentReference(paymentReference)
-        val obligationWithUpdatedSettlementInstructions = obligation.withSettlementTerms(updatedSettlementInstructions)
-
-        // 6. Add updated settlement terms to obligation.
+        // 4. Creating a sign new transaction.
         val signingKey = listOf(obligation.obligor.owningKey)
         val notary = serviceHub.networkMapCache.notaryIdentities.firstOrNull()
                 ?: throw FlowException("No available notary.")
         val utx = TransactionBuilder(notary = notary).apply {
             addInputState(obligationStateAndRef)
-            addOutputState(obligationWithUpdatedSettlementInstructions, ObligationContract.CONTRACT_REF)
-            addCommand(ObligationContract.Commands.AddPaymentDetails(), signingKey)
+            addOutputState(obligationWithNewPayment, ObligationContract.CONTRACT_REF)
+            addCommand(ObligationCommands.AddPayment(), signingKey)
         }
 
-        // 7. Sign transaction.
+        // 5. Sign transaction.
         val stx = serviceHub.signInitialTransaction(utx, signingKey)
 
-        // 8. Finalise transaction and send to participants.
+        // 6. Finalise transaction and send to participants.
         return subFlow(FinalityFlow(stx))
     }
 }

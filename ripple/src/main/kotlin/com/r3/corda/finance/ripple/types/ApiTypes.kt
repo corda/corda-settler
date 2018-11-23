@@ -26,7 +26,7 @@ data class AccountInfoRequest(
 data class AccountInfoResponse(
         @JsonProperty("account_data") val accountData: AccountData,
         @JsonProperty("ledger_current_index") val ledgerCurrentIndex: Int,
-        @JsonProperty("settlementStatus") val status: String,
+        @JsonProperty("status") val status: String,
         @JsonProperty("validated") val validated: Boolean
 )
 
@@ -53,7 +53,7 @@ data class SubmitPaymentResponse(
         @JsonProperty("engine_result") val engineResult: String,
         @JsonProperty("engine_result_code") val engineResultCode: String,
         @JsonProperty("engine_result_message") val engineResultMessage: String,
-        @JsonProperty("settlementStatus") val status: String,
+        @JsonProperty("status") val status: String,
         @JsonProperty("tx_blob") val txBlob: String,
         @JsonProperty("tx_json") val txJson: TransactionJson
 )
@@ -96,7 +96,7 @@ data class TransactionInfoResponse(
         @JsonProperty("hash") val hash: String,
         @JsonProperty("inLedger") val inLedger: Int,
         @JsonProperty("ledger_index") val ledgerIndex: Int,
-        @JsonProperty("settlementStatus") val status: String,
+        @JsonProperty("status") val status: String,
         @JsonProperty("validated") val validated: Boolean
 )
 
@@ -118,5 +118,5 @@ data class LedgerCurrentIndexResponseObject(@JsonProperty("result") override val
 
 data class LedgerCurrentIndexResponse(
         @JsonProperty("ledger_current_index") val ledgerCurrentIndex: Long,
-        @JsonProperty("settlementStatus") val status: String
+        @JsonProperty("status") val status: String
 )

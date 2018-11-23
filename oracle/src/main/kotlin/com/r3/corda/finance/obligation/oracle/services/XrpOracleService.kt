@@ -40,7 +40,10 @@ class XrpOracleService(val services: AppServiceHub) : SingletonSerializeAsToken(
         }
     }
 
-    private fun checkObligeeReceivedPayment(xrpPayment: XrpPayment<DigitalCurrency>, obligation: Obligation<DigitalCurrency>): Boolean {
+    private fun checkObligeeReceivedPayment(
+            xrpPayment: XrpPayment<DigitalCurrency>,
+            obligation: Obligation<DigitalCurrency>
+    ): Boolean {
         // Query all the ripple nodes.
         val results = clientsForVerification.map { client -> client.transaction(xrpPayment.paymentReference) }
         // All nodes should report the same result.
@@ -51,7 +54,10 @@ class XrpOracleService(val services: AppServiceHub) : SingletonSerializeAsToken(
         return destinationCorrect && amountCorrect && referenceCorrect && hasSucceeded
     }
 
-    fun hasPaymentSettled(xrpPayment: XrpPayment<DigitalCurrency>, obligation: Obligation<DigitalCurrency>): VerifySettlement.VerifyResult {
+    fun hasPaymentSettled(
+            xrpPayment: XrpPayment<DigitalCurrency>,
+            obligation: Obligation<DigitalCurrency>
+    ): VerifySettlement.VerifyResult {
         val upToDate = checkServersAreUpToDate()
 
         if (!upToDate) {

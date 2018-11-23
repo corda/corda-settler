@@ -1,10 +1,12 @@
 package com.r3.corda.finance.obligation.client.flows
 
 import co.paralleluniverse.fibers.Suspendable
+import com.r3.corda.finance.obligation.Money
 import com.r3.corda.finance.obligation.OffLedgerPayment
 import com.r3.corda.finance.obligation.OnLedgerSettlement
 import com.r3.corda.finance.obligation.client.getLinearStateById
 import com.r3.corda.finance.obligation.states.Obligation
+import net.corda.core.contracts.Amount
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.flows.FlowLogic
@@ -12,7 +14,10 @@ import net.corda.core.flows.StartableByRPC
 import net.corda.core.transactions.SignedTransaction
 
 @StartableByRPC
-class OffLedgerSettleObligation(private val linearId: UniqueIdentifier) : FlowLogic<SignedTransaction>() {
+class OffLedgerSettleObligation<T : Money>(
+        private val amount: Amount<T>,
+        private val linearId: UniqueIdentifier
+) : FlowLogic<SignedTransaction>() {
 
     private fun getFlowInstance(
             settlementInstructions: OffLedgerPayment<*>,
@@ -20,10 +25,11 @@ class OffLedgerSettleObligation(private val linearId: UniqueIdentifier) : FlowLo
     ): FlowLogic<SignedTransaction> {
         val paymentFlowClass = settlementInstructions.paymentFlow
         val paymentFlowClassConstructor = paymentFlowClass.getDeclaredConstructor(
+                Amount::class.java,
                 StateAndRef::class.java,
                 OffLedgerPayment::class.java
         )
-        return paymentFlowClassConstructor.newInstance(obligationStateAndRef, settlementInstructions)
+        return paymentFlowClassConstructor.newInstance(amount, obligationStateAndRef, settlementInstructions)
     }
 
     @Suspendable

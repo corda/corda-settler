@@ -80,8 +80,8 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
     }
 
     /** Add settlement instructions to existing obligation. */
-    fun StartedMockNode.makePayment(linearId: UniqueIdentifier): CordaFuture<SignedTransaction> {
-        return transaction { startFlow(OffLedgerSettleObligation(linearId)) }
+    fun <T : Money>StartedMockNode.makePayment(amount: Amount<T>, linearId: UniqueIdentifier): CordaFuture<SignedTransaction> {
+        return transaction { startFlow(OffLedgerSettleObligation(amount, linearId)) }
     }
 
     fun StartedMockNode.legalIdentity() = services.myInfo.legalIdentities.first()

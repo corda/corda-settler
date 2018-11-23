@@ -3,6 +3,7 @@ package com.r3.corda.finance.ripple.flows
 import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.finance.obligation.Money
 import com.r3.corda.finance.obligation.OffLedgerPayment
+import com.r3.corda.finance.obligation.PaymentStatus
 import com.r3.corda.finance.obligation.client.flows.MakeOffLedgerPayment
 import com.r3.corda.finance.obligation.states.Obligation
 import com.r3.corda.finance.ripple.services.XRPService
@@ -125,6 +126,6 @@ class MakeXrpPayment<T : Money>(
 
         // Return the payment information.
         val lastLedgerIndex = getCurrentLedgerIndex() + waitingPeriod
-        return XrpPayment(paymentReference, amount, lastLedgerIndex)
+        return XrpPayment(paymentReference, lastLedgerIndex, amount, PaymentStatus.SENT)
     }
 }

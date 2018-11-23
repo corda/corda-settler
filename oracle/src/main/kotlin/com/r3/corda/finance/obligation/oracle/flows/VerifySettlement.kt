@@ -41,26 +41,22 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
         }
     }
 
-    private fun createTransaction(obligationStateAndRef: StateAndRef<Obligation<DigitalCurrency>>): SignedTransaction {
+    private fun createTransaction(
+            obligationStateAndRef: StateAndRef<Obligation<DigitalCurrency>>,
+            status: PaymentStatus
+    ): SignedTransaction {
+        // Update payment status.
         val obligation = obligationStateAndRef.state.data
-        val settlementInstructions = obligation.settlementMethod as XrpSettlement
-
-        // 4. Update settlement instructions.
-        // For now we cannot partially settle the obligation.
-        val updatedSettlementInstructions = settlementInstructions.updateStatus(PaymentStatus.ACCEPTED)
-        val obligationWithUpdatedStatus = obligation
-                .withSettlementMethod(updatedSettlementInstructions)
-                .settle(obligation.faceAmount)
-
-        // 4. Build transaction.
-        // Change the payment settlementStatus to accepted - this means that the obligation has settled.
+        // Status is MUTABLE to save us having to re-create the payments list.
+        obligation.payments.last().status = status
+        // Create transaction.
         val signingKey = ourIdentity.owningKey
         val notary = serviceHub.networkMapCache.notaryIdentities.firstOrNull()
                 ?: throw FlowException("No available notary.")
         val utx = TransactionBuilder(notary = notary).apply {
             addInputState(obligationStateAndRef)
-            addCommand(ObligationCommands.Cancel(), signingKey)
-            addOutputState(obligationWithUpdatedStatus, ObligationContract.CONTRACT_REF)
+            addCommand(ObligationCommands.AddPayment(), signingKey)
+            addOutputState(obligation, ObligationContract.CONTRACT_REF)
         }
 
         // 5. Sign transaction.
@@ -87,13 +83,11 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
 
         when (verifyResult) {
             VerifyResult.TIMEOUT -> {
-                val
-                otherSession.send(SettlementOracleResult.Failure("Payment wasn't made by the deadline."))
-                return
+                val stx = createTransaction(obligationStateAndRef, PaymentStatus.FAILED)
+                otherSession.send(SettlementOracleResult.Failure(stx, "Payment wasn't made by the deadline."))
             }
             VerifyResult.SUCCESS -> {
-                val stx = createTransaction(obligationStateAndRef)
-                // 6. Finalise transaction and send to participants.
+                val stx = createTransaction(obligationStateAndRef, PaymentStatus.SETTLED)
                 otherSession.send(SettlementOracleResult.Success(stx))
             }
             else -> throw IllegalStateException("This shouldn't happen!")

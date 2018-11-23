@@ -51,15 +51,12 @@ interface Payment<T : Any> {
     val paymentReference: PaymentReference
     /** Amount that was paid in the required token type. */
     val amount: Amount<T>
-    /** SENT, ACCEPTED or REJECTED. */
-    val status: PaymentStatus
-
-    /** Updates the status of the payment. */
-    fun updateStatus(newStatus: PaymentStatus): Payment<T>
+    /** SENT, ACCEPTED or FAILED. */
+    var status: PaymentStatus
 }
 
 @CordaSerializable
-enum class PaymentStatus { SETTLED, SENT, REJECTED }
+enum class PaymentStatus { SETTLED, SENT, FAILED }
 
 /** A common interface for things which are fungible. */
 @CordaSerializable
@@ -92,12 +89,14 @@ data class DigitalCurrency(
             return registry[currencyCode] ?: throw IllegalArgumentException("$currencyCode doesn't exist.")
         }
     }
+
+    override fun toString() = symbol
 }
 
 @CordaSerializable
 sealed class SettlementOracleResult {
     data class Success(val stx: SignedTransaction) : SettlementOracleResult()
-    data class Failure(val message: String) : SettlementOracleResult()
+    data class Failure(val stx: SignedTransaction, val message: String) : SettlementOracleResult()
 }
 
 @CordaSerializable

@@ -55,10 +55,8 @@ class ObligationTestsWithOracle : MockNetworkTest(numberOfNodes = 3) {
 
         // Add settlement instructions.
         val rippleAddress = AccountID.fromString("rNmkj4AtjEHJh3D9hMRC4rS3CXQ9mX4S4b")
-        // After 20 ledgers, if a payment is not made, settlement will be considered failed.
-        val lastLedgerSequence = A.ledgerIndex() + 20
         // Just use party A as the oracle for now.
-        val settlementInstructions = XrpSettlement(rippleAddress, A.legalIdentity(), lastLedgerSequence)
+        val settlementInstructions = XrpSettlement(rippleAddress, A.legalIdentity())
 
         // Add the settlement instructions.
         val updatedObligation = B.addSettlementInstructions(obligationId, settlementInstructions).getOrThrow()
@@ -71,7 +69,7 @@ class ObligationTestsWithOracle : MockNetworkTest(numberOfNodes = 3) {
     }
 
     @Test
-    fun `end to end test`() {
+    fun `end to end test with single payment`() {
         // Create obligation.
         val newObligation = A.createObligation(10.XRP, B, CreateObligation.InitiatorRole.OBLIGOR).getOrThrow()
         val obligation = newObligation.singleOutput<Obligation<DigitalCurrency>>()
@@ -79,14 +77,13 @@ class ObligationTestsWithOracle : MockNetworkTest(numberOfNodes = 3) {
 
         // Add settlement instructions.
         val xrpAddress = AccountID.fromString("ra6mzL1Xy9aN5eRdjzn9CHTMwcczG1uMpN")
-        val lastLedgerSequence = A.ledgerIndex() + 20
-        val settlementInstructions = XrpSettlement(xrpAddress, O.legalIdentity(), lastLedgerSequence)
+        val settlementInstructions = XrpSettlement(xrpAddress, O.legalIdentity())
 
         // Add the settlement instructions.
         B.addSettlementInstructions(obligationId, settlementInstructions).getOrThrow()
 
         // Make the payment.
-        val obligationWithPaymentMade = A.transaction { A.makePayment(obligationId).getOrThrow() }
+        val obligationWithPaymentMade = A.transaction { A.makePayment(10.XRP, obligationId).getOrThrow() }
         val transactionHash = obligationWithPaymentMade.id
 
         // Wait for the updates on both nodes.
@@ -101,6 +98,69 @@ class ObligationTestsWithOracle : MockNetworkTest(numberOfNodes = 3) {
     }
 
     @Test
+    fun `partial settlement`() {
+        // Create obligation.
+        val newObligation = A.createObligation(10.XRP, B, CreateObligation.InitiatorRole.OBLIGOR).getOrThrow()
+        val obligation = newObligation.singleOutput<Obligation<DigitalCurrency>>()
+        val obligationId = obligation.linearId()
+
+        // Add settlement instructions.
+        val xrpAddress = AccountID.fromString("ra6mzL1Xy9aN5eRdjzn9CHTMwcczG1uMpN")
+        val settlementInstructions = XrpSettlement(xrpAddress, O.legalIdentity())
+
+        // Add the settlement instructions.
+        B.addSettlementInstructions(obligationId, settlementInstructions).getOrThrow()
+
+        // Make the payment.
+        val obligationWithPaymentMade = A.transaction { A.makePayment(5.XRP, obligationId).getOrThrow() }
+        val transactionHash = obligationWithPaymentMade.id
+
+        // Wait for the updates on both nodes.
+        val aObligation = A.watchForTransaction(transactionHash).toCompletableFuture()
+        val bObligation = B.watchForTransaction(transactionHash).toCompletableFuture()
+        CompletableFuture.allOf(aObligation, bObligation)
+
+        // Print settled obligation info.
+        val partiallySettledObligation = A.queryObligationById(obligationId)
+        println(partiallySettledObligation.state.data)
+        println(partiallySettledObligation.state.data.settlementMethod as XrpSettlement)
+        partiallySettledObligation.state.data.payments.forEach(::println)
+        assertEquals(partiallySettledObligation.state.data.settlementStatus, Obligation.SettlementStatus.PARTIALLY_SETTLED)
+    }
+
+    @Test
+    fun `settle with multiple payments`() {
+        // Create obligation.
+        val newObligation = A.createObligation(10.XRP, B, CreateObligation.InitiatorRole.OBLIGOR).getOrThrow()
+        val obligation = newObligation.singleOutput<Obligation<DigitalCurrency>>()
+        val obligationId = obligation.linearId()
+
+        // Add settlement instructions.
+        val xrpAddress = AccountID.fromString("ra6mzL1Xy9aN5eRdjzn9CHTMwcczG1uMpN")
+        val settlementInstructions = XrpSettlement(xrpAddress, O.legalIdentity())
+
+        // Add the settlement instructions.
+        B.addSettlementInstructions(obligationId, settlementInstructions).getOrThrow()
+
+        // Make payment one and two.
+        A.transaction { A.makePayment(5.XRP, obligationId).getOrThrow() }
+        val obligationWithPaymentMade = A.transaction { A.makePayment(5.XRP, obligationId).getOrThrow() }
+        val transactionHash = obligationWithPaymentMade.id
+
+        // Wait for the updates on both nodes.
+        val aObligation = A.watchForTransaction(transactionHash).toCompletableFuture()
+        val bObligation = B.watchForTransaction(transactionHash).toCompletableFuture()
+        CompletableFuture.allOf(aObligation, bObligation)
+
+        // Print settled obligation info.
+        val partiallySettledObligation = A.queryObligationById(obligationId)
+        println(partiallySettledObligation.state.data)
+        println(partiallySettledObligation.state.data.settlementMethod as XrpSettlement)
+        partiallySettledObligation.state.data.payments.forEach(::println)
+        assertEquals(partiallySettledObligation.state.data.settlementStatus, Obligation.SettlementStatus.SETTLED)
+    }
+
+    @Test
     fun `last ledger sequence is reached`() {
         // Create obligation.
         val newObligation = A.createObligation(10000.XRP, B, CreateObligation.InitiatorRole.OBLIGOR).getOrThrow()
@@ -110,7 +170,7 @@ class ObligationTestsWithOracle : MockNetworkTest(numberOfNodes = 3) {
         // Add settlement instructions.
         val xrpAddress = AccountID.fromString("ra6mzL1Xy9aN5eRdjzn9CHTMwcczG1uMpN")
         val lastLedgerSequence = A.ledgerIndex()
-        val settlementInstructions = XrpSettlement(xrpAddress, O.legalIdentity(), lastLedgerSequence)
+        val settlementInstructions = XrpSettlement(xrpAddress, O.legalIdentity())
 
         // Add the settlement instructions.
         B.addSettlementInstructions(obligationId, settlementInstructions).getOrThrow()

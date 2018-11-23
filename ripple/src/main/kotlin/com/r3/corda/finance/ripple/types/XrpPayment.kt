@@ -6,10 +6,8 @@ import net.corda.core.contracts.Amount
 /** Represents a payment of XRP. */
 data class XrpPayment<T : Money>(
         override val paymentReference: PaymentReference,
-        override val amount: Amount<T>,
         /** It is expected that the payment reaches the beneficiary by this ledger number. */
         val lastLedgerSequence: Long,
-        override val status: PaymentStatus = PaymentStatus.SENT
-) : Payment<T> {
-    override fun updateStatus(newStatus: PaymentStatus) = copy(status = newStatus)
-}
+        override val amount: Amount<T>,
+        override var status: PaymentStatus = PaymentStatus.SENT
+) : Payment<T>

@@ -2,6 +2,7 @@ package com.r3.corda.finance.obligation.states
 
 import com.r3.corda.finance.obligation.Money
 import com.r3.corda.finance.obligation.Payment
+import com.r3.corda.finance.obligation.PaymentStatus
 import com.r3.corda.finance.obligation.SettlementMethod
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.LinearState
@@ -56,8 +57,10 @@ data class Obligation<T : Money>(
     override val participants: List<AbstractParty> get() = listOf(obligee, obligor)
 
     /** The sum of amounts for all payments. */
-    // TODO: Payment amount is not intially added. Check the oracle handles this properly.
-    val amountPaid: Amount<T> get() = payments.mapNotNull { it.amount }.reduce { acc, amount -> acc + amount }
+    val amountPaid: Amount<T> get() = payments
+            .filter { it.status == PaymentStatus.SETTLED }
+            .map { it.amount }
+            .fold(Amount.zero(faceAmount.token)) { acc, amount -> acc + amount }
 
     /** A defaulted obligation is one where the current time is greater than the [dueBy] time. */
     val inDefault: Boolean get() = Instant.now() > dueBy
@@ -127,9 +130,9 @@ data class Obligation<T : Money>(
     }
 
     override fun toString(): String {
-        val obligeeString = (obligee as? Party)?.name?.organisation ?: obligee.owningKey.toStringShort()
-        val obligorString = (obligor as? Party)?.name?.organisation ?: obligor.owningKey.toStringShort()
-        return "Obligation($linearId): $obligorString owes $obligeeString $faceAmount ($amountPaid paid)."
+        val obligeeString = (obligee as? Party)?.name?.organisation ?: obligee.owningKey.toStringShort().substring(0, 10)
+        val obligorString = (obligor as? Party)?.name?.organisation ?: obligor.owningKey.toStringShort().substring(0, 10)
+        return "${settlementStatus} Obligation($linearId): $obligorString owes $obligeeString $faceAmount ($amountPaid paid)."
     }
 
 }

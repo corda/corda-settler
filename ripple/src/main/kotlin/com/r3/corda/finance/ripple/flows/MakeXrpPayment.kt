@@ -3,14 +3,10 @@ package com.r3.corda.finance.ripple.flows
 import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.finance.obligation.Money
 import com.r3.corda.finance.obligation.OffLedgerPayment
-import com.r3.corda.finance.obligation.PaymentReference
 import com.r3.corda.finance.obligation.client.flows.MakeOffLedgerPayment
 import com.r3.corda.finance.obligation.states.Obligation
 import com.r3.corda.finance.ripple.services.XRPService
-import com.r3.corda.finance.ripple.types.AlreadysubmittedException
-import com.r3.corda.finance.ripple.types.IncorrectSequenceNumberException
-import com.r3.corda.finance.ripple.types.SubmitPaymentResponse
-import com.r3.corda.finance.ripple.types.XrpSettlement
+import com.r3.corda.finance.ripple.types.*
 import com.r3.corda.finance.ripple.utilities.DEFAULT_XRP_FEE
 import com.r3.corda.finance.ripple.utilities.toXRPAmount
 import com.r3.corda.finance.ripple.utilities.toXRPHash
@@ -39,7 +35,11 @@ class MakeXrpPayment<T : Money>(
         override val settlementMethod: OffLedgerPayment<*>
 ) : MakeOffLedgerPayment<T>(amount, obligationStateAndRef, settlementMethod) {
 
+    /** Ensures that the flow uses the same sequence number for idempotency. */
     var seqNo: UInt32? = null
+
+    /** Assuming each ledger takes 5 seconds, or so, we are willing to wait 60 seconds for the payment to "arrive". */
+    val waitingPeriod: Long = 60 / 5
 
     /** Don't want to serialize this. */
     private fun getSequenceNumber(): UInt32 {
@@ -48,25 +48,10 @@ class MakeXrpPayment<T : Money>(
         return xrpService.nextSequenceNumber(accountId)
     }
 
-    @Suspendable
-    override fun setup() {
-        // Get a new sequence number.
-        seqNo = getSequenceNumber()
-        // Checkpoint the flow here.
-        // - If the flow dies before payment, the payment should still happen.
-        // - If the flow dies after payment and is replayed from this point, then the second payment will fail.
-        sleep(Duration.ofMillis(1))
-    }
-
-    override fun checkBalance(requiredAmount: Amount<*>) {
-        // Get a XRPService client.
-        val xrpClient = serviceHub.cordaService(XRPService::class.java).client
-        // Check the balance on the supplied XRPService address.
-        val ourAccountInfo = xrpClient.accountInfo(xrpClient.address)
-        val balance = ourAccountInfo.accountData.balance
-        check(balance > requiredAmount.toXRPAmount()) {
-            "You do not have enough XRP to make the payment."
-        }
+    /** Don't want to serialize this either. */
+    private fun getCurrentLedgerIndex(): Long {
+        val xrpService = serviceHub.cordaService(XRPService::class.java).client
+        return xrpService.ledgerIndex().ledgerCurrentIndex
     }
 
     /** Don't want to serialize this. */
@@ -92,7 +77,28 @@ class MakeXrpPayment<T : Money>(
     }
 
     @Suspendable
-    override fun makePayment(obligation: Obligation<*>, amount: Amount<T>): PaymentReference {
+    override fun setup() {
+        // Get a new sequence number.
+        seqNo = getSequenceNumber()
+        // Checkpoint the flow here.
+        // - If the flow dies before payment, the payment should still happen.
+        // - If the flow dies after payment and is replayed from this point, then the second payment will fail.
+        sleep(Duration.ofMillis(1))
+    }
+
+    override fun checkBalance(requiredAmount: Amount<*>) {
+        // Get a XRPService client.
+        val xrpClient = serviceHub.cordaService(XRPService::class.java).client
+        // Check the balance on the supplied XRPService address.
+        val ourAccountInfo = xrpClient.accountInfo(xrpClient.address)
+        val balance = ourAccountInfo.accountData.balance
+        check(balance > requiredAmount.toXRPAmount()) {
+            "You do not have enough XRP to make the payment."
+        }
+    }
+
+    @Suspendable
+    override fun makePayment(obligation: Obligation<*>, amount: Amount<T>): XrpPayment<T> {
         // Create, sign and submit a payment request then store the transaction hash and checkpoint.
         // Fail if there is any exception as
         val paymentResponse = try {
@@ -117,7 +123,8 @@ class MakeXrpPayment<T : Money>(
         val paymentReference = paymentResponse.txJson.hash
         sleep(Duration.ofMillis(1))
 
-        // Return the payment hash.
-        return paymentReference
+        // Return the payment information.
+        val lastLedgerIndex = getCurrentLedgerIndex() + waitingPeriod
+        return XrpPayment(paymentReference, amount, lastLedgerIndex)
     }
 }

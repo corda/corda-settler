@@ -3,6 +3,7 @@ package com.r3.corda.finance.obligation.client.flows
 import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.finance.obligation.Money
 import com.r3.corda.finance.obligation.OffLedgerPayment
+import com.r3.corda.finance.obligation.Payment
 import com.r3.corda.finance.obligation.PaymentReference
 import com.r3.corda.finance.obligation.flows.AbstractMakeOffLedgerPayment
 import com.r3.corda.finance.obligation.states.Obligation
@@ -21,7 +22,7 @@ abstract class MakeOffLedgerPayment<T : Money>(
     abstract fun checkBalance(requiredAmount: Amount<*>)
 
     @Suspendable
-    abstract fun makePayment(obligation: Obligation<*>, amount: Amount<T>): PaymentReference
+    abstract fun makePayment(obligation: Obligation<*>, amount: Amount<T>): Payment<T>
 
     @Suspendable
     abstract fun setup()
@@ -43,9 +44,9 @@ abstract class MakeOffLedgerPayment<T : Money>(
         checkBalance(amount)
 
         // 4. Make payment and manually checkpoint
-        val paymentReference = makePayment(obligation, amount)
+        val paymentInformation = makePayment(obligation, amount)
 
         // 5. Add payment reference to settlement instructions and update state.
-        return subFlow(UpdateObligationWithPayment(obligation.linearId, amount, paymentReference))
+        return subFlow(UpdateObligationWithPayment(obligation.linearId, paymentInformation))
     }
 }

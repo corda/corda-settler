@@ -9,6 +9,7 @@ import com.r3.corda.finance.obligation.contracts.ObligationContract
 import com.r3.corda.finance.obligation.flows.AbstractSendToSettlementOracle
 import com.r3.corda.finance.obligation.oracle.services.XrpOracleService
 import com.r3.corda.finance.obligation.states.Obligation
+import com.r3.corda.finance.ripple.types.XrpPayment
 import com.r3.corda.finance.ripple.types.XrpSettlement
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.*
@@ -25,11 +26,11 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
     enum class VerifyResult { TIMEOUT, SUCCESS, PENDING }
 
     @Suspendable
-    fun verifyXrpSettlement(obligation: Obligation<DigitalCurrency>, settlementInstructions: XrpSettlement): VerifyResult {
+    fun verifyXrpSettlement(obligation: Obligation<DigitalCurrency>, xrpPayment: XrpPayment<DigitalCurrency>): VerifyResult {
         val oracleService = serviceHub.cordaService(XrpOracleService::class.java)
         while (true) {
             logger.info("Checking for settlement...")
-            val result = oracleService.hasPaymentSettled(settlementInstructions, obligation)
+            val result = oracleService.hasPaymentSettled(xrpPayment, obligation)
             when (result) {
                 VerifyResult.SUCCESS, VerifyResult.TIMEOUT -> return result
                 // Sleep for five seconds before we try again. The Oracle might receive the request to verify payment
@@ -71,19 +72,22 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
         // 1. Receive the obligation state we are verifying settlement of.
         val obligationStateAndRef = subFlow(ReceiveStateAndRefFlow<Obligation<DigitalCurrency>>(otherSession)).single()
         val obligation = obligationStateAndRef.state.data
-        val settlementInstructions = obligation.settlementMethod
-
+        val settlementMethod = obligation.settlementMethod
         // 2. Check there are settlement instructions.
-        check(settlementInstructions != null) { "This obligation has no settlement method." }
+        check(settlementMethod != null) { "This obligation has no settlement method." }
+        // 3. As payments are appended to the end of the payments list, we assume we are only checking the last
+        // payment. The obligation is sent to the settlement Oracle for EACH payment, so everyone does get checked.
+        val lastPayment = obligation.payments.last() as XrpPayment<DigitalCurrency>
 
-        // 3. Handle different settlement methods.
-        val verifyResult = when (settlementInstructions) {
-            is XrpSettlement -> verifyXrpSettlement(obligation, settlementInstructions)
+        // 4. Handle different settlement methods.
+        val verifyResult = when (settlementMethod) {
+            is XrpSettlement -> verifyXrpSettlement(obligation, lastPayment)
             else -> throw IllegalStateException("This Oracle only handles XRP settlement.")
         }
 
         when (verifyResult) {
             VerifyResult.TIMEOUT -> {
+                val
                 otherSession.send(SettlementOracleResult.Failure("Payment wasn't made by the deadline."))
                 return
             }

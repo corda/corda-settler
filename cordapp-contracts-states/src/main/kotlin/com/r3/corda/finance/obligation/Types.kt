@@ -59,7 +59,7 @@ interface Payment<T : Any> {
 }
 
 @CordaSerializable
-enum class PaymentStatus { SENT, ACCEPTED, REJECTED }
+enum class PaymentStatus { SETTLED, SENT, REJECTED }
 
 /** A common interface for things which are fungible. */
 @CordaSerializable

@@ -24,10 +24,10 @@ class SendToSettlementOracle(val linearId: UniqueIdentifier) : AbstractSendToSet
 
         // Get the Oracle from the settlement instructions.
         val obligationState = obligationStateAndRef.state.data
-        val settlementInstructions = obligationState.settlementMethod as OffLedgerPayment<*>
+        val settlementMethod = obligationState.settlementMethod as OffLedgerPayment<*>
 
         // Send the Oracle the ObligationContract state.
-        val session = initiateFlow(settlementInstructions.settlementOracle)
+        val session = initiateFlow(settlementMethod.settlementOracle)
         subFlow(SendStateAndRefFlow(session, listOf(obligationStateAndRef)))
 
         // Receive a SignedTransaction from the oracle that exits the obligation, or throw an exception if we timed out.

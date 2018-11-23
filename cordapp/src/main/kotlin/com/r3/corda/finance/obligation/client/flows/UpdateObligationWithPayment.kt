@@ -19,11 +19,7 @@ import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 
 @StartableByRPC
-class UpdateObligationWithPayment<T : Money>(
-        val linearId: UniqueIdentifier,
-        val amount: Amount<T>,
-        val paymentReference: PaymentReference
-) : FlowLogic<SignedTransaction>() {
+class UpdateObligationWithPayment<T : Money>(val linearId: UniqueIdentifier, val paymentInformation: Payment<T>) : FlowLogic<SignedTransaction>() {
 
     @Suspendable
     override fun call(): SignedTransaction {
@@ -39,8 +35,7 @@ class UpdateObligationWithPayment<T : Money>(
         check(ourIdentity == obligor) { "This flow can only be started by the obligor. " }
 
         // 3. Add payment to obligation.
-        val newPayment = Payment(paymentReference, amount)
-        val obligationWithNewPayment = obligation.withPayment(newPayment)
+        val obligationWithNewPayment = obligation.withPayment(paymentInformation)
 
         // 4. Creating a sign new transaction.
         val signingKey = listOf(obligation.obligor.owningKey)

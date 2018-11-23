@@ -56,6 +56,7 @@ data class Obligation<T : Money>(
     override val participants: List<AbstractParty> get() = listOf(obligee, obligor)
 
     /** The sum of amounts for all payments. */
+    // TODO: Payment amount is not intially added. Check the oracle handles this properly.
     val amountPaid: Amount<T> get() = payments.mapNotNull { it.amount }.reduce { acc, amount -> acc + amount }
 
     /** A defaulted obligation is one where the current time is greater than the [dueBy] time. */

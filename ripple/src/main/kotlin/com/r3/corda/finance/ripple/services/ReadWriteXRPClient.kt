@@ -1,9 +1,9 @@
 package com.r3.corda.finance.ripple.services
 
+import com.r3.corda.finance.ripple.types.IncorrectSequenceNumberException
 import com.r3.corda.finance.ripple.types.SubmitPaymentRequest
 import com.r3.corda.finance.ripple.types.SubmitPaymentResponse
 import com.r3.corda.finance.ripple.types.SubmitPaymentResultObject
-import com.r3.corda.finance.ripple.utilities.IncorrectSequenceNumberException
 import com.r3.corda.finance.ripple.utilities.deserialize
 import com.r3.corda.finance.ripple.utilities.makeRequest
 import com.ripple.core.coretypes.AccountID

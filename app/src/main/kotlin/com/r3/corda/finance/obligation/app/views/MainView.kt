@@ -34,11 +34,11 @@ class MainView : View("Corda Settler") {
 
                 tableview(obligationsController.obligations) {
                     columnResizePolicy = SmartResize.POLICY
-                    readonlyColumn("ObligationContract ID", Obligation<*>::linearId)
-                    readonlyColumn("Face amount", Obligation<*>::faceAmount).cellFormat { text = formatAmount(it) }
-                    column("Counterparty") { it: TableColumn.CellDataFeatures<Obligation<*>, String> ->
+                    readonlyColumn("Due By", Obligation<*>::dueBy)
+                    readonlyColumn("Amount", Obligation<*>::faceAmount).cellFormat { text = formatAmount(it) }
+                    column("Cpty") { it: TableColumn.CellDataFeatures<Obligation<*>, String> ->
                         val obligation = it.value
-                        val counterparty = if (obligation.obligor == networkMapController.us) {
+                        val counterparty = if (obligation.obligor == networkMapController.us.value) {
                             obligation.obligee
                         } else obligation.obligor
                         SimpleStringProperty(counterparty.nameOrNull()?.organisation)
@@ -49,8 +49,8 @@ class MainView : View("Corda Settler") {
         bottom {
             toolbar {
                 button("Add obligation").action {
-                    val params = mapOf(AddObligationView::cordaRpcOps to cordaRpcOps)
-                    find<AddObligationView>(params).openWindow(stageStyle = StageStyle.UTILITY)
+                    val params = mapOf(CreateObligationView::cordaRpcOps to cordaRpcOps)
+                    find<CreateObligationView>(params).openWindow(stageStyle = StageStyle.UTILITY)
                 }
             }
         }

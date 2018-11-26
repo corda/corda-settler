@@ -12,12 +12,10 @@ import net.corda.core.contracts.Amount
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.flows.*
-import net.corda.core.identity.AbstractParty
 import net.corda.core.identity.Party
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import java.math.BigDecimal
-import java.security.PublicKey
 
 object NovateObligation {
 
@@ -49,8 +47,10 @@ object NovateObligation {
             val obligation = obligationStateAndRef.state.data
             return when (novationCommand) {
                 is ObligationCommands.Novate.UpdateDueBy -> obligation.withDueByDate(novationCommand.newDueBy)
-                is ObligationCommands.Novate.UpdateParty -> obligation.withNewCounterparty(novationCommand.oldParty, novationCommand.newParty)
-                is ObligationCommands.Novate.UpdateFaceAmountQuantity -> obligation.withNewFaceValueQuantity(novationCommand.newAmount)
+                is ObligationCommands.Novate.UpdateParty ->
+                    obligation.withNewCounterparty(novationCommand.oldParty, novationCommand.newParty)
+                is ObligationCommands.Novate.UpdateFaceAmountQuantity ->
+                    obligation.withNewFaceValueQuantity(novationCommand.newAmount)
                 is ObligationCommands.Novate.UpdateFaceAmountToken<*, *> -> handleUpdateFaceAmountToken(obligation)
             }
         }

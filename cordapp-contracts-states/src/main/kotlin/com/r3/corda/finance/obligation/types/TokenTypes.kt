@@ -23,6 +23,11 @@ data class FiatCurrency(private val currency: Currency) : Money {
     override val description: String get() = currency.displayName
     override val displayTokenSize: BigDecimal get() = BigDecimal.ONE.scaleByPowerOfTen(-currency.defaultFractionDigits)
     override fun toString(): String = symbol
+
+    companion object {
+        // Uses the java currency registry.
+        fun getInstance(currencyCode: String) = FiatCurrency(Currency.getInstance(currencyCode))
+    }
 }
 
 /** A representation of digital currency. This implementation somewhat mirrors that of [Currency]. */

@@ -1,6 +1,7 @@
 package com.r3.corda.finance.obligation.app
 
 import com.r3.corda.finance.obligation.types.DigitalCurrency
+import com.r3.corda.finance.obligation.types.FiatCurrency
 import javafx.collections.ObservableList
 import javafx.util.StringConverter
 import net.corda.client.jfx.model.Models
@@ -68,8 +69,8 @@ fun formatAmount(amount: Amount<*>): String {
             val quantity = BigDecimal.valueOf(amount.quantity, 0) * token.displayTokenSize
             "$symbol $quantity"
         }
-        is Currency -> amount.toString()
-        else -> throw UnsupportedOperationException("Only Currency and DigitalCurrency are supported by the " +
+        is FiatCurrency -> amount.toString()
+        else -> throw UnsupportedOperationException("Only FiatCurrency and DigitalCurrency are supported by the " +
                 "Corda settler UI.")
     }
 }

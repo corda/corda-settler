@@ -18,7 +18,7 @@ class LoginView : View("Login to the Corda Settler") {
     private val loginController: LoginController by inject()
 
     override val root = form {
-        fieldset("Host and port") {
+        fieldset("Corda node host and port") {
             field {
                 textfield(host) {
                     required()

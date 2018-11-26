@@ -55,11 +55,11 @@ enum class Role { OBLIGOR, OBLIGEE }
 //    // Resolve identities.
 //    val resolver = { abstractParty: AbstractParty -> cordaRpcOps.wellKnownPartyFromAnonymous(abstractParty)!! }
 //    val wellKnown = withWellKnownIdentities(resolver)
-//    val us = cordaRpcOps.nodeInfo().legalIdentities.first()
+//    val ourNodeinfo = cordaRpcOps.nodeInfo().legalIdentities.first()
 //
 //    // Determine counterparty and who is obligor.
-//    val counterparty = if (wellKnown.obligor == us) wellKnown.obligee else wellKnown.obligor
-//    val isPayer = if (wellKnown.obligor == us) Role.OBLIGOR else Role.OBLIGEE
+//    val counterparty = if (wellKnown.obligor == ourNodeinfo) wellKnown.obligee else wellKnown.obligor
+//    val isPayer = if (wellKnown.obligor == ourNodeinfo) Role.OBLIGOR else Role.OBLIGEE
 //
 //    // Return an obligation model.
 //    return ObligationContract(linearId, faceAmount, counterparty as Party, isPayer, settlementStatus, settlementMethod)

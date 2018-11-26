@@ -1,6 +1,6 @@
 package com.r3.corda.finance.obligation.app
 
-import com.r3.corda.finance.obligation.DigitalCurrency
+import com.r3.corda.finance.obligation.types.DigitalCurrency
 import javafx.collections.ObservableList
 import javafx.util.StringConverter
 import net.corda.client.jfx.model.Models

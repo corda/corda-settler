@@ -1,14 +1,16 @@
 package com.r3.corda.finance.ripple.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.Money
-import com.r3.corda.finance.obligation.OffLedgerPayment
-import com.r3.corda.finance.obligation.PaymentStatus
+import com.r3.corda.finance.obligation.USD
+import com.r3.corda.finance.obligation.types.Money
 import com.r3.corda.finance.obligation.client.flows.MakeOffLedgerPayment
 import com.r3.corda.finance.obligation.states.Obligation
+import com.r3.corda.finance.obligation.types.OffLedgerPayment
+import com.r3.corda.finance.obligation.types.PaymentStatus
 import com.r3.corda.finance.ripple.services.XRPService
 import com.r3.corda.finance.ripple.types.*
 import com.r3.corda.finance.ripple.utilities.DEFAULT_XRP_FEE
+import com.r3.corda.finance.ripple.utilities.XRP
 import com.r3.corda.finance.ripple.utilities.toXRPAmount
 import com.r3.corda.finance.ripple.utilities.toXRPHash
 import com.ripple.core.coretypes.uint.UInt32
@@ -16,6 +18,7 @@ import net.corda.core.contracts.Amount
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.crypto.SecureHash
 import net.corda.core.flows.FlowException
+import java.math.BigDecimal
 import java.time.Duration
 import com.ripple.core.coretypes.Amount as RippleAmount
 

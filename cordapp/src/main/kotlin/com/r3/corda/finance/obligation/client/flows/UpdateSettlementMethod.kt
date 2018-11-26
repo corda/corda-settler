@@ -1,9 +1,10 @@
 package com.r3.corda.finance.obligation.client.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.Money
-import com.r3.corda.finance.obligation.SettlementMethod
+import com.r3.corda.finance.obligation.types.Money
+import com.r3.corda.finance.obligation.types.SettlementMethod
 import com.r3.corda.finance.obligation.client.getLinearStateById
+import com.r3.corda.finance.obligation.client.resolver
 import com.r3.corda.finance.obligation.commands.ObligationCommands
 import com.r3.corda.finance.obligation.contracts.ObligationContract
 import com.r3.corda.finance.obligation.states.Obligation
@@ -44,10 +45,7 @@ class UpdateSettlementMethod(
         val obligation = obligationStateAndRef.state.data
 
         // 2. This flow should only be started by the beneficiary.
-        val identityResolver = { abstractParty: AbstractParty ->
-            serviceHub.identityService.requireWellKnownPartyFromAnonymous(abstractParty)
-        }
-        val obligee = obligation.withWellKnownIdentities(identityResolver).obligee
+        val obligee = obligation.withWellKnownIdentities(resolver).obligee
         check(ourIdentity == obligee) { "This flow can only be started by the obligee. " }
 
         // 3. Add settlement instructions.

@@ -1,6 +1,6 @@
 package com.r3.corda.finance.obligation.app.views
 
-import com.r3.corda.finance.obligation.DigitalCurrency
+import com.r3.corda.finance.obligation.types.DigitalCurrency
 import com.r3.corda.finance.obligation.app.PartyNameFormatter
 import com.r3.corda.finance.obligation.app.singleIdentityAndCert
 import com.r3.corda.finance.obligation.app.stringConverter

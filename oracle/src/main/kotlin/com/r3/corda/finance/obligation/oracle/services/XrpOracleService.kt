@@ -1,14 +1,11 @@
 package com.r3.corda.finance.obligation.oracle.services
 
-import com.r3.corda.finance.obligation.DigitalCurrency
-import com.r3.corda.finance.obligation.Payment
-import com.r3.corda.finance.obligation.PaymentStatus
-import com.r3.corda.finance.obligation.SettlementMethod
+import com.r3.corda.finance.obligation.types.DigitalCurrency
 import com.r3.corda.finance.obligation.oracle.flows.VerifySettlement
 import com.r3.corda.finance.obligation.states.Obligation
 import com.r3.corda.finance.ripple.services.XRPClientForVerification
+import com.r3.corda.finance.ripple.types.TransactionNotFoundException
 import com.r3.corda.finance.ripple.types.XrpPayment
-import com.r3.corda.finance.ripple.types.XrpSettlement
 import com.r3.corda.finance.ripple.utilities.hasSucceeded
 import com.r3.corda.finance.ripple.utilities.toXRPAmount
 import com.typesafe.config.ConfigFactory
@@ -45,7 +42,14 @@ class XrpOracleService(val services: AppServiceHub) : SingletonSerializeAsToken(
             obligation: Obligation<DigitalCurrency>
     ): Boolean {
         // Query all the ripple nodes.
-        val results = clientsForVerification.map { client -> client.transaction(xrpPayment.paymentReference) }
+        val results = clientsForVerification.map { client ->
+            try {
+                client.transaction(xrpPayment.paymentReference)
+            } catch (e: TransactionNotFoundException) {
+                // The transaction is not recognised by the Oracle.
+                return false
+            }
+        }
         // All nodes should report the same result.
         val destinationCorrect = results.all { it.destination == obligation.settlementMethod?.accountToPay }
         val amountCorrect = results.all { it.amount == xrpPayment.amount.toXRPAmount() }

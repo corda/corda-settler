@@ -1,10 +1,9 @@
 package com.r3.corda.finance.obligation.client.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.Money
-import com.r3.corda.finance.obligation.OffLedgerPayment
-import com.r3.corda.finance.obligation.Payment
-import com.r3.corda.finance.obligation.PaymentReference
+import com.r3.corda.finance.obligation.types.Money
+import com.r3.corda.finance.obligation.types.OffLedgerPayment
+import com.r3.corda.finance.obligation.types.Payment
 import com.r3.corda.finance.obligation.flows.AbstractMakeOffLedgerPayment
 import com.r3.corda.finance.obligation.states.Obligation
 import net.corda.core.contracts.Amount

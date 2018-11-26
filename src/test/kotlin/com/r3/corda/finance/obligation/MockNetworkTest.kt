@@ -1,9 +1,14 @@
 package com.r3.corda.finance.obligation
 
 import com.r3.corda.finance.obligation.client.flows.CreateObligation
+import com.r3.corda.finance.obligation.client.flows.NovateObligation
 import com.r3.corda.finance.obligation.client.flows.OffLedgerSettleObligation
 import com.r3.corda.finance.obligation.client.flows.UpdateSettlementMethod
+import com.r3.corda.finance.obligation.commands.ObligationCommands
 import com.r3.corda.finance.obligation.states.Obligation
+import com.r3.corda.finance.obligation.types.DigitalCurrency
+import com.r3.corda.finance.obligation.types.Money
+import com.r3.corda.finance.obligation.types.SettlementMethod
 import net.corda.core.concurrent.CordaFuture
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.LinearState
@@ -67,6 +72,17 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
     ): CordaFuture<SignedTransaction> {
         return transaction {
             val flow = CreateObligation.Initiator(faceAmount, role, counterparty.legalIdentity())
+            startFlow(flow)
+        }
+    }
+
+    /** Novate an obligation. */
+    fun StartedMockNode.novateObligation(
+            linearId: UniqueIdentifier,
+            novationCommand: ObligationCommands.Novate
+    ): CordaFuture<SignedTransaction> {
+        return transaction {
+            val flow = NovateObligation.Initiator(linearId, novationCommand)
             startFlow(flow)
         }
     }

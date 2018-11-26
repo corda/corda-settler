@@ -1,14 +1,14 @@
 package com.r3.corda.finance.obligation.oracle.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.DigitalCurrency
-import com.r3.corda.finance.obligation.PaymentStatus
-import com.r3.corda.finance.obligation.SettlementOracleResult
+import com.r3.corda.finance.obligation.types.SettlementOracleResult
 import com.r3.corda.finance.obligation.commands.ObligationCommands
 import com.r3.corda.finance.obligation.contracts.ObligationContract
 import com.r3.corda.finance.obligation.flows.AbstractSendToSettlementOracle
 import com.r3.corda.finance.obligation.oracle.services.XrpOracleService
 import com.r3.corda.finance.obligation.states.Obligation
+import com.r3.corda.finance.obligation.types.DigitalCurrency
+import com.r3.corda.finance.obligation.types.PaymentStatus
 import com.r3.corda.finance.ripple.types.XrpPayment
 import com.r3.corda.finance.ripple.types.XrpSettlement
 import net.corda.core.contracts.StateAndRef
@@ -69,11 +69,20 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
         val obligationStateAndRef = subFlow(ReceiveStateAndRefFlow<Obligation<DigitalCurrency>>(otherSession)).single()
         val obligation = obligationStateAndRef.state.data
         val settlementMethod = obligation.settlementMethod
+
         // 2. Check there are settlement instructions.
-        check(settlementMethod != null) { "This obligation has no settlement method." }
+        if (settlementMethod == null) {
+            otherSession.send(SettlementOracleResult.Failure(null, "The obligation has no settlement method." ))
+            return
+        }
+
         // 3. As payments are appended to the end of the payments list, we assume we are only checking the last
         // payment. The obligation is sent to the settlement Oracle for EACH payment, so everyone does get checked.
-        val lastPayment = obligation.payments.last() as XrpPayment<DigitalCurrency>
+        val payments = obligation.payments
+        val lastPayment = if (payments.isEmpty()) {
+            otherSession.send(SettlementOracleResult.Failure(null, "No payments have been made for this obligation."))
+            return
+        } else obligation.payments.last() as XrpPayment<DigitalCurrency>
 
         // 4. Handle different settlement methods.
         val verifyResult = when (settlementMethod) {

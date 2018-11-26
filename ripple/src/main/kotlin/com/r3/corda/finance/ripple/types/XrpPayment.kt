@@ -1,6 +1,9 @@
 package com.r3.corda.finance.ripple.types
 
-import com.r3.corda.finance.obligation.*
+import com.r3.corda.finance.obligation.types.Money
+import com.r3.corda.finance.obligation.types.Payment
+import com.r3.corda.finance.obligation.types.PaymentReference
+import com.r3.corda.finance.obligation.types.PaymentStatus
 import net.corda.core.contracts.Amount
 
 /** Represents a payment of XRP. */

@@ -1,6 +1,6 @@
 package com.r3.corda.finance.obligation.commands
 
-import com.r3.corda.finance.obligation.Money
+import com.r3.corda.finance.obligation.types.Money
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.CommandData
 import net.corda.core.contracts.TypeOnlyCommandData

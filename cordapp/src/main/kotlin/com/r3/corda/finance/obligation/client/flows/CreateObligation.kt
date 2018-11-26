@@ -1,7 +1,7 @@
 package com.r3.corda.finance.obligation.client.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.Money
+import com.r3.corda.finance.obligation.types.Money
 import com.r3.corda.finance.obligation.commands.ObligationCommands
 import com.r3.corda.finance.obligation.contracts.ObligationContract
 import com.r3.corda.finance.obligation.states.Obligation
@@ -121,7 +121,7 @@ object CreateObligation {
                 @Suspendable
                 override fun checkTransaction(stx: SignedTransaction) {
                     // TODO: Do some basic checking here.
-                    // Rach out to human operator when HCI is available.
+                    // Reach out to human operator when HCI is available.
                 }
             }
             val stx = subFlow(flow)

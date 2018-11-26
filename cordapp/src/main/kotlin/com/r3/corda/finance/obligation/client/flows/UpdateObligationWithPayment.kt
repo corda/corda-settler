@@ -1,14 +1,13 @@
 package com.r3.corda.finance.obligation.client.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.Money
-import com.r3.corda.finance.obligation.Payment
-import com.r3.corda.finance.obligation.PaymentReference
+import com.r3.corda.finance.obligation.types.Money
+import com.r3.corda.finance.obligation.types.Payment
 import com.r3.corda.finance.obligation.client.getLinearStateById
+import com.r3.corda.finance.obligation.client.resolver
 import com.r3.corda.finance.obligation.commands.ObligationCommands
 import com.r3.corda.finance.obligation.contracts.ObligationContract
 import com.r3.corda.finance.obligation.states.Obligation
-import net.corda.core.contracts.Amount
 import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.FlowException
@@ -28,10 +27,7 @@ class UpdateObligationWithPayment<T : Money>(val linearId: UniqueIdentifier, val
         val obligation = obligationStateAndRef.state.data
 
         // 2. This flow should only be started by the beneficiary.
-        val identityResolver = { abstractParty: AbstractParty ->
-            serviceHub.identityService.requireWellKnownPartyFromAnonymous(abstractParty)
-        }
-        val obligor = obligation.withWellKnownIdentities(identityResolver).obligor
+        val obligor = obligation.withWellKnownIdentities(resolver).obligor
         check(ourIdentity == obligor) { "This flow can only be started by the obligor. " }
 
         // 3. Add payment to obligation.

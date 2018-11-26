@@ -1,9 +1,10 @@
 package com.r3.corda.finance.obligation.states
 
-import com.r3.corda.finance.obligation.Money
-import com.r3.corda.finance.obligation.Payment
-import com.r3.corda.finance.obligation.PaymentStatus
-import com.r3.corda.finance.obligation.SettlementMethod
+import com.r3.corda.finance.obligation.USD
+import com.r3.corda.finance.obligation.types.Money
+import com.r3.corda.finance.obligation.types.Payment
+import com.r3.corda.finance.obligation.types.PaymentStatus
+import com.r3.corda.finance.obligation.types.SettlementMethod
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.LinearState
 import net.corda.core.contracts.UniqueIdentifier
@@ -11,7 +12,10 @@ import net.corda.core.crypto.toStringShort
 import net.corda.core.identity.AbstractParty
 import net.corda.core.identity.Party
 import net.corda.core.serialization.CordaSerializable
+import net.corda.finance.GBP
 import java.time.Instant
+import kotlin.reflect.KProperty
+import kotlin.reflect.KProperty1
 
 /**
  * Obligation Settlement Assumptions:
@@ -42,6 +46,8 @@ data class Obligation<T : Money>(
         val obligee: AbstractParty,
         /** When the obligation should be paid by. May not always be required. */
         val dueBy: Instant? = null,
+        /** The time when the obligation was created. */
+        val createdAt: Instant = Instant.now(),
         /** Settlement methods the obligee will accept: On ledger, off ledger (crypto, swift, PISP, paypal, etc.). */
         val settlementMethod: SettlementMethod? = null,
         /** The obligation can be paid in parts. This lists all payments in respect of this obligation */
@@ -95,9 +101,9 @@ data class Obligation<T : Money>(
         }
     }
 
-    fun <U : Money> withFaceValueToken(newToken: U): Obligation<U> {
+    fun <U : Money> withNewFaceValueToken(newAmount: Amount<U>): Obligation<U> {
         return if (payments.isEmpty()) {
-            Obligation(Amount(faceAmount.quantity, newToken), obligor, obligee, dueBy, settlementMethod, emptyList())
+            Obligation(newAmount, obligor, obligee, dueBy, createdAt, settlementMethod, emptyList())
         } else {
             throw IllegalStateException("The faceValue token type cannot be updated after payments have been made.")
         }
@@ -132,7 +138,7 @@ data class Obligation<T : Money>(
     override fun toString(): String {
         val obligeeString = (obligee as? Party)?.name?.organisation ?: obligee.owningKey.toStringShort().substring(0, 10)
         val obligorString = (obligor as? Party)?.name?.organisation ?: obligor.owningKey.toStringShort().substring(0, 10)
-        return "${settlementStatus} Obligation($linearId): $obligorString owes $obligeeString $faceAmount ($amountPaid paid)."
+        return "$settlementStatus Obligation($linearId): $obligorString owes $obligeeString $faceAmount ($amountPaid paid)."
     }
 
 }

@@ -1,9 +1,8 @@
 package com.r3.corda.finance.obligation.flows
 
+import com.r3.corda.finance.obligation.types.FxRateResponse
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.InitiatingFlow
-import net.corda.core.transactions.SignedTransaction
 
 @InitiatingFlow
-abstract class AbstractSendToSettlementOracle : FlowLogic<SignedTransaction>()
-
+abstract class AbstractGetFxRate : FlowLogic<FxRateResponse>()

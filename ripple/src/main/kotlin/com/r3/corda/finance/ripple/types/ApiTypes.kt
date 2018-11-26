@@ -100,7 +100,7 @@ data class TransactionInfoResponse(
         @JsonProperty("validated") val validated: Boolean
 )
 
-/** Server status. */
+/** Server settlementStatus. */
 
 data class ServerStateResponseObject(@JsonProperty("result") override val result: ServerStateResponse) : ResultObject
 

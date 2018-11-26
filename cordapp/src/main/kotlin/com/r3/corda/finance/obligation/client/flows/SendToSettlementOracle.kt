@@ -1,11 +1,11 @@
 package com.r3.corda.finance.obligation.client.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.OffLedgerSettlementInstructions
-import com.r3.corda.finance.obligation.contracts.Obligation
+import com.r3.corda.finance.obligation.types.OffLedgerPayment
+import com.r3.corda.finance.obligation.types.SettlementOracleResult
+import com.r3.corda.finance.obligation.client.getLinearStateById
 import com.r3.corda.finance.obligation.flows.AbstractSendToSettlementOracle
-import com.r3.corda.finance.obligation.flows.OracleResult
-import com.r3.corda.finance.obligation.getLinearStateById
+import com.r3.corda.finance.obligation.states.Obligation
 import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.SendStateAndRefFlow
@@ -19,25 +19,25 @@ class SendToSettlementOracle(val linearId: UniqueIdentifier) : AbstractSendToSet
     @Suspendable
     override fun call(): SignedTransaction {
         // Resolve the linearId to an obligation.
-        val obligationStateAndRef = getLinearStateById<Obligation.State<*>>(linearId, serviceHub)
+        val obligationStateAndRef = getLinearStateById<Obligation<*>>(linearId, serviceHub)
                 ?: throw IllegalArgumentException("LinearId not recognised.")
 
         // Get the Oracle from the settlement instructions.
         val obligationState = obligationStateAndRef.state.data
-        val settlementInstructions = obligationState.settlementInstructions as OffLedgerSettlementInstructions<*>
+        val settlementMethod = obligationState.settlementMethod as OffLedgerPayment<*>
 
-        // Send the Oracle the Obligation state.
-        val session = initiateFlow(settlementInstructions.settlementOracle)
+        // Send the Oracle the ObligationContract state.
+        val session = initiateFlow(settlementMethod.settlementOracle)
         subFlow(SendStateAndRefFlow(session, listOf(obligationStateAndRef)))
 
         // Receive a SignedTransaction from the oracle that exits the obligation, or throw an exception if we timed out.
-        return session.receive<OracleResult>().unwrap {
+        return session.receive<SettlementOracleResult>().unwrap {
             when (it) {
-                is OracleResult.Success -> {
+                is SettlementOracleResult.Success -> {
                     val stx = it.stx
                     subFlow(FinalityFlow(stx))
                 }
-                is OracleResult.Failure -> {
+                is SettlementOracleResult.Failure -> {
                     throw IllegalStateException(it.message)
                 }
             }

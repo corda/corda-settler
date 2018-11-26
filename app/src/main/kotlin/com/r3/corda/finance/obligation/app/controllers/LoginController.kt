@@ -7,6 +7,7 @@ import com.r3.corda.finance.obligation.app.views.LoginView
 import com.r3.corda.finance.obligation.app.views.MainView
 import javafx.beans.property.SimpleStringProperty
 import net.corda.client.rpc.RPCException
+import org.apache.activemq.artemis.api.core.ActiveMQConnectionTimedOutException
 import org.apache.activemq.artemis.api.core.ActiveMQSecurityException
 import tornadofx.*
 
@@ -28,6 +29,9 @@ class LoginController : Controller() {
             return
         } catch (e: ActiveMQSecurityException) {
             runLater { status = "Username or password incorrect." }
+            return
+        } catch (e: ActiveMQConnectionTimedOutException) {
+            runLater { status = "Connection attempt timed out." }
             return
         } catch (e: IllegalArgumentException) {
             runLater { status = e.message }

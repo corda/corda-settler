@@ -1,3 +1,5 @@
+package com.r3.corda.finance.obligation.app.old
+
 //package com.r3.corda.finance.obligation.app
 //
 //import net.corda.core.crypto.SecureHash
@@ -36,7 +38,7 @@
 //    // 1. Create a new payment.
 //    val payment = rippleClient.createPayment(
 //            source = rippleClient.address,
-//            destination = (obligationModel.settlementInstructions as XRPSettlementInstructions).accountToPay,
+//            destination = (obligationModel.settlementMethod as XrpSettlement).accountToPay,
 //            amount = obligationModel.amount.toXRPAmount(),
 //            fee = DEFAULT_XRP_FEE,
 //            linearId = SecureHash.sha256(obligationModel.linearId.id.toString()).toXRPHash()

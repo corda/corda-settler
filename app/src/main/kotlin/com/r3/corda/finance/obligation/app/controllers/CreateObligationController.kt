@@ -11,6 +11,10 @@ import net.corda.core.messaging.CordaRPCOps
 import net.corda.core.utilities.getOrThrow
 import tornadofx.*
 import java.math.BigDecimal
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.ZoneOffset
 
 class CreateObligationController : Controller() {
 
@@ -31,7 +35,14 @@ class CreateObligationController : Controller() {
         }
     }
 
-    fun createObligation(quantity: Number, currency: String, role: String, counterparty: Party, anonymous: Boolean) {
+    fun createObligation(
+            quantity: Number,
+            currency: String,
+            role: String,
+            dueBy: LocalDate,
+            counterparty: Party,
+            anonymous: Boolean
+    ) {
         runLater { status = "" }
 
         val tokenType = parseToken(currency)
@@ -48,6 +59,7 @@ class CreateObligationController : Controller() {
                     amount,
                     CreateObligation.InitiatorRole.valueOf(role.toUpperCase()),
                     counterparty,
+                    dueBy.atStartOfDay(ZoneOffset.UTC).toInstant(),
                     anonymous
             ).returnValue.getOrThrow()
         } catch(e: Exception) {
@@ -56,8 +68,8 @@ class CreateObligationController : Controller() {
             return
         }
         runLater {
-            val truncatedHash = flowResult.tx.id.toString().substring(0, 5)
-            status = "Obligation created with hash $truncatedHash..."
+            val truncatedHash = flowResult.tx.id.toString().substring(0, 20)
+            status = "Obligation created with hash\n $truncatedHash..."
         }
     }
 

@@ -18,6 +18,7 @@ import net.corda.core.contracts.Amount
 import net.corda.core.identity.Party
 import net.corda.core.messaging.CordaRPCOps
 import tornadofx.*
+import java.time.LocalDate
 
 class CreateObligationView : View("Add Obligation") {
     val cordaRpcOps: CordaRPCOps by param()
@@ -28,12 +29,13 @@ class CreateObligationView : View("Add Obligation") {
     private val model = ViewModel()
     private val quantity = model.bind { SimpleDoubleProperty() }
     private val currency = model.bind { SimpleStringProperty() }
+    private val dueBy = model.bind { SimpleObjectProperty<LocalDate>() }
     private val role = model.bind { SimpleStringProperty() }
     private val counterparty = model.bind { SimpleObjectProperty<Party>() }
     private val anonymous = model.bind { SimpleBooleanProperty() }
 
     override val root = form {
-        fieldset("Face Amount") {
+        fieldset("Face amount") {
             field {
                 combobox<String>(currency) {
                     // TODO: Get currencies from some service.
@@ -46,6 +48,11 @@ class CreateObligationView : View("Add Obligation") {
                     filterInput { it.controlNewText.isDouble() }
                     maxWidth = 98.0
                 }
+            }
+        }
+        fieldset("Due by") {
+            datepicker(dueBy) {
+                value = LocalDate.now()
             }
         }
         fieldset {
@@ -84,6 +91,7 @@ class CreateObligationView : View("Add Obligation") {
                             currency = currency.value,
                             quantity = quantity.value,
                             role = role.value,
+                            dueBy = dueBy.value,
                             counterparty = counterparty.value,
                             anonymous = anonymous.value
                     )
@@ -91,12 +99,13 @@ class CreateObligationView : View("Add Obligation") {
             }
         }
         label(createObligationController.statusProperty) {
+            isWrapText = true
             style {
                 fontWeight = FontWeight.BLACK
                 textFill = Color.RED
                 paddingTop = 10
+                minHeight = 40.px
             }
         }
-
     }
 }

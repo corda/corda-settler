@@ -1,7 +1,9 @@
 package com.r3.corda.finance.obligation.app
 
-import com.r3.corda.finance.obligation.types.DigitalCurrency
-import com.r3.corda.finance.obligation.types.FiatCurrency
+import com.r3.corda.finance.obligation.app.models.UiObligation
+import com.r3.corda.finance.obligation.types.*
+import com.r3.corda.finance.ripple.types.XrpSettlement
+import javafx.beans.property.SimpleStringProperty
 import javafx.collections.ObservableList
 import javafx.util.StringConverter
 import net.corda.client.jfx.model.Models
@@ -12,6 +14,7 @@ import net.corda.core.contracts.Amount
 import net.corda.core.contracts.ContractState
 import net.corda.core.identity.AbstractParty
 import net.corda.core.identity.CordaX500Name
+import net.corda.core.identity.Party
 import net.corda.core.identity.PartyAndCertificate
 import net.corda.core.messaging.CordaRPCOps
 import net.corda.core.node.NodeInfo
@@ -35,13 +38,13 @@ fun connectToCordaRpc(hostAndPort: String, username: String, password: String): 
     return client.start(username, password).proxy
 }
 
-fun <T> stringConverter(fromStringFunction: ((String?) -> T)? = null, toStringFunction: (T) -> String): StringConverter<T> {
+fun <T> stringConverter(fromStringFunction: ((String?) -> T)? = null, toStringFunction: (T?) -> String): StringConverter<T> {
     return object : StringConverter<T>() {
         override fun fromString(string: String?): T {
             return fromStringFunction?.invoke(string) ?: throw UnsupportedOperationException("not implemented")
         }
 
-        override fun toString(o: T): String {
+        override fun toString(o: T?): String {
             return toStringFunction(o)
         }
     }
@@ -61,7 +64,8 @@ interface Formatter<in T> {
     fun format(value: T): String
 }
 
-fun formatAmount(amount: Amount<*>): String {
+fun formatAmount(amount: Amount<*>?): String {
+    if (amount == null) return ""
     val token = amount.token
     return when (token) {
         is DigitalCurrency -> {
@@ -69,8 +73,40 @@ fun formatAmount(amount: Amount<*>): String {
             val quantity = BigDecimal.valueOf(amount.quantity, 0) * token.displayTokenSize
             "$symbol $quantity"
         }
-        is FiatCurrency -> amount.toString()
+        is FiatCurrency -> {
+            val symbol = token.symbol
+            val quantity = BigDecimal.valueOf(amount.quantity, 0) * token.displayTokenSize
+            "$symbol $quantity"
+        }
         else -> throw UnsupportedOperationException("Only FiatCurrency and DigitalCurrency are supported by the " +
                 "Corda settler UI.")
     }
+}
+
+fun formatCounterparty(obligation: UiObligation?, us: Party): String {
+    if (obligation == null) return ""
+    val counterparty = if (obligation.obligor == us) {
+        obligation.obligee
+    } else obligation.obligor
+    return counterparty.nameOrNull().organisation
+}
+
+fun formatSettlementMethod(settlementMethod: SettlementMethod?): String {
+    if (settlementMethod == null) {
+        return "No settlement method added."
+    }
+    var output = ""
+    val clazz = settlementMethod::class.java
+    when {
+        clazz.isAssignableFrom(XrpSettlement::class.java) -> {
+            val xrpSettlement = settlementMethod as XrpSettlement
+            val accountToPay = xrpSettlement.accountToPay
+            val oracle = xrpSettlement.settlementOracle.name.organisation
+            output += "Settlement via XRP to $accountToPay using $oracle as settlement oracle."
+        }
+        clazz.isAssignableFrom(OnLedgerSettlement::class.java) -> {
+            output += "On ledger settlement."
+        }
+    }
+    return output
 }

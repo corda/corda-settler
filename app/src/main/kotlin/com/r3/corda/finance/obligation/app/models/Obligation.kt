@@ -1,66 +1,75 @@
 package com.r3.corda.finance.obligation.app.models
 
-class SettlementInstructions() {
+import com.r3.corda.finance.obligation.states.Obligation
+import com.r3.corda.finance.obligation.types.Payment
+import com.r3.corda.finance.obligation.types.SettlementMethod
+import javafx.beans.property.*
+import javafx.collections.ObservableList
+import net.corda.core.contracts.Amount
+import net.corda.core.contracts.UniqueIdentifier
+import net.corda.core.identity.Party
+import tornadofx.*
+import java.time.Instant
 
+class UiObligation(
+        linearId: UniqueIdentifier,
+        faceAmount: Amount<*>,
+        obligor: Party,
+        obligee: Party,
+        settlementStatus: Obligation.SettlementStatus,
+        createdAt: Instant? = null,
+        dueBy: Instant? = null,
+        settlementMethod: SettlementMethod? = null,
+        hasSettlementMethod: Boolean = false,
+        hasPayments: Boolean = false,
+        payments: List<Payment<*>> = emptyList()
+) {
+
+    val linearIdProperty = SimpleObjectProperty<UniqueIdentifier>(this, "linearId", linearId)
+    var linearId by linearIdProperty
+
+    val amountProperty = SimpleObjectProperty<Amount<*>>(this, "amount", faceAmount)
+    var amount by amountProperty
+
+    val obligorProperty = SimpleObjectProperty<Party>(this, "obligor", obligor)
+    var obligor by obligorProperty
+
+    val obligeeProperty = SimpleObjectProperty<Party>(this, "obligee", obligee)
+    var obligee by obligeeProperty
+
+    val statusProperty = SimpleObjectProperty<Obligation.SettlementStatus>(this, "settlementStatus", settlementStatus)
+    var settlementStatus by statusProperty
+
+    val createdAtProperty = SimpleObjectProperty<Instant>(this, "createdAt", createdAt)
+    var createdAt by createdAtProperty
+
+    val dueByProperty = SimpleObjectProperty<Instant>(this, "dueBy", dueBy)
+    var dueBy by dueByProperty
+
+    val settlementMethodProperty = SimpleObjectProperty<SettlementMethod>(this, "settlementMethod", settlementMethod)
+    var settlementMethod by settlementMethodProperty
+
+    val hasSettlementMethodProperty = SimpleBooleanProperty(this, "hasSettlementMethod", hasSettlementMethod)
+    var hasSettlementMethod by hasSettlementMethodProperty
+
+    val hasPaymentsProperty = SimpleBooleanProperty(this, "hasPayments", hasPayments)
+    var hasPayments by hasPaymentsProperty
+
+    val paymentsProperty = SimpleListProperty<Payment<*>>(this, "payments", payments.observable())
+    var payments by paymentsProperty
 }
 
-class SettlementInstructionsModel() {
-
-}
-
-enum class Role { OBLIGOR, OBLIGEE }
-
-/**
- * We are ignoring the "paid" property since obligations are either outstanding or fully paid. We are adding a "role"
- * property to indicate which party is the obligor/obligee.
- */
-//class ObligationModel(
-//        linearId: UniqueIdentifier,
-//        faceAmount: Amount<*>,
-//        counterparty: Party,
-//        role: Role,
-//        settlementStatus: SettlementStatus,
-//        settlementMethod: SettlementInstructions?
-//) {
-//
-//    val linearIdProperty = SimpleStringProperty()
-//    var linearId by linearIdProperty
-//
-//    val amountProperty = SimpleObjectProperty<Amount<*>>()
-//    var amount by amountProperty
-//
-//    val roleProperty = SimpleObjectProperty<Role>()
-//    var role by roleProperty
-//
-//    val counterpartyProperty = SimpleStringProperty()
-//    var counterparty by counterpartyProperty
-//
-//    val statusProperty = SimpleStringProperty()
-//    var settlementStatus by statusProperty
-//
-//    val settlementInstructionsProperty = SimpleObjectProperty<SettlementInstructions>()
-//    var settlementMethod by settlementInstructionsProperty
-//}
-
-//class ObligationModel : ItemViewModel<ObligationContract>() {
-//    val linearId = bind(ObligationContract::linearId)
-//    val amount = bind(ObligationContract::amount)
+class ObligationModel : ItemViewModel<UiObligation>() {
+    val linearId = bind(UiObligation::linearIdProperty)
+    val amount = bind(UiObligation::amountProperty)
 //    val paid = bind(ObligationContract::role)
-//    val counterparty = bind(ObligationContract::counterparty)
-//    val settlementStatus = bind(ObligationContract::settlementStatus)
-//    val settlementMethod = bind(ObligationContract::settlementMethod)
-//}
-//
-//fun ObligationContract.State<*>.toModel(cordaRpcOps: CordaRPCOps): ObligationContract {
-//    // Resolve identities.
-//    val resolver = { abstractParty: AbstractParty -> cordaRpcOps.wellKnownPartyFromAnonymous(abstractParty)!! }
-//    val wellKnown = withWellKnownIdentities(resolver)
-//    val ourNodeinfo = cordaRpcOps.nodeInfo().legalIdentities.first()
-//
-//    // Determine counterparty and who is obligor.
-//    val counterparty = if (wellKnown.obligor == ourNodeinfo) wellKnown.obligee else wellKnown.obligor
-//    val isPayer = if (wellKnown.obligor == ourNodeinfo) Role.OBLIGOR else Role.OBLIGEE
-//
-//    // Return an obligation model.
-//    return ObligationContract(linearId, faceAmount, counterparty as Party, isPayer, settlementStatus, settlementMethod)
-//}
+    val obligor = bind(UiObligation::obligorProperty)
+    val obligee = bind(UiObligation::obligeeProperty)
+    val settlementStatus = bind(UiObligation::statusProperty)
+    val createdAt = bind(UiObligation::createdAtProperty)
+    val dueBy = bind(UiObligation::dueByProperty)
+    val settlementMethod = bind(UiObligation::settlementMethodProperty)
+    val hasSettlementMethod = bind(UiObligation::hasSettlementMethodProperty)
+    val payments = bind(UiObligation::paymentsProperty)
+    val hasPayments = bind(UiObligation::hasPaymentsProperty)
+}

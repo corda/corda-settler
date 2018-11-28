@@ -14,6 +14,7 @@ import net.corda.core.serialization.CordaSerializable
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
+import net.corda.core.utilities.seconds
 import java.security.PublicKey
 import java.time.Instant
 import java.time.LocalDate
@@ -101,6 +102,7 @@ object CreateObligation {
                 addOutputState(obligation, ObligationContract.CONTRACT_REF)
                 val signers = obligation.participants.map { it.owningKey }
                 addCommand(ObligationCommands.Create(), signers)
+                setTimeWindow(serviceHub.clock.instant(), 30.seconds)
             }
 
             // Step 4. Sign the transaction.

@@ -143,7 +143,7 @@
 //        bottom {
 //            toolbar {
 //                button("Add obligation").action {
-//                    find<AddObligationView>().openModal(stageStyle = StageStyle.UTILITY)
+//                    find<CreateObligationView>().openModal(stageStyle = StageStyle.UTILITY)
 //                }
 //            }
 //        }

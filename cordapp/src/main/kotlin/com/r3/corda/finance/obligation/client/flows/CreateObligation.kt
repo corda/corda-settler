@@ -16,6 +16,9 @@ import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
 import net.corda.core.utilities.seconds
 import java.security.PublicKey
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneOffset
 
 object CreateObligation {
 
@@ -31,6 +34,7 @@ object CreateObligation {
             private val amount: Amount<T>,
             private val role: InitiatorRole,
             private val counterparty: Party,
+            private val dueBy: Instant? = null,
             private val anonymous: Boolean = true
     ) : FlowLogic<SignedTransaction>() {
 
@@ -66,8 +70,8 @@ object CreateObligation {
         private fun createObligation(us: AbstractParty, them: AbstractParty): Pair<Obligation<T>, PublicKey> {
             check(us != them) { "You cannot create an obligation to yourself" }
             val obligation = when (role) {
-                InitiatorRole.OBLIGEE -> Obligation(amount, them, us)
-                InitiatorRole.OBLIGOR -> Obligation(amount, us, them)
+                InitiatorRole.OBLIGEE -> Obligation(amount, them, us, dueBy)
+                InitiatorRole.OBLIGOR -> Obligation(amount, us, them, dueBy)
             }
             return Pair(obligation, us.owningKey)
         }
@@ -82,7 +86,15 @@ object CreateObligation {
                 createObligation(us = ourIdentity, them = counterparty)
             }
 
-            // Step 2. Building.
+            // Step 2. Check parameters.
+            if (dueBy != null) {
+                val todayUTC = LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC)
+                require(dueBy > todayUTC) {
+                    "Due by date must be in the future."
+                }
+            }
+
+            // Step 3. Building.
             progressTracker.currentStep = BUILDING
             val notary = serviceHub.networkMapCache.notaryIdentities.firstOrNull()
                     ?: throw FlowException("No available notary.")
@@ -93,11 +105,11 @@ object CreateObligation {
                 setTimeWindow(serviceHub.clock.instant(), 30.seconds)
             }
 
-            // Step 3. Sign the transaction.
+            // Step 4. Sign the transaction.
             progressTracker.currentStep = SIGNING
             val ptx = serviceHub.signInitialTransaction(utx, signingKey)
 
-            // Step 4. Get the counterparty signature.
+            // Step 5. Get the counterparty signature.
             progressTracker.currentStep = COLLECTING
             val lenderFlow = initiateFlow(counterparty)
             val stx = subFlow(CollectSignaturesFlow(
@@ -107,7 +119,7 @@ object CreateObligation {
                     progressTracker = COLLECTING.childProgressTracker())
             )
 
-            // Step 5. Finalise and return the transaction.
+            // Step 6. Finalise and return the transaction.
             progressTracker.currentStep = FINALISING
             return subFlow(FinalityFlow(stx, FINALISING.childProgressTracker()))
         }

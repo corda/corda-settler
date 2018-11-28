@@ -4,7 +4,7 @@ import com.r3.corda.finance.ripple.services.ReadWriteXRPClient
 import com.r3.corda.finance.ripple.services.XRPClientForVerification
 import com.r3.corda.finance.ripple.types.IncorrectSequenceNumberException
 import com.r3.corda.finance.ripple.types.TransactionNotFoundException
-import com.r3.corda.finance.ripple.utilities.Ripple
+import com.r3.corda.finance.ripple.utilities.XRP
 import com.r3.corda.finance.ripple.utilities.toXRPAmount
 import com.ripple.core.coretypes.AccountID
 import com.ripple.core.coretypes.Amount
@@ -96,8 +96,8 @@ class XrpClientTests {
 
     @Test
     fun `corda to ripple amount`() {
-        val oneDrop = CordaAmount.fromDecimal(BigDecimal("0.000001"), Ripple)
-        var cordaAmount = CordaAmount.zero(Ripple)
+        val oneDrop = CordaAmount.fromDecimal(BigDecimal("0.000001"), XRP)
+        var cordaAmount = CordaAmount.zero(XRP)
         (1..1000000).forEach { cordaAmount += oneDrop }
         val xrpAmount = cordaAmount.toXRPAmount()
         val normalisedCordaAmount = cordaAmount.displayTokenSize * BigDecimal.valueOf(cordaAmount.quantity)

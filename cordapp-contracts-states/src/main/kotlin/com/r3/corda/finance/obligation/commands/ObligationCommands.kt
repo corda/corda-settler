@@ -1,5 +1,9 @@
 package com.r3.corda.finance.obligation.commands
 
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.r3.corda.finance.obligation.types.DigitalCurrency
+import com.r3.corda.finance.obligation.types.FiatCurrency
 import com.r3.corda.finance.obligation.types.Money
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.CommandData
@@ -15,6 +19,17 @@ interface ObligationCommands : CommandData {
     class Create : ObligationCommands, TypeOnlyCommandData()
 
     /** Change the details of an obligation. */
+    @JsonTypeInfo(
+            use = JsonTypeInfo.Id.NAME,
+            include = JsonTypeInfo.As.PROPERTY,
+            property = "type"
+    )
+    @JsonSubTypes(
+            JsonSubTypes.Type(value = Novate.UpdateFaceAmountQuantity::class, name = "quantity"),
+            JsonSubTypes.Type(value = Novate.UpdateFaceAmountToken::class, name = "token"),
+            JsonSubTypes.Type(value = Novate.UpdateDueBy::class, name = "dueBy"),
+            JsonSubTypes.Type(value = Novate.UpdateParty::class, name = "party")
+    )
     sealed class Novate : ObligationCommands {
 
         /** Change the face value quantity of the obligation. */

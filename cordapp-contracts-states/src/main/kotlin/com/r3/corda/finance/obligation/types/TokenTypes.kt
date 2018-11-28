@@ -1,5 +1,9 @@
 package com.r3.corda.finance.obligation.types
 
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import net.corda.core.contracts.TokenizableAssetInfo
 import net.corda.core.serialization.CordaSerializable
 import net.corda.core.transactions.SignedTransaction
@@ -14,7 +18,16 @@ interface Fungible : TokenizableAssetInfo {
     val description: String
 }
 
-/** A common interface for all money-like states. */
+/** A common interface for all money-like token types. */
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        include = JsonTypeInfo.As.PROPERTY,
+        property = "type"
+)
+@JsonSubTypes(
+        JsonSubTypes.Type(value = FiatCurrency::class, name = "fiat"),
+        JsonSubTypes.Type(value = DigitalCurrency::class, name = "digital")
+)
 interface Money : Fungible
 
 /** A wrapper for currency as it doesn't implement our interfaces and adds specificity around the currency being fiat. */
@@ -23,6 +36,9 @@ data class FiatCurrency(private val currency: Currency) : Money {
     override val description: String get() = currency.displayName
     override val displayTokenSize: BigDecimal get() = BigDecimal.ONE.scaleByPowerOfTen(-currency.defaultFractionDigits)
     override fun toString(): String = symbol
+
+    @JsonCreator
+    constructor(@JsonProperty("currencyCode") currencyCode: String) : this(Currency.getInstance(currencyCode))
 
     companion object {
         // Uses the java currency registry.
@@ -37,6 +53,13 @@ data class DigitalCurrency(
         private val defaultFractionDigits: Int = 0
 ) : Money {
     override val displayTokenSize: BigDecimal get() = BigDecimal.ONE.scaleByPowerOfTen(-defaultFractionDigits)
+
+    @JsonCreator
+    constructor(@JsonProperty("currencyCode") currencyCode: String) : this(
+            DigitalCurrency.getInstance(currencyCode).symbol,
+            DigitalCurrency.getInstance(currencyCode).description,
+            DigitalCurrency.getInstance(currencyCode).defaultFractionDigits
+    )
 
     companion object {
         private val registry = mapOf(Pair("XRP", DigitalCurrency("XRP", "Ripple", 6)))

@@ -11,10 +11,13 @@ import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.SendStateAndRefFlow
 import net.corda.core.flows.StartableByRPC
 import net.corda.core.transactions.SignedTransaction
+import net.corda.core.utilities.ProgressTracker
 import net.corda.core.utilities.unwrap
 
 @StartableByRPC
 class SendToSettlementOracle(val linearId: UniqueIdentifier) : AbstractSendToSettlementOracle() {
+
+    override val progressTracker: ProgressTracker = ProgressTracker()
 
     @Suspendable
     override fun call(): SignedTransaction {

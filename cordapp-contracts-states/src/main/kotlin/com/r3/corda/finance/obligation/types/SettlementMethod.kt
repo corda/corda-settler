@@ -1,5 +1,6 @@
 package com.r3.corda.finance.obligation.types
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.r3.corda.finance.obligation.flows.AbstractMakeOffLedgerPayment
 import net.corda.core.identity.Party
 import net.corda.core.serialization.CordaSerializable
@@ -8,12 +9,16 @@ import java.time.Instant
 
 /** All settlement methods require some key or account that a payment must be made to. */
 @CordaSerializable
+@JsonTypeInfo(use= JsonTypeInfo.Id.CLASS, include= JsonTypeInfo.As.PROPERTY, property="_type")
 interface SettlementMethod {
     /** The public key, account number or whatever, that payment should be made to. */
     val accountToPay: Any
 }
 
-/** A simple fx rate type. TODO: Replace this with a proper library. */
+/**
+ * A simple fx rate type.
+ * TODO: Replace this with a proper fx library.
+ */
 @CordaSerializable
 data class FxRate(val baseCurrency: Money, val counterCurrency: Money, val time: Instant, val rate: Number)
 

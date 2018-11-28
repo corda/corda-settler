@@ -12,12 +12,15 @@ import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.StartableByRPC
 import net.corda.core.transactions.SignedTransaction
+import net.corda.core.utilities.ProgressTracker
 
 @StartableByRPC
 class OffLedgerSettleObligation<T : Money>(
         private val amount: Amount<T>,
         private val linearId: UniqueIdentifier
 ) : FlowLogic<SignedTransaction>() {
+
+    override val progressTracker: ProgressTracker = ProgressTracker()
 
     private fun getFlowInstance(
             settlementInstructions: OffLedgerPayment<*>,

@@ -1,6 +1,5 @@
 package com.r3.corda.finance.obligation.states
 
-import com.r3.corda.finance.obligation.USD
 import com.r3.corda.finance.obligation.types.Money
 import com.r3.corda.finance.obligation.types.Payment
 import com.r3.corda.finance.obligation.types.PaymentStatus
@@ -12,10 +11,7 @@ import net.corda.core.crypto.toStringShort
 import net.corda.core.identity.AbstractParty
 import net.corda.core.identity.Party
 import net.corda.core.serialization.CordaSerializable
-import net.corda.finance.GBP
 import java.time.Instant
-import kotlin.reflect.KProperty
-import kotlin.reflect.KProperty1
 
 /**
  * Obligation Settlement Assumptions:

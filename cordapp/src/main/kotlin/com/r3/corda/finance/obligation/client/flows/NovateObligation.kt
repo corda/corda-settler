@@ -15,6 +15,7 @@ import net.corda.core.flows.*
 import net.corda.core.identity.Party
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
+import net.corda.core.utilities.ProgressTracker
 import java.math.BigDecimal
 
 object NovateObligation {
@@ -25,6 +26,8 @@ object NovateObligation {
             val linearId: UniqueIdentifier,
             val novationCommand: ObligationCommands.Novate
     ) : FlowLogic<SignedTransaction>() {
+
+        override val progressTracker: ProgressTracker = ProgressTracker()
 
         @Suspendable
         fun handleUpdateFaceAmountToken(obligation: Obligation<Money>): Obligation<Money> {

@@ -16,9 +16,12 @@ import net.corda.core.flows.StartableByRPC
 import net.corda.core.identity.AbstractParty
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
+import net.corda.core.utilities.ProgressTracker
 
 @StartableByRPC
 class UpdateObligationWithPayment<T : Money>(val linearId: UniqueIdentifier, val paymentInformation: Payment<T>) : FlowLogic<SignedTransaction>() {
+
+    override val progressTracker: ProgressTracker = ProgressTracker()
 
     @Suspendable
     override fun call(): SignedTransaction {

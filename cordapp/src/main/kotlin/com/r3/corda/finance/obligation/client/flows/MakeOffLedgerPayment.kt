@@ -10,12 +10,15 @@ import net.corda.core.contracts.Amount
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.identity.AbstractParty
 import net.corda.core.transactions.SignedTransaction
+import net.corda.core.utilities.ProgressTracker
 
 abstract class MakeOffLedgerPayment<T : Money>(
         val amount: Amount<T>,
         private val obligationStateAndRef: StateAndRef<Obligation<*>>,
         open val settlementMethod: OffLedgerPayment<*>
 ) : AbstractMakeOffLedgerPayment() {
+
+    override val progressTracker: ProgressTracker = ProgressTracker()
 
     @Suspendable
     abstract fun checkBalance(requiredAmount: Amount<*>)

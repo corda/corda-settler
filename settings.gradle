@@ -2,5 +2,3 @@ include 'cordapp'
 include 'cordapp-contracts-states'
 include 'ripple'
 include 'oracle'
-include 'app'
-

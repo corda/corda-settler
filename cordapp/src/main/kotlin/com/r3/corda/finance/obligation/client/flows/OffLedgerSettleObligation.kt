@@ -26,7 +26,11 @@ class OffLedgerSettleObligation<T : Money>(
             override fun childProgressTracker() = MakeOffLedgerPayment.tracker()
         }
 
-        fun tracker() = ProgressTracker(INITIALISING, PAYING)
+        object SENDING : ProgressTracker.Step("Sending obligation to settlement oracle.") {
+            override fun childProgressTracker() = SendToSettlementOracle.tracker()
+        }
+
+        fun tracker() = ProgressTracker(INITIALISING, PAYING, SENDING)
     }
 
     override val progressTracker: ProgressTracker = tracker()
@@ -37,10 +41,16 @@ class OffLedgerSettleObligation<T : Money>(
             progressTracker: ProgressTracker
     ): FlowLogic<SignedTransaction> {
         val paymentFlowClass = settlementInstructions.paymentFlow
+
+        check(MakeOffLedgerPayment::class.java.isAssignableFrom(paymentFlowClass)) {
+            "Specified payment flow does not sub-class MakeOffLedgerPayment. Aborting..."
+        }
+
         val paymentFlowClassConstructor = paymentFlowClass.getDeclaredConstructor(
                 Amount::class.java,
                 StateAndRef::class.java,
-                OffLedgerPayment::class.java
+                OffLedgerPayment::class.java,
+                ProgressTracker::class.java
         )
         return paymentFlowClassConstructor.newInstance(
                 amount,
@@ -68,7 +78,7 @@ class OffLedgerSettleObligation<T : Money>(
 
         // Checks the payment settled.
         // We only supply the linear ID because this flow can be called from the shell on its own.
-        return subFlow(SendToSettlementOracle(linearId))
+        return subFlow(SendToSettlementOracle(linearId, SENDING.childProgressTracker()))
     }
 
 }

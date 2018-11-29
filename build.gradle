@@ -155,6 +155,7 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
                 "$project.group:ripple:$project.version",
                 "$project.group:cordapp-contracts-states:$project.version",
                 "$project.group:oracle:$project.version",
+                "$project.group:cordapp:$project.version",
                 "$corda_release_group:corda-finance:$corda_release_version"
         ]
         rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]

@@ -1,6 +1,7 @@
 package com.r3.corda.finance.obligation
 
 import com.r3.corda.finance.obligation.client.flows.CreateObligation
+import com.r3.corda.finance.obligation.client.flows.MakeOffLedgerPayment
 import com.r3.corda.finance.obligation.client.flows.SendToSettlementOracle
 import com.r3.corda.finance.obligation.commands.ObligationCommands
 import com.r3.corda.finance.obligation.contracts.ObligationContract
@@ -8,6 +9,7 @@ import com.r3.corda.finance.obligation.states.Obligation
 import com.r3.corda.finance.obligation.types.DigitalCurrency
 import com.r3.corda.finance.obligation.types.Money
 import com.r3.corda.finance.obligation.types.PaymentStatus
+import com.r3.corda.finance.ripple.flows.MakeXrpPayment
 import com.r3.corda.finance.ripple.services.XRPService
 import com.r3.corda.finance.ripple.types.XrpPayment
 import com.r3.corda.finance.ripple.types.XrpSettlement
@@ -15,6 +17,9 @@ import com.r3.corda.finance.ripple.utilities.XRP
 import com.ripple.core.coretypes.AccountID
 import net.corda.core.contracts.Amount
 import net.corda.core.flows.FinalityFlow
+import net.corda.core.node.services.Vault
+import net.corda.core.node.services.queryBy
+import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.getOrThrow
 import net.corda.testing.node.StartedMockNode
@@ -243,6 +248,22 @@ class ObligationTestsWithOracle : MockNetworkTest(numberOfNodes = 3) {
         assertFailsWith<IllegalStateException>("Payment wasn't made by the deadline.") {
             B.startFlow(SendToSettlementOracle(obligationId)).getOrThrow()
         }
+    }
+
+    @Test
+    fun `create obligation then cancel it`() {
+        // Create obligation.
+        val newTransaction = A.createObligation(10000.XRP, B, CreateObligation.InitiatorRole.OBLIGOR).getOrThrow()
+        val obligation = newTransaction.singleOutput<Obligation<DigitalCurrency>>()
+        val obligationId = obligation.linearId()
+
+        // Cancel it.
+        A.cancelObligation(obligationId).getOrThrow()
+
+        // Check the obligation state has been exited.
+        val query = QueryCriteria.LinearStateQueryCriteria(linearId = listOf(obligationId), status = Vault.StateStatus.UNCONSUMED)
+        assertEquals(A.services.vaultService.queryBy<Obligation<Money>>(query).states.singleOrNull(), null)
+        assertEquals(B.services.vaultService.queryBy<Obligation<Money>>(query).states.singleOrNull(), null)
     }
 
 }

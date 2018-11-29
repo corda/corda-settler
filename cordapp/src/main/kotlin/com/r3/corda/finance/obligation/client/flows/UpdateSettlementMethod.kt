@@ -32,7 +32,7 @@ class UpdateSettlementMethod(
             override fun childProgressTracker() = FinalityFlow.tracker()
         }
 
-        fun tracker() = ProgressTracker(INITIALISING, BUILDING, SIGNING, FINALISING)
+        fun tracker() = ProgressTracker(INITIALISING, UPDATING, BUILDING, SIGNING, FINALISING)
     }
 
     override val progressTracker: ProgressTracker = tracker()

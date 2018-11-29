@@ -1,5 +1,6 @@
 package com.r3.corda.finance.ripple.services
 
+import com.typesafe.config.ConfigException
 import net.corda.core.node.AppServiceHub
 import net.corda.core.node.services.CordaService
 import net.corda.core.serialization.SingletonSerializeAsToken
@@ -9,5 +10,11 @@ import net.corda.core.serialization.SingletonSerializeAsToken
 class XRPService(val services: AppServiceHub) : SingletonSerializeAsToken() {
     // Config file defaulted to this name.
     private val configFileName = "xrp.conf"
-    val client: XRPClientForPayment by lazy { XRPClientForPayment(configFileName) }
+    val client: XRPClientForPayment by lazy {
+        try {
+            XRPClientForPayment(configFileName)
+        } catch (e: ConfigException) {
+            throw IllegalArgumentException(e)
+        }
+    }
 }

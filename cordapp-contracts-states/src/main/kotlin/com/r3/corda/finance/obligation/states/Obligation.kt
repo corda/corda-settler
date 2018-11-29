@@ -99,7 +99,7 @@ data class Obligation<T : Money>(
 
     fun <U : Money> withNewFaceValueToken(newAmount: Amount<U>): Obligation<U> {
         return if (payments.isEmpty()) {
-            Obligation(newAmount, obligor, obligee, dueBy, createdAt, settlementMethod, emptyList())
+            Obligation(newAmount, obligor, obligee, dueBy, createdAt, settlementMethod, emptyList(), linearId)
         } else {
             throw IllegalStateException("The faceValue token type cannot be updated after payments have been made.")
         }

@@ -24,6 +24,7 @@ class UpdateSettlementMethod(
 
     companion object {
         object INITIALISING : ProgressTracker.Step("Performing initial steps.")
+        object UPDATING : ProgressTracker.Step("Updating obligation with settlement method.")
         object BUILDING : ProgressTracker.Step("Building and verifying transaction.")
         object SIGNING : ProgressTracker.Step("signing transaction.")
 
@@ -49,6 +50,7 @@ class UpdateSettlementMethod(
         check(ourIdentity == obligee) { "This flow can only be started by the obligee. " }
 
         // 3. Add settlement instructions.
+        progressTracker.currentStep = UPDATING
         val obligationWithSettlementTerms = obligation.withSettlementMethod(settlementMethod)
 
         // 4. Build transaction which adds settlement terms.

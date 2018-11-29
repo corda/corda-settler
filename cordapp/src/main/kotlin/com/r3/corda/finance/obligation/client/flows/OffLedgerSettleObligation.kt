@@ -20,11 +20,21 @@ class OffLedgerSettleObligation<T : Money>(
         private val linearId: UniqueIdentifier
 ) : FlowLogic<SignedTransaction>() {
 
-    override val progressTracker: ProgressTracker = ProgressTracker()
+    companion object {
+        object INITIALISING : ProgressTracker.Step("Initialising off ledger payment.")
+        object PAYING : ProgressTracker.Step("Invoking payment flow.") {
+            override fun childProgressTracker() = MakeOffLedgerPayment.tracker()
+        }
+
+        fun tracker() = ProgressTracker(INITIALISING, PAYING)
+    }
+
+    override val progressTracker: ProgressTracker = tracker()
 
     private fun getFlowInstance(
             settlementInstructions: OffLedgerPayment<*>,
-            obligationStateAndRef: StateAndRef<Obligation<*>>
+            obligationStateAndRef: StateAndRef<Obligation<*>>,
+            progressTracker: ProgressTracker
     ): FlowLogic<SignedTransaction> {
         val paymentFlowClass = settlementInstructions.paymentFlow
         val paymentFlowClassConstructor = paymentFlowClass.getDeclaredConstructor(
@@ -32,20 +42,27 @@ class OffLedgerSettleObligation<T : Money>(
                 StateAndRef::class.java,
                 OffLedgerPayment::class.java
         )
-        return paymentFlowClassConstructor.newInstance(amount, obligationStateAndRef, settlementInstructions)
+        return paymentFlowClassConstructor.newInstance(
+                amount,
+                obligationStateAndRef,
+                settlementInstructions,
+                progressTracker
+        )
     }
 
     @Suspendable
     override fun call(): SignedTransaction {
         // The settlement instructions determine how this obligation should be settled.
+        progressTracker.currentStep = INITIALISING
         val obligationStateAndRef = getLinearStateById<Obligation<*>>(linearId, serviceHub)
                 ?: throw IllegalArgumentException("LinearId not recognised.")
         val obligationState = obligationStateAndRef.state.data
         val settlementMethod = obligationState.settlementMethod
 
+        progressTracker.currentStep = PAYING
         when (settlementMethod) {
             is OnLedgerSettlement -> throw IllegalStateException("ObligationContract to be settled on-ledger. Aborting...")
-            is OffLedgerPayment<*> -> subFlow(getFlowInstance(settlementMethod, obligationStateAndRef))
+            is OffLedgerPayment<*> -> subFlow(getFlowInstance(settlementMethod, obligationStateAndRef, PAYING.childProgressTracker()))
             else -> throw IllegalStateException("No settlement instructions added to obligation.")
         }
 

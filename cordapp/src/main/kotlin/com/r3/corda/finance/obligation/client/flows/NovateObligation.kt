@@ -27,7 +27,24 @@ object NovateObligation {
             val novationCommand: ObligationCommands.Novate
     ) : FlowLogic<SignedTransaction>() {
 
-        override val progressTracker: ProgressTracker = ProgressTracker()
+        companion object {
+            object INITIALISING : ProgressTracker.Step("Performing initial steps.")
+            object HANDLING : ProgressTracker.Step("Handling novation command.")
+            object BUILDING : ProgressTracker.Step("Building and verifying transaction.")
+            object SIGNING : ProgressTracker.Step("signing transaction.")
+
+            object COLLECTING : ProgressTracker.Step("Collecting counterparty signature.") {
+                override fun childProgressTracker() = CollectSignaturesFlow.tracker()
+            }
+
+            object FINALISING : ProgressTracker.Step("Finalising transaction.") {
+                override fun childProgressTracker() = FinalityFlow.tracker()
+            }
+
+            fun tracker() = ProgressTracker(INITIALISING, HANDLING, BUILDING, SIGNING, COLLECTING, FINALISING)
+        }
+
+        override val progressTracker: ProgressTracker = tracker()
 
         @Suspendable
         fun handleUpdateFaceAmountToken(obligation: Obligation<Money>): Obligation<Money> {
@@ -61,12 +78,15 @@ object NovateObligation {
         @Suspendable
         override fun call(): SignedTransaction {
             // Get the obligation from our vault.
+            progressTracker.currentStep = INITIALISING
             val obligationStateAndRef = getLinearStateById<Obligation<Money>>(linearId, serviceHub)
                     ?: throw IllegalArgumentException("LinearId not recognised.")
             // Generate output and required signers list based based upon supplied command.
+            progressTracker.currentStep = HANDLING
             val novatedObligation = handleNovationCommand(obligationStateAndRef)
 
             // Create the new transaction.
+            progressTracker.currentStep = BUILDING
             val notary = serviceHub.networkMapCache.notaryIdentities.first()
             val signers = novatedObligation.participants.map { it.owningKey }
             val utx = TransactionBuilder(notary = notary).apply {
@@ -84,19 +104,23 @@ object NovateObligation {
             }
 
             // Sign it.
+            progressTracker.currentStep = SIGNING
             val ptx = serviceHub.signInitialTransaction(utx, us.owningKey)
 
             // TODO: Collect the oracle's signature.
 
             // Get the counterparty's signature.
+            progressTracker.currentStep = COLLECTING
             val couterpartyFlow = initiateFlow(counterparty as Party)
             val stx = subFlow(CollectSignaturesFlow(
                     partiallySignedTx = ptx,
                     sessionsToCollectFrom = setOf(couterpartyFlow),
-                    myOptionalKeys = listOf(us.owningKey)
+                    myOptionalKeys = listOf(us.owningKey),
+                    progressTracker = COLLECTING.childProgressTracker()
             ))
 
-            return subFlow(FinalityFlow(stx))
+            progressTracker.currentStep = FINALISING
+            return subFlow(FinalityFlow(stx, FINALISING.childProgressTracker()))
         }
     }
 

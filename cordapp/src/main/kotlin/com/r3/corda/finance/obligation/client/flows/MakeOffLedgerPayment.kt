@@ -15,10 +15,20 @@ import net.corda.core.utilities.ProgressTracker
 abstract class MakeOffLedgerPayment<T : Money>(
         val amount: Amount<T>,
         private val obligationStateAndRef: StateAndRef<Obligation<*>>,
-        open val settlementMethod: OffLedgerPayment<*>
+        open val settlementMethod: OffLedgerPayment<*>,
+        override val progressTracker: ProgressTracker = MakeOffLedgerPayment.tracker()
 ) : AbstractMakeOffLedgerPayment() {
 
-    override val progressTracker: ProgressTracker = ProgressTracker()
+    companion object {
+        object SETUP : ProgressTracker.Step("Setting up payment method.")
+        object CHECKING : ProgressTracker.Step("Checking balance.")
+        object PAYING : ProgressTracker.Step("Making payment.")
+        object UPDATING : ProgressTracker.Step("Updating obligation with payment details.") {
+            override fun childProgressTracker() = UpdateObligationWithPayment.tracker()
+        }
+
+        fun tracker() = ProgressTracker(SETUP, CHECKING, PAYING, UPDATING)
+    }
 
     @Suspendable
     abstract fun checkBalance(requiredAmount: Amount<*>)
@@ -40,15 +50,23 @@ abstract class MakeOffLedgerPayment<T : Money>(
         check(ourIdentity == obligor) { "This flow can only be started by the obligor." }
 
         // 1. Do any setup stuff.
+        progressTracker.currentStep = SETUP
         setup()
 
         // 2. Check balance.
+        progressTracker.currentStep = CHECKING
         checkBalance(amount)
 
         // 4. Make payment and manually checkpoint
+        progressTracker.currentStep = PAYING
         val paymentInformation = makePayment(obligation, amount)
 
         // 5. Add payment reference to settlement instructions and update state.
-        return subFlow(UpdateObligationWithPayment(obligation.linearId, paymentInformation))
+        progressTracker.currentStep = UPDATING
+        return subFlow(UpdateObligationWithPayment(
+                linearId = obligation.linearId,
+                paymentInformation = paymentInformation,
+                progressTracker = UPDATING.childProgressTracker()
+        ))
     }
 }

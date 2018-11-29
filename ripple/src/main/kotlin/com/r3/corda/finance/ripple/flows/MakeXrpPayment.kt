@@ -18,6 +18,7 @@ import net.corda.core.contracts.Amount
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.crypto.SecureHash
 import net.corda.core.flows.FlowException
+import net.corda.core.utilities.ProgressTracker
 import java.math.BigDecimal
 import java.time.Duration
 import com.ripple.core.coretypes.Amount as RippleAmount
@@ -36,8 +37,9 @@ import com.ripple.core.coretypes.Amount as RippleAmount
 class MakeXrpPayment<T : Money>(
         amount: Amount<T>,
         obligationStateAndRef: StateAndRef<Obligation<*>>,
-        override val settlementMethod: OffLedgerPayment<*>
-) : MakeOffLedgerPayment<T>(amount, obligationStateAndRef, settlementMethod) {
+        settlementMethod: OffLedgerPayment<*>,
+        progressTracker: ProgressTracker
+) : MakeOffLedgerPayment<T>(amount, obligationStateAndRef, settlementMethod, progressTracker) {
 
     /** Ensures that the flow uses the same sequence number for idempotency. */
     var seqNo: UInt32? = null

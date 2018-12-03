@@ -1,6 +1,6 @@
-# Obligation settler
+# Corda settler
 
-## Requirements
+## Background
 
 Obligations which arise on a Corda ledger can be settled individually,
 in whole, with of ledger payments, in this case XRP. Example: Alice
@@ -9,12 +9,75 @@ future. Alice should only be able to mark the obligation as paid if she
 can prove that the required amount of XRP was paid to Bob via the XRP
 ledger.
 
+This repository contains an implementation of the Corda Settler with a
+plugin to handle off-ledger settlement in XRP.
+
+## Usage
+
+Clone and locally install the Ripple Java Library (Note: You will need
+Maven installed):
+
+    git clone https://github.com/ripple-unmaintained/ripple-lib-java
+    cd ripple-lib-java
+    mvn install
+
+Clone the Corda Settler repository and deploy locally:
+
+    git clone http://github.com/corda/corda-settler
+    cd corda-settler
+    ./gradlew clean deployNodes
+
+Run the nodes:
+
+    cd build/nodes
+    ./runnodes
+
+You should see four nodes open in your terminal.
+
+Start with `Party A` and paste the following command to create a new
+obligation:
+
+    start CreateObligation amount: { quantity: 1000, token: { currencyCode: USD, type: fiat } }, role: OBLIGOR, counterparty: PartyB, dueBy: 1543922400, anonymous: false
+
+If the flow fails due to `☠   Due by date must be in the future.` then increase the value of the timestamp to a date in the future!
+
+The node shell will output the result of the flow which should print the
+details of the new obligation that looks something like this:
+
+    OUTPUT:     Obligation(d6f9bb92-c903-4c54-9121-97a2b3afb1b2): PartyA owes PartyB 10.00 USD (0.00 USD paid).
+                Settlement status: UNSETTLED
+                SettlementMethod: No settlement method added
+                Payments:
+                    No payments made.
+    COMMAND:    com.r3.corda.finance.obligation.commands.ObligationCommands.Create with pubkeys DL4AeA53y7qHJDEQrEJYiEsycihxhz1uNEoc5jEFvuyAt9, DLDnLmKJ5kfJm2qNv3NpbD8QD9dcZGNm2YXXXvptrLmcdg
+    ATTACHMENT: BE850C17C89B5B55B1962AEC78947404A36EC05FD8FA1AE52207EEB052F8B977
+
+From the output, copy the UUID for the obligation which was output
+on the first line `OUTPUT:     Obligation(UUID)`.
+
+Next, from the `Party A` node, novate the obligation face value token to XRP:
+
+    start NovateObligation linearId: PASTE_UUID, novationCommand: { oldToken: { currencyCode: USD, type: fiat }, newToken: { currencyCode: XRP, type: digital }, oracle: Oracle, type: token }
+
+Next, from the `Party B` node, we need to add the settlement instructions.
+You will need to use an XRP address of an XRP account which you control. If
+you don't have an XRP account then you can get one from the testnet Faucet: https://developers.ripple.com/xrp-test-net-faucet.html
+
+    start UpdateSettlementMethod linearId: PASTE_UUID, settlementMethod: { accountToPay: PASTE_ACCOUNT, settlementOracle: Oracle, _type: com.r3.corda.finance.ripple.types.XrpSettlement }
+
+Lastly, we want to settle the obligation with a payment of XRP. We can do this with the following command:
+
+    start OffLedgerSettleObligation amount: { quantity: 20000000, token: { currencyCode: XRP, type: digital } }, linearId: PASTE_UUID
+
+You should see that the obligation is now settled. You can inspect the XRP ledger using the payment reference for the payment which is noted in the output for this command.
+Although this is support for a real interest rate Oracle in this repository, the demo uses a fixed exchange rate of XRP/USD 0.50.
+
 ## Design
 
 **The obligation contract**
 
 I'll use the obligation contract I created of Ubin as a template but
-will add an additional property called `settlementInstructions` of some
+will add an additional property called `settlementmethod` of some
 interface type.
 
 Settlement can either be on-ledger or off-ledger. For on-ledger we can
@@ -176,6 +239,12 @@ not need to sign.
 
 ## Notes/Issues
 
+* The Ripple account secret and cryptocompare API key are included in
+  platintext intentionally as it makes the repo easier to use. The ripple
+  account is a testnet account. And the Cryptocompare API is free. If this
+  repo becomes popular then it might be the case that the Cryptocompare
+  account runs out of free APIs calls, in which case you can mitigate this
+  by setting up your own free account or mocking out the Fx ORacle.
 * We use xrp ledger number to specify when the payment should be made by.
   Note that each ledger number takes about 3-5 seconds.
 * The unit tests require Internet connectivity specifically, you need to
@@ -193,6 +262,17 @@ not need to sign.
 
 ## TODO
 
+* Need to re-implement this with the human computer interaction API when
+  it is available as currently, parties auto accept any change to obligations,
+  instead, we want to give them the opportunity to assent to a change,
+  provide a counter-change or just reject the change entirely.
+* The Settlement method contains a `Class<T>` which is the flow that is
+  run for off ledger settlement. Clearly, there are some security implications
+  here. Currently `T` is restricted to sub-classes of `MakeOffLedgerPayment`
+  but we should add a white-list of accepted off ledger payment flows as
+  well.
+* The Ripple secret should not be stored in plaintext and in a config file.
+  Define some flows for adding and getting this config information.
 * Define a settlement Oracle interface/abstract class and move reusable
   parts of the `XrpOracleService` to the abstract class.
 * Add the option to use a mock Fx Oracle that just provides a single

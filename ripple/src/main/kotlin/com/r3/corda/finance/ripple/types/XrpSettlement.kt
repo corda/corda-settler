@@ -18,4 +18,8 @@ data class XrpSettlement(
         override val accountToPay: AccountID,
         override val settlementOracle: Party,
         override val paymentFlow: Class<MakeXrpPayment<*>> = MakeXrpPayment::class.java
-) : OffLedgerPayment<MakeXrpPayment<*>>
+) : OffLedgerPayment<MakeXrpPayment<*>> {
+    override fun toString(): String {
+        return "Pay XRP address $accountToPay and use $settlementOracle as settlement Oracle."
+    }
+}

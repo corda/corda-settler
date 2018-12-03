@@ -58,7 +58,7 @@ class UpdateObligationWithPayment<T : Money>(
         val utx = TransactionBuilder(notary = notary).apply {
             addInputState(obligationStateAndRef)
             addOutputState(obligationWithNewPayment, ObligationContract.CONTRACT_REF)
-            addCommand(ObligationCommands.AddPayment(), signingKey)
+            addCommand(ObligationCommands.AddPayment(paymentInformation.paymentReference), signingKey)
         }
 
         // 5. Sign transaction.

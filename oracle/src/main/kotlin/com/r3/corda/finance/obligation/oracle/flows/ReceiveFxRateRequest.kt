@@ -11,7 +11,6 @@ import net.corda.core.utilities.unwrap
 
 @InitiatedBy(AbstractGetFxRate::class)
 class ReceiveFxRateRequest(val otherSession: FlowSession) : FlowLogic<Unit>() {
-
     @Suspendable
     override fun call() {
         val request = otherSession.receive<FxRateRequest>().unwrap { it }
@@ -19,5 +18,4 @@ class ReceiveFxRateRequest(val otherSession: FlowSession) : FlowLogic<Unit>() {
         val response = fxRateService.getRate(request)
         otherSession.send(response)
     }
-
 }

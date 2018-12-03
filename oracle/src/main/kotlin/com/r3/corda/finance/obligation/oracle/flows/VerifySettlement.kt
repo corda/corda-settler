@@ -48,14 +48,15 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
         // Update payment status.
         val obligation = obligationStateAndRef.state.data
         // Status is MUTABLE to save us having to re-create the payments list.
-        obligation.payments.last().status = status
+        val payment = obligation.payments.last()
+        payment.status = status
         // Create transaction.
         val signingKey = ourIdentity.owningKey
         val notary = serviceHub.networkMapCache.notaryIdentities.firstOrNull()
                 ?: throw FlowException("No available notary.")
         val utx = TransactionBuilder(notary = notary).apply {
             addInputState(obligationStateAndRef)
-            addCommand(ObligationCommands.AddPayment(), signingKey)
+            addCommand(ObligationCommands.UpdatePayment(payment.paymentReference), signingKey)
             addOutputState(obligation, ObligationContract.CONTRACT_REF)
         }
 

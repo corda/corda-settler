@@ -11,8 +11,10 @@ import net.corda.core.flows.*
 import net.corda.core.identity.AbstractParty
 import net.corda.core.identity.Party
 import net.corda.core.serialization.CordaSerializable
+import net.corda.core.transactions.LedgerTransaction
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
+import net.corda.core.transactions.WireTransaction
 import net.corda.core.utilities.ProgressTracker
 import net.corda.core.utilities.seconds
 import java.security.PublicKey
@@ -36,7 +38,7 @@ object CreateObligation {
             private val counterparty: Party,
             private val dueBy: Instant? = null,
             private val anonymous: Boolean = true
-    ) : FlowLogic<SignedTransaction>() {
+    ) : FlowLogic<WireTransaction>() {
 
         companion object {
             object INITIALISING : ProgressTracker.Step("Performing initial steps.")
@@ -77,7 +79,7 @@ object CreateObligation {
         }
 
         @Suspendable
-        override fun call(): SignedTransaction {
+        override fun call(): WireTransaction {
             // Step 1. Initialisation.
             progressTracker.currentStep = INITIALISING
             val (obligation, signingKey) = if (anonymous) {
@@ -121,14 +123,15 @@ object CreateObligation {
 
             // Step 6. Finalise and return the transaction.
             progressTracker.currentStep = FINALISING
-            return subFlow(FinalityFlow(stx, FINALISING.childProgressTracker()))
+            val ntx = subFlow(FinalityFlow(stx, FINALISING.childProgressTracker()))
+            return ntx.tx
         }
     }
 
     @InitiatedBy(Initiator::class)
-    class Responder(val otherFlow: FlowSession) : FlowLogic<SignedTransaction>() {
+    class Responder(val otherFlow: FlowSession) : FlowLogic<WireTransaction>() {
         @Suspendable
-        override fun call(): SignedTransaction {
+        override fun call(): WireTransaction {
             val flow = object : SignTransactionFlow(otherFlow) {
                 @Suspendable
                 override fun checkTransaction(stx: SignedTransaction) {
@@ -138,7 +141,7 @@ object CreateObligation {
             }
             val stx = subFlow(flow)
             // Suspend this flow until the transaction is committed.
-            return waitForLedgerCommit(stx.id)
+            return waitForLedgerCommit(stx.id).tx
         }
     }
 }

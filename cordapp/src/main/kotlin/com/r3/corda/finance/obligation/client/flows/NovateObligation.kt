@@ -8,6 +8,7 @@ import com.r3.corda.finance.obligation.client.resolver
 import com.r3.corda.finance.obligation.commands.ObligationCommands
 import com.r3.corda.finance.obligation.contracts.ObligationContract
 import com.r3.corda.finance.obligation.states.Obligation
+import com.r3.corda.finance.obligation.types.FxRateResponse
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.contracts.UniqueIdentifier
@@ -15,6 +16,7 @@ import net.corda.core.flows.*
 import net.corda.core.identity.Party
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
+import net.corda.core.transactions.WireTransaction
 import net.corda.core.utilities.ProgressTracker
 import java.math.BigDecimal
 
@@ -25,7 +27,7 @@ object NovateObligation {
     class Initiator(
             val linearId: UniqueIdentifier,
             val novationCommand: ObligationCommands.Novate
-    ) : FlowLogic<SignedTransaction>() {
+    ) : FlowLogic<WireTransaction>() {
 
         companion object {
             object INITIALISING : ProgressTracker.Step("Performing initial steps.")
@@ -47,43 +49,46 @@ object NovateObligation {
         override val progressTracker: ProgressTracker = tracker()
 
         @Suspendable
-        fun handleUpdateFaceAmountToken(obligation: Obligation<Money>): Obligation<Money> {
+        fun handleUpdateFaceAmountToken(obligation: Obligation<Money>): Pair<Obligation<Money>, ObligationCommands.Novate> {
             // We know that this is a token change.
             novationCommand as ObligationCommands.Novate.UpdateFaceAmountToken<*, *>
             // If no fx rate is supplied then get one from the Oracle.
             val fxRate = if (novationCommand.fxRate == null) {
                 val request = FxRateRequest(novationCommand.oldToken, novationCommand.newToken, obligation.createdAt)
-                val response = subFlow(GetFxRate(request, novationCommand.oracle))
+                val response: FxRateResponse = subFlow(GetFxRate(request, novationCommand.oracle))
                 response.rate
             } else novationCommand.fxRate!!
             // Update the obligation.
             val newQuantity = obligation.faceAmount.toDecimal() * BigDecimal.valueOf(fxRate.toDouble())
             val newAmount = Amount.fromDecimal(newQuantity, novationCommand.newToken)
-            return obligation.withNewFaceValueToken(newAmount)
+            return Pair(obligation.withNewFaceValueToken(newAmount), novationCommand.copy(fxRate = fxRate))
         }
 
         @Suspendable
-        fun handleNovationCommand(obligationStateAndRef: StateAndRef<Obligation<Money>>): Obligation<Money> {
+        fun handleNovationCommand(
+                obligationStateAndRef: StateAndRef<Obligation<Money>>
+        ): Pair<Obligation<Money>, ObligationCommands.Novate> {
             val obligation = obligationStateAndRef.state.data
             return when (novationCommand) {
-                is ObligationCommands.Novate.UpdateDueBy -> obligation.withDueByDate(novationCommand.newDueBy)
+                is ObligationCommands.Novate.UpdateDueBy ->
+                    Pair(obligation.withDueByDate(novationCommand.newDueBy), novationCommand)
                 is ObligationCommands.Novate.UpdateParty ->
-                    obligation.withNewCounterparty(novationCommand.oldParty, novationCommand.newParty)
+                    Pair(obligation.withNewCounterparty(novationCommand.oldParty, novationCommand.newParty), novationCommand)
                 is ObligationCommands.Novate.UpdateFaceAmountQuantity ->
-                    obligation.withNewFaceValueQuantity(novationCommand.newAmount)
+                    Pair(obligation.withNewFaceValueQuantity(novationCommand.newAmount), novationCommand)
                 is ObligationCommands.Novate.UpdateFaceAmountToken<*, *> -> handleUpdateFaceAmountToken(obligation)
             }
         }
 
         @Suspendable
-        override fun call(): SignedTransaction {
+        override fun call(): WireTransaction {
             // Get the obligation from our vault.
             progressTracker.currentStep = INITIALISING
             val obligationStateAndRef = getLinearStateById<Obligation<Money>>(linearId, serviceHub)
                     ?: throw IllegalArgumentException("LinearId not recognised.")
             // Generate output and required signers list based based upon supplied command.
             progressTracker.currentStep = HANDLING
-            val novatedObligation = handleNovationCommand(obligationStateAndRef)
+            val (novatedObligation, updatedNovationCommand) = handleNovationCommand(obligationStateAndRef)
 
             // Create the new transaction.
             progressTracker.currentStep = BUILDING
@@ -92,7 +97,13 @@ object NovateObligation {
             val utx = TransactionBuilder(notary = notary).apply {
                 addInputState(obligationStateAndRef)
                 addOutputState(novatedObligation, ObligationContract.CONTRACT_REF)
-                addCommand(novationCommand, signers)
+                // Add the oracle key if required.
+                if (novationCommand is ObligationCommands.Novate.UpdateFaceAmountToken<*, *>) {
+                    val oracleKey = novationCommand.oracle.owningKey
+                    addCommand(updatedNovationCommand, signers + oracleKey)
+                } else {
+                    addCommand(updatedNovationCommand, signers)
+                }
             }
 
             // Get the counterparty and our signing key.
@@ -103,11 +114,15 @@ object NovateObligation {
                 Pair(novatedObligation.obligee, obligation.obligor)
             }
 
-            // Sign it.
+            // Sign it and get the oracle's signature if required.
             progressTracker.currentStep = SIGNING
-            val ptx = serviceHub.signInitialTransaction(utx, us.owningKey)
-
-            // TODO: Collect the oracle's signature.
+            val ptx = if (novationCommand is ObligationCommands.Novate.UpdateFaceAmountToken<*, *>) {
+                val selfSignedTransaction = serviceHub.signInitialTransaction(utx, us.owningKey)
+                val signature = subFlow(GetFxRateOracleSignature(selfSignedTransaction, novationCommand.oracle))
+                selfSignedTransaction + signature
+            } else {
+                serviceHub.signInitialTransaction(utx, us.owningKey)
+            }
 
             // Get the counterparty's signature.
             progressTracker.currentStep = COLLECTING
@@ -120,14 +135,14 @@ object NovateObligation {
             ))
 
             progressTracker.currentStep = FINALISING
-            return subFlow(FinalityFlow(stx, FINALISING.childProgressTracker()))
+            return subFlow(FinalityFlow(stx, FINALISING.childProgressTracker())).tx
         }
     }
 
     @InitiatedBy(Initiator::class)
-    class Responder(val otherFlow: FlowSession) : FlowLogic<SignedTransaction>() {
+    class Responder(val otherFlow: FlowSession) : FlowLogic<WireTransaction>() {
         @Suspendable
-        override fun call(): SignedTransaction {
+        override fun call(): WireTransaction {
             val flow = object : SignTransactionFlow(otherFlow) {
                 @Suspendable
                 override fun checkTransaction(stx: SignedTransaction) {
@@ -137,7 +152,7 @@ object NovateObligation {
             }
             val stx = subFlow(flow)
             // Suspend this flow until the transaction is committed.
-            return waitForLedgerCommit(stx.id)
+            return waitForLedgerCommit(stx.id).tx
         }
     }
 

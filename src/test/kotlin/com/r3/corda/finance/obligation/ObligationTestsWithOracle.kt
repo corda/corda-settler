@@ -240,7 +240,7 @@ class ObligationTestsWithOracle : MockNetworkTest(numberOfNodes = 3) {
         val stx = B.services.signInitialTransaction(TransactionBuilder(notary = notary).apply {
             addInputState(latestObligation)
             addOutputState(obligationWithFakePayment, ObligationContract.CONTRACT_REF)
-            addCommand(ObligationCommands.AddPayment(), B.legalIdentity().owningKey)
+            addCommand(ObligationCommands.AddPayment("wrong reference"), B.legalIdentity().owningKey)
         })
         B.startFlow(FinalityFlow(stx)).getOrThrow()
 
@@ -262,8 +262,10 @@ class ObligationTestsWithOracle : MockNetworkTest(numberOfNodes = 3) {
 
         // Check the obligation state has been exited.
         val query = QueryCriteria.LinearStateQueryCriteria(linearId = listOf(obligationId), status = Vault.StateStatus.UNCONSUMED)
-        assertEquals(A.services.vaultService.queryBy<Obligation<Money>>(query).states.singleOrNull(), null)
-        assertEquals(B.services.vaultService.queryBy<Obligation<Money>>(query).states.singleOrNull(), null)
+        // Hack: It takes a moment for the vaults to update...
+        Thread.sleep(100)
+        assertEquals(null, A.transaction { A.services.vaultService.queryBy<Obligation<Money>>(query).states.singleOrNull() })
+        assertEquals(null, B.transaction { B.services.vaultService.queryBy<Obligation<Money>>(query).states.singleOrNull() })
     }
 
 }

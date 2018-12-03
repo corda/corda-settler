@@ -98,8 +98,10 @@ class MakeXrpPayment<T : Money>(
         // Check the balance on the supplied XRPService address.
         val ourAccountInfo = xrpClient.accountInfo(xrpClient.address)
         val balance = ourAccountInfo.accountData.balance
-        check(balance > requiredAmount.toXRPAmount()) {
-            "You do not have enough XRP to make the payment."
+        // XRP accounts must contain a minimum of 20 XRP.
+        check(balance > requiredAmount.toXRPAmount().add(20)) {
+            "You do not have enough XRP to make the payment. Needed: $requiredAmount, " +
+                    "available: $balance"
         }
     }
 

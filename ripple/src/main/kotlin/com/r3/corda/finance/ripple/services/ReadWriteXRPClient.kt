@@ -1,9 +1,6 @@
 package com.r3.corda.finance.ripple.services
 
-import com.r3.corda.finance.ripple.types.IncorrectSequenceNumberException
-import com.r3.corda.finance.ripple.types.SubmitPaymentRequest
-import com.r3.corda.finance.ripple.types.SubmitPaymentResponse
-import com.r3.corda.finance.ripple.types.SubmitPaymentResultObject
+import com.r3.corda.finance.ripple.types.*
 import com.r3.corda.finance.ripple.utilities.deserialize
 import com.r3.corda.finance.ripple.utilities.makeRequest
 import com.ripple.core.coretypes.AccountID
@@ -26,6 +23,7 @@ interface ReadWriteXRPClient : ReadOnlyXRPClient {
         val response = makeRequest(nodeUri, "submit", submitPaymentRequest)
         val deserializedResponse = deserialize<SubmitPaymentResultObject>(response).result
         return when (deserializedResponse.engineResult) {
+            "tecUNFUNDED_PAYMENT" -> throw InsufficientBalanceException()
             "tefPAST_SEQ", "terPRE_SEQ" -> throw IncorrectSequenceNumberException()
             "tefALREADY" -> throw IncorrectSequenceNumberException()
             "tesSUCCESS" -> deserializedResponse

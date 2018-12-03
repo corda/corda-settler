@@ -43,7 +43,8 @@ object CancelObligation {
             progressTracker.currentStep = INITIALISING
             val obligationStateAndRef = getLinearStateById<Obligation<Money>>(linearId, serviceHub)
                     ?: throw IllegalArgumentException("LinearId not recognised.")
-            val obligation = obligationStateAndRef.state.data.withWellKnownIdentities(resolver)
+            val obligation = obligationStateAndRef.state.data
+            val obligationWithWellKnownParties = obligation.withWellKnownIdentities(resolver)
             // Generate output and required signers list based based upon supplied command.
 
             // Create the new transaction.
@@ -56,10 +57,10 @@ object CancelObligation {
             }
 
             // Get the counterparty and our signing key.
-            val (us, counterparty) = if (obligation.obligor == ourIdentity) {
-                Pair(obligation.obligor, obligation.obligee)
+            val (us, counterparty) = if (obligationWithWellKnownParties.obligor == ourIdentity) {
+                Pair(obligation.obligor, obligationWithWellKnownParties.obligee)
             } else {
-                Pair(obligation.obligee, obligation.obligor)
+                Pair(obligation.obligee, obligationWithWellKnownParties.obligor)
             }
 
             // Sign it.

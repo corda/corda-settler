@@ -12,13 +12,14 @@ import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.StartableByRPC
 import net.corda.core.transactions.SignedTransaction
+import net.corda.core.transactions.WireTransaction
 import net.corda.core.utilities.ProgressTracker
 
 @StartableByRPC
 class OffLedgerSettleObligation<T : Money>(
         private val amount: Amount<T>,
         private val linearId: UniqueIdentifier
-) : FlowLogic<SignedTransaction>() {
+) : FlowLogic<WireTransaction>() {
 
     companion object {
         object INITIALISING : ProgressTracker.Step("Initialising off ledger payment.")
@@ -61,7 +62,7 @@ class OffLedgerSettleObligation<T : Money>(
     }
 
     @Suspendable
-    override fun call(): SignedTransaction {
+    override fun call(): WireTransaction {
         // The settlement instructions determine how this obligation should be settled.
         progressTracker.currentStep = INITIALISING
         val obligationStateAndRef = getLinearStateById<Obligation<*>>(linearId, serviceHub)
@@ -78,7 +79,7 @@ class OffLedgerSettleObligation<T : Money>(
 
         // Checks the payment settled.
         // We only supply the linear ID because this flow can be called from the shell on its own.
-        return subFlow(SendToSettlementOracle(linearId, SENDING.childProgressTracker()))
+        return subFlow(SendToSettlementOracle(linearId, SENDING.childProgressTracker())).tx
     }
 
 }

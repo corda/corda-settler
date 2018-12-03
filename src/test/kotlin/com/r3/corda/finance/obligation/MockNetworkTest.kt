@@ -17,6 +17,7 @@ import net.corda.core.node.services.queryBy
 import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.toFuture
 import net.corda.core.transactions.SignedTransaction
+import net.corda.core.transactions.WireTransaction
 import net.corda.testing.node.MockNetwork
 import net.corda.testing.node.StartedMockNode
 import org.junit.After
@@ -66,7 +67,7 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
             faceAmount: Amount<T>,
             counterparty: StartedMockNode,
             role: CreateObligation.InitiatorRole
-    ): CordaFuture<SignedTransaction> {
+    ): CordaFuture<WireTransaction> {
         return transaction {
             val flow = CreateObligation.Initiator(faceAmount, role, counterparty.legalIdentity())
             startFlow(flow)
@@ -85,7 +86,7 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
     fun StartedMockNode.novateObligation(
             linearId: UniqueIdentifier,
             novationCommand: ObligationCommands.Novate
-    ): CordaFuture<SignedTransaction> {
+    ): CordaFuture<WireTransaction> {
         return transaction {
             val flow = NovateObligation.Initiator(linearId, novationCommand)
             startFlow(flow)
@@ -93,7 +94,7 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
     }
 
     /** Add settlement instructions to existing obligation. */
-    fun StartedMockNode.addSettlementInstructions(linearId: UniqueIdentifier, settlementMethod: SettlementMethod): CordaFuture<SignedTransaction> {
+    fun StartedMockNode.addSettlementInstructions(linearId: UniqueIdentifier, settlementMethod: SettlementMethod): CordaFuture<WireTransaction> {
         return transaction {
             val flow = UpdateSettlementMethod(linearId, settlementMethod)
             startFlow(flow)
@@ -101,14 +102,14 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
     }
 
     /** Add settlement instructions to existing obligation. */
-    fun <T : Money>StartedMockNode.makePayment(amount: Amount<T>, linearId: UniqueIdentifier): CordaFuture<SignedTransaction> {
+    fun <T : Money>StartedMockNode.makePayment(amount: Amount<T>, linearId: UniqueIdentifier): CordaFuture<WireTransaction> {
         return transaction { startFlow(OffLedgerSettleObligation(amount, linearId)) }
     }
 
     fun StartedMockNode.legalIdentity() = services.myInfo.legalIdentities.first()
 
     /** From a transaction which produces a single output, retrieve that output. */
-    inline fun <reified T : LinearState> SignedTransaction.singleOutput() = tx.outRefsOfType<T>().single()
+    inline fun <reified T : LinearState> WireTransaction.singleOutput() = outRefsOfType<T>().single()
 
     inline fun <reified T : LinearState> StateAndRef<T>.linearId() = state.data.linearId
 

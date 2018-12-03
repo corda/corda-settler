@@ -17,6 +17,10 @@ class IncorrectSequenceNumberException : RippleRpcException() {
             "It is likely that the same transaction has been submitted twice."
 }
 
+class InsufficientBalanceException : RippleRpcException() {
+    override fun toString() = "You don't have enough XRP to make the payment!"
+}
+
 class AlreadysubmittedException : RippleRpcException() {
     override fun toString() = "The transaction has already been submitted."
 }

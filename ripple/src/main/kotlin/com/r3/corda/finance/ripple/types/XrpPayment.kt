@@ -13,4 +13,8 @@ data class XrpPayment<T : Money>(
         val lastLedgerSequence: Long,
         override val amount: Amount<T>,
         override var status: PaymentStatus = PaymentStatus.SENT
-) : Payment<T>
+) : Payment<T> {
+    override fun toString(): String {
+        return "Amount: $amount, Ripple tx hash: $paymentReference, Status: $status"
+    }
+}

@@ -13,6 +13,7 @@ import net.corda.core.flows.*
 import net.corda.core.identity.AbstractParty
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
+import net.corda.core.transactions.WireTransaction
 import net.corda.core.utilities.ProgressTracker
 
 @InitiatingFlow
@@ -20,7 +21,7 @@ import net.corda.core.utilities.ProgressTracker
 class UpdateSettlementMethod(
         val linearId: UniqueIdentifier,
         private val settlementMethod: SettlementMethod
-) : FlowLogic<SignedTransaction>() {
+) : FlowLogic<WireTransaction>() {
 
     companion object {
         object INITIALISING : ProgressTracker.Step("Performing initial steps.")
@@ -38,7 +39,7 @@ class UpdateSettlementMethod(
     override val progressTracker: ProgressTracker = tracker()
 
     @Suspendable
-    override fun call(): SignedTransaction {
+    override fun call(): WireTransaction {
         // 1. Retrieve obligation.
         progressTracker.currentStep = INITIALISING
         val obligationStateAndRef = getLinearStateById<Obligation<Money>>(linearId, serviceHub)
@@ -70,7 +71,7 @@ class UpdateSettlementMethod(
 
         // 6. Finalise transaction and send to participants.
         progressTracker.currentStep = FINALISING
-        return subFlow(FinalityFlow(stx, FINALISING.childProgressTracker()))
+        return subFlow(FinalityFlow(stx, FINALISING.childProgressTracker())).tx
     }
 
 }

@@ -65,7 +65,7 @@ data class Obligation<T : Money>(
             .fold(Amount.zero(faceAmount.token)) { acc, amount -> acc + amount }
 
     /** A defaulted obligation is one where the current time is greater than the [dueBy] time. */
-    val inDefault: Boolean get() = Instant.now() > dueBy
+    val inDefault: Boolean get() = dueBy?.let { Instant.now() > dueBy } ?: false
 
     /** Returns the current state of the obligation. */
     val settlementStatus: SettlementStatus
@@ -134,7 +134,18 @@ data class Obligation<T : Money>(
     override fun toString(): String {
         val obligeeString = (obligee as? Party)?.name?.organisation ?: obligee.owningKey.toStringShort().substring(0, 10)
         val obligorString = (obligor as? Party)?.name?.organisation ?: obligor.owningKey.toStringShort().substring(0, 10)
-        return "$settlementStatus Obligation($linearId): $obligorString owes $obligeeString $faceAmount ($amountPaid paid)."
+        val settlementMethod = if (settlementMethod == null) "No settlement method added" else settlementMethod.toString()
+        var paymentString = ""
+        if (payments.isNotEmpty()) {
+            payments.forEach { paymentString += "\n\t\t\t$it" }
+        } else {
+            paymentString = "\n\t\t\tNo payments made."
+        }
+        return "Obligation($linearId): $obligorString owes $obligeeString $faceAmount ($amountPaid paid)." +
+                "\n\t\tSettlement status: $settlementStatus" +
+                "\n\t\tSettlementMethod: $settlementMethod" +
+                "\n\t\tPayments:" +
+                paymentString
     }
 
 }

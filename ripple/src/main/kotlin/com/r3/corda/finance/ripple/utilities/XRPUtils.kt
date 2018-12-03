@@ -12,6 +12,8 @@ fun TransactionInfoResponse.hasSucceeded() = status == "success" && validated
 
 fun Amount<*>.toXRPAmount(): XRPAmount = XRPAmount.fromString(quantity.toString())
 
+fun Int.toXRPAmount(): XRPAmount = XRPAmount.fromString(toString())
+
 fun SecureHash.toXRPHash(): Hash256 = Hash256.fromHex(toString())
 
 val DEFAULT_XRP_FEE = XRPAmount.fromString("1000")

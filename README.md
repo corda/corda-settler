@@ -3,10 +3,11 @@
 ## Requirements
 
 Obligations which arise on a Corda ledger can be settled individually,
-in whole, with payments of XRP. Example: Alice incurs an obligation to
-pay Bob an amount of XRP at some point in the future. Alice should only
-be able to mark the obligation as paid if she can prove that the
-required amount of XRP was paid to Bob via the Ripple ledger.
+in whole, with of ledger payments, in this case XRP. Example: Alice
+incurs an obligation to pay Bob an amount of USD at some point in the
+future. Alice should only be able to mark the obligation as paid if she
+can prove that the required amount of XRP was paid to Bob via the XRP
+ledger.
 
 ## Design
 
@@ -177,6 +178,25 @@ not need to sign.
 
 * We use xrp ledger number to specify when the payment should be made by.
   Note that each ledger number takes about 3-5 seconds.
+* The unit tests require Internet connectivity specifically, you need to
+  be able to access the Ripple testnet node and the exchange rate
+  provider.
+* The Unit tests require you to use an XRP account that has enough XRP
+  to make the payments. If you specified account in `xrp.conf` has ran
+  out of XRP then get a new one here [here](https://developers.ripple.com/xrp-test-net-faucet.html).
+* For now, the unit tests require that you have an account with
+  http://cryptocompare.com to get the XRP/USD exchange rate. NOTE: There
+  is no affiliation to this provider, it was just the first one I found
+  that worked easily! Feel free to replace it with your own provider. The
+  exchange rate oracle for this project is really just a stub so we can
+  handle token novation.
+
+## TODO
+
+* Define a settlement Oracle interface/abstract class and move reusable
+  parts of the `XrpOracleService` to the abstract class.
+* Add the option to use a mock Fx Oracle that just provides a single
+  fixed Fx rate.
 
 
 

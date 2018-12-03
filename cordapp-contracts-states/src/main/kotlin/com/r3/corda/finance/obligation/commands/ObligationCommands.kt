@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.r3.corda.finance.obligation.types.DigitalCurrency
 import com.r3.corda.finance.obligation.types.FiatCurrency
 import com.r3.corda.finance.obligation.types.Money
+import com.r3.corda.finance.obligation.types.PaymentReference
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.CommandData
 import net.corda.core.contracts.TypeOnlyCommandData
@@ -33,10 +34,10 @@ interface ObligationCommands : CommandData {
     sealed class Novate : ObligationCommands {
 
         /** Change the face value quantity of the obligation. */
-        class UpdateFaceAmountQuantity(val newAmount: Amount<Money>) : Novate()
+        data class UpdateFaceAmountQuantity(val newAmount: Amount<Money>) : Novate()
 
         /** Change the face amount token of the obligation. This involves an fx conversion. */
-        class UpdateFaceAmountToken<OLD : Money, NEW : Money>(
+        data class UpdateFaceAmountToken<OLD : Money, NEW : Money>(
                 val oldToken: OLD,
                 val newToken: NEW,
                 val oracle: Party,
@@ -44,17 +45,20 @@ interface ObligationCommands : CommandData {
         ) : Novate()
 
         /** Change the due by date. */
-        class UpdateDueBy(val newDueBy: Instant) : Novate()
+        data class UpdateDueBy(val newDueBy: Instant) : Novate()
 
         /** Change one of the parties. */
-        class UpdateParty(val oldParty: AbstractParty, val newParty: AbstractParty) : Novate()
+        data class UpdateParty(val oldParty: AbstractParty, val newParty: AbstractParty) : Novate()
     }
 
     /** Add or update the settlement method. */
     class UpdateSettlementMethod : ObligationCommands, TypeOnlyCommandData()
 
     /** Record that a payment was made in respect of an obligation. */
-    class AddPayment : ObligationCommands, TypeOnlyCommandData()
+    data class AddPayment(val ref: PaymentReference) : ObligationCommands
+
+    /** Update the settlement status of a payment. */
+    data class UpdatePayment(val ref: PaymentReference) : ObligationCommands
 
     /** Cancel the obligation - involves exiting the obligation state from the ledger. */
     class Cancel : ObligationCommands, TypeOnlyCommandData()

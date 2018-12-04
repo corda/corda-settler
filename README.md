@@ -268,7 +268,7 @@ We can experiment with numbers but for now I'll assert that the payment
 should succeed after 10 ledgers from when the payment was initially
 made.
 
-**Step 3. Extinguishing the obligation.**
+**Step 4. Extinguishing the obligation.**
 
 The obligation can be submitted to the Oracle at any point after the
 Ripple transaction hash has been added to obligation.

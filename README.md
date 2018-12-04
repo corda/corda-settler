@@ -39,7 +39,8 @@ obligation:
 
     start CreateObligation amount: { quantity: 1000, token: { currencyCode: USD, type: fiat } }, role: OBLIGOR, counterparty: PartyB, dueBy: 1543922400, anonymous: false
 
-If the flow fails due to `☠   Due by date must be in the future.` then increase the value of the timestamp to a date in the future!
+If the flow fails due to `☠   Due by date must be in the future.` then
+increase the value of the timestamp to a date in the future!
 
 The node shell will output the result of the flow which should print the
 details of the new obligation that looks something like this:
@@ -61,37 +62,107 @@ Next, from the `Party A` node, novate the obligation face value token to XRP:
 
 Next, from the `Party B` node, we need to add the settlement instructions.
 You will need to use an XRP address of an XRP account which you control. If
-you don't have an XRP account then you can get one from the testnet Faucet: https://developers.ripple.com/xrp-test-net-faucet.html
+you don't have an XRP account then you can get one from the testnet
+Faucet: https://developers.ripple.com/xrp-test-net-faucet.html
 
     start UpdateSettlementMethod linearId: PASTE_UUID, settlementMethod: { accountToPay: PASTE_ACCOUNT, settlementOracle: Oracle, _type: com.r3.corda.finance.ripple.types.XrpSettlement }
 
-Lastly, we want to settle the obligation with a payment of XRP. We can do this with the following command:
+Lastly, we want to settle the obligation with a payment of XRP. We can do
+this with the following command:
 
     start OffLedgerSettleObligation amount: { quantity: 20000000, token: { currencyCode: XRP, type: digital } }, linearId: PASTE_UUID
 
-You should see that the obligation is now settled. You can inspect the XRP ledger using the payment reference for the payment which is noted in the output for this command.
-Although this is support for a real interest rate Oracle in this repository, the demo uses a fixed exchange rate of XRP/USD 0.50.
+You should see that the obligation is now settled. You can inspect the XRP
+ledger using the payment reference for the payment which is noted in the
+output for this command. Although this is support for a real interest rate
+Oracle in this repository, the demo uses a fixed exchange rate of XRP/USD 0.50.
+
+## Repo structure
+
+There are four modules in this repo:
+
+1. `cordapp-states-contracts` which contains the `Obligation` state and
+   `ObligationContract`, as well as some abstract flows  definitions and
+   types for obligation payments and settlement methods. This module also
+   contains some token type definitions which will eventually be refactored
+   out of this repository when the Corda Token SDK binaries are available.
+   IMPORTANT: This module does not depend on the `Ripple` module. This module
+   makes no assumption about the nature of the settlement rail.
+2. `Cordapp` which contains the flows for issuing, cancelling, novating and
+   selling obligations. The main flow of interest in this module is the
+   `MakeOffLedgerPayment` flow which is abstract. The expectation is that
+   CorDapp developers will sub-class their flow flows for specific off-ledger
+   payment methods. You'll see that the flow defines a bunch of abstract
+   methods for checking balances, making payments and setting up the
+   process. Currently there is one implementation of this flow in the `ripple`
+   module.
+3. `ripple` which contains an implementation of the `MakeOffLedgerPayment` flow
+   called `MakeXrpPayment`. `MakeXrpPayment` uses the `ripple-lib-java`
+   library to create and sign XRP transactions. The remainder of this module
+   defines the types, serialisers and client interface necessary for
+   interacting with Ripple nodes. The interfaces are defined in the `services`
+   package.
+4. `oracle` which contains an implementation of the `XrpOracleService` which
+   checks whether an XRP payment specified by a transaction hash has
+   credited a specific XRP account. There is also a stubbed-out exchange rate
+   Oracle which is required for novating obligation face value token types.
+
+## Implementing your own settler
+
+1. Add a new module to this project with an outline similar to the `Ripple`
+   module.
+2. The settlement rail you intend to use probably already has a java client
+   API, so all you need to do is create a wrapper around this for Corda.
+   Look at what I did with the `Ripple` library as an example. If you are
+   sending library types over the wire, you'll need to create proxy
+   serialisers for those types. The interface to your payment rail should
+   exist as a `CordaService`.
+3. Sub-class `MakeOffLedgerPayment` for creating a payment using the
+   payment rail of your choice. Note, that the payment must also be
+   submitted to the payment rail. For Ripple and other cryptos this is easy
+   as there are publicly available nodes. For legacy rails like RTGS and DFS
+   you'll need access to an API for submitting transactions.
+4. Implement an Oracle service which will update and sign a transaction
+   containing a payment against an Oracle service, if and only if the
+   payment credited the specified beneficiaries account on the settlement
+   rail. For cryptos you can query some nodes of your choosing to check
+   whether the payment settled correctly. For RTGS and DFS, again, you'll
+   need access to an API.
+5. Add a `SettlementMethod` type for your payment rail.
+6. Add a `Payment` type for your payment rail.
+
+If you get stuck then e-mail roger [dot] willis [@] r3 [dot] com for help!
+
+## Payment rail operators wanting to integrate with the Corda Settler
+
+At a high level you need the following:
+
+1. Provide an API for submitting payment instructions. The API should
+   return the ID of the payment transaction. This probably already exists.
+2. Provide an API to checking the status of the payment. The API should
+   only return "SUCCESS" if and only if the payment credits the specified
+   beneficiaries account. This will likely need adding to your API.
+
+E-mail roger [dot] willis [@] r3 [dot] com for more information.
 
 ## Design
 
 **The obligation contract**
 
-I'll use the obligation contract I created of Ubin as a template but
-will add an additional property called `settlementmethod` of some
-interface type.
+As at 4/12/18.
+
+This repo usea the obligation contract created for project Ubin with a
+couple of differences/additions. For example, ther are new propties called
+`settlementmethod` and `payments`, both of an interface type.
 
 Settlement can either be on-ledger or off-ledger. For on-ledger we can
 specify token states from which issuers are acceptable. Note, that this
-is not implemented in this project. For off-ledger, there will be only
+is not implemented in this project. See the [obligation cordapp](https://github.com/corda/obligation-cordapp)
+for how this is implemented. For off-ledger, there will be only
 one option for now: XRP settlement. Different implementations can be
-used for each method. The settler CorDapp is settlement rail agnostic.
+used for each method. The settler CorDapp is settlement rail agnostic!
 To add support for more rails just add a CorDapp that sub-classes the
 payment flow and adds settlement instructions for that settlement type.
-
-In addition. I'll create a flow which allows the parties to the
-obligation to add settlement instructions. For now, this flow will start
-with the obligee as they are required to add a Ripple address to which
-they expect the settlement payment to be made.
 
 The Corda contract which governs how the obligation functions, allows
 the obligation to be marked as fulfilled if an Oracle signs a Corda
@@ -112,18 +183,18 @@ deadline as an `Instant`.
 
 Also, we must know if the settlement payment of XRP succeeded or failed
 within some bounded time, otherwise we expose ourselves to a "halting
-problem". As such, we will need to add the ledger number of the Ripple
+problem". As such, we will need to add the ledger number of the XRP
 ledger which we expect payment to be made by. This can be added after
 the payment instruction has been sent to a Ripple node.
 
 In terms of settlement instructions for off-ledger XRP payments, we'll
 need:
 
-* which Ripple address Bob expects Alice to make a payment to
+* which XRP address Bob expects Alice to make a payment to
 * which Ripple ledger number the payment should be expected by - this is
   effectively the deadline
-* a UUID to track the Ripple payment - this should be the linear ID of
-  the obligation the payment will extinguish
+* a UUID to track the Ripple payment - this should be the hash of the
+  linear ID of the obligation the payment will (partially) extinguish
 * which Corda Oracle should be used to sign that the payment occurred
 
 Out of these items, only the Ripple address, UUID and Oracle need to be
@@ -148,14 +219,12 @@ transaction by Alice) that matches the UUID portion of the Linear ID.
 Bob will also specify which Oracle will be used. Alice is to agree on
 the Oracle.
 
-The Ripple ledger number can be left blank for now.
-
 At this point, both parties are in consensus that an XRP payment is
 owing, precisely how it should be made and what evidence the oracle will
 require from the Ripple ledger in order to be prepared to sign a
 statement that the payment has indeed been made.
 
-**Step 3. Making the Ripple payment.**
+**Step 3. Making the XRP payment.**
 
 Alice creates a new Ripple payment transaction for the specified amount,
 to the specified account, with the specified UUID (in the memo field of
@@ -175,6 +244,14 @@ transaction hash can be used to query the specified Oracle.
 Assuming the new transaction is included in the calculated ledgers of a
 super-majority of nodes on the Ripple network, then the transaction will
 be included in a validated ledger instance.
+
+At this point, the obligation is updated with the information for the
+XRP payment which has just been made. The following details are required:
+
+* `amount` as the payment may only partially settle the obligation
+* `lastLedgerSequence`
+* `paymentReference`
+* `status`, which is defaulted to `SENT`
 
 The XRP payment is actually made via a Corda flow which calls out
 to a Ripple node. When Alice receives the transaction hash, she adds
@@ -196,19 +273,16 @@ made.
 The obligation can be submitted to the Oracle at any point after the
 Ripple transaction hash has been added to obligation.
 
-For any obligation to be settled via off ledger XRP payment, the Oracle
-will sign a Corda transaction exiting the obligation if the Ripple
-transaction represented by the hash has:
+The Oracle will signer over an XRP payment which (partially) settles an
+obligation, if and only if:
 
 * transactionResult: tesSUCCESS and validated: true
-* an amount paid equal to the amount specified in the obligation (NOTE:
-  this may be less due to fees... Investigate)
 * the account specified in the settlement instructions as the recipient
-* a UUID in the transaction memo field, equal to the UUID specified in
-  the settlement instructions
+* there is a UUID in the transaction memo field, equal to the UUID
+  specified in the settlement method
 
 The server_state of the rippled process used by the Oracle must be
-set to FULL.
+set to "tracking", "full", "validating", or "proposing".
 
 Corda transaction proposals can be sent to the Oracle at any time for
 signing. The Oracle is configured to cache transaction proposals until
@@ -222,7 +296,10 @@ LastLedgerSequence then the Oracle will return an exception for the
 given transaction hash, indicating that the window for committing the
 transaction has passed.
 
-At this point, new settlement instructions can be added, if necessary.
+At this point, a new settlement method can be added, if necessary. XRP
+payments might fail if they are paid to the wrong address or if the
+invoiceID is not set to the correct value. IF this is the case, then
+such issues must be resolved manually for now.
 
 In practise, the Oracle would run a rippled process where the unique
 node list ("UNL") for the node would be published for participants on
@@ -240,13 +317,12 @@ not need to sign.
 ## Notes/Issues
 
 * The Ripple account secret and cryptocompare API key are included in
-  platintext intentionally as it makes the repo easier to use. The ripple
-  account is a testnet account. And the Cryptocompare API is free. If this
-  repo becomes popular then it might be the case that the Cryptocompare
-  account runs out of free APIs calls, in which case you can mitigate this
-  by setting up your own free account or mocking out the Fx ORacle.
-* We use xrp ledger number to specify when the payment should be made by.
-  Note that each ledger number takes about 3-5 seconds.
+  platin text intentionally as it makes the repo easier to use. The ripple
+  account is a testnet account. And the Cryptocompare API is free.
+* We use the Ripple ledger_index to specify when the payment should be
+  made by. Note that each ledger number takes about 3-5 seconds. The Oracle
+  currently waits up to 60 seconds for a payment to settle. This is more
+  than enough time!
 * The unit tests require Internet connectivity specifically, you need to
   be able to access the Ripple testnet node and the exchange rate
   provider.
@@ -271,7 +347,7 @@ not need to sign.
   here. Currently `T` is restricted to sub-classes of `MakeOffLedgerPayment`
   but we should add a white-list of accepted off ledger payment flows as
   well.
-* The Ripple secret should not be stored in plaintext and in a config file.
+* The Ripple secret should not be stored in plaintext and in a config file!
   Define some flows for adding and getting this config information.
 * Define a settlement Oracle interface/abstract class and move reusable
   parts of the `XrpOracleService` to the abstract class.

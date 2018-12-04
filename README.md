@@ -34,8 +34,8 @@ Run the nodes:
 
 You should see four nodes open in your terminal.
 
-1. Start with `Party A` and paste the following command to create a new
-   obligation:
+Start with `Party A` and paste the following command to create a new
+obligation:
 
     start CreateObligation amount: { quantity: 1000, token: { currencyCode: USD, type: fiat } }, role: OBLIGOR, counterparty: PartyB, dueBy: 1543922400, anonymous: false
 
@@ -56,19 +56,19 @@ details of the new obligation that looks something like this:
 From the output, copy the UUID for the obligation which was output
 on the first line `OUTPUT:     Obligation(UUID)`.
 
-2. Next, from the `Party A` node, novate the obligation face value token to XRP:
+Next, from the `Party A` node, novate the obligation face value token to XRP:
 
     start NovateObligation linearId: PASTE_UUID, novationCommand: { oldToken: { currencyCode: USD, type: fiat }, newToken: { currencyCode: XRP, type: digital }, oracle: Oracle, type: token }
 
-3. Next, from the `Party B` node, we need to add the settlement instructions.
-   You will need to use an XRP address of an XRP account which you control. If
-   you don't have an XRP account then you can get one from the testnet
-   Faucet: https://developers.ripple.com/xrp-test-net-faucet.html
+Next, from the `Party B` node, we need to add the settlement instructions.
+You will need to use an XRP address of an XRP account which you control. If
+you don't have an XRP account then you can get one from the testnet
+Faucet: https://developers.ripple.com/xrp-test-net-faucet.html
 
     start UpdateSettlementMethod linearId: PASTE_UUID, settlementMethod: { accountToPay: PASTE_ACCOUNT, settlementOracle: Oracle, _type: com.r3.corda.finance.ripple.types.XrpSettlement }
 
-4. Lastly, we want to settle the obligation with a payment of XRP. We can do
-   this with the following command:
+Lastly, we want to settle the obligation with a payment of XRP. We can do
+this with the following command:
 
     start OffLedgerSettleObligation amount: { quantity: 20000000, token: { currencyCode: XRP, type: digital } }, linearId: PASTE_UUID
 

@@ -327,7 +327,7 @@ not need to sign.
   provider.
 * The Unit tests require you to use an XRP account that has enough XRP
   to make the payments. If your specified account in `xrp.conf` has ran
-  out of XRP then get a new one here [here](https://developers.ripple.com/xrp-test-net-faucet.html).
+  out of XRP then get a new one [here](https://developers.ripple.com/xrp-test-net-faucet.html).
 * For now, the unit tests require that you have an account with
   http://cryptocompare.com to get the XRP/USD exchange rate. NOTE: There
   is no affiliation to this provider, it was just the first one I found

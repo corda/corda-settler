@@ -15,22 +15,16 @@ plugin to handle off-ledger settlement in XRP.
 ## Usage
 
 Clone and locally install the Ripple Java Library:
-**Note:** You will need Maven and Android Platform/API level 10 (2.3.3 APIs)
 
     git clone https://github.com/ripple-unmaintained/ripple-lib-java
     cd ripple-lib-java
     mvn install
-
-**Note**: A guide to installing Maven can be found [here](https://www.baeldung.com/install-maven-on-windows-linux-mac)
-**Note**: Download [Android Studio](https://developer.android.com/studio/) or the [Android CLI](https://developer.android.com/studio/command-line/) in order to install 2.3.3 APIs.
 
 Clone the Corda Settler repository and deploy locally:
 
     git clone http://github.com/corda/corda-settler
     cd corda-settler
     ./gradlew clean deployNodes
-
-**Note**: In the OffLedgerSettleObligation flow, XRP will be sent from the account specified in the xrp.conf file located in main/kotlin/resources.
 
 Run the nodes:
 

@@ -3,7 +3,7 @@
 ## Background
 
 Obligations which arise on a Corda ledger can be settled individually,
-in whole, with of ledger payments, in this case XRP. Example: Alice
+in whole, with off-ledger payments, in this case XRP. Example: Alice
 incurs an obligation to pay Bob an amount of USD at some point in the
 future. Alice should only be able to mark the obligation as paid if she
 can prove that the required amount of XRP was paid to Bob via the XRP
@@ -73,7 +73,7 @@ this with the following command:
 
 You should see that the obligation is now settled. You can inspect the XRP
 ledger using the payment reference for the payment which is noted in the
-output for this command. Although this is support for a real interest rate
+output for this command. Although there is support for a real exchange rate
 Oracle in this repository, the demo uses a fixed exchange rate of XRP/USD 0.50.
 
 ## Repo structure
@@ -87,10 +87,10 @@ There are four modules in this repo:
    out of this repository when the Corda Token SDK binaries are available.
    IMPORTANT: This module does not depend on the `Ripple` module. This module
    makes no assumption about the nature of the settlement rail.
-2. `Cordapp` which contains the flows for issuing, cancelling, novating and
+2. `cordapp` which contains the flows for issuing, cancelling, novating and
    selling obligations. The main flow of interest in this module is the
    `MakeOffLedgerPayment` flow which is abstract. The expectation is that
-   CorDapp developers will sub-class their flow flows for specific off-ledger
+   CorDapp developers will sub-class this with their own flows for specific off-ledger
    payment methods. You'll see that the flow defines a bunch of abstract
    methods for checking balances, making payments and setting up the
    process. Currently there is one implementation of this flow in the `ripple`
@@ -108,9 +108,9 @@ There are four modules in this repo:
 
 ## Implementing your own settler
 
-1. Add a new module to this project with an outline similar to the `Ripple`
+1. Add a new module to this project with an outline similar to the `ripple`
    module.
-2. The settlement rail you intend to use probably already has a java client
+2. The settlement rail you intend to use probably already has a Java client
    API, so all you need to do is create a wrapper around this for Corda.
    Look at what I did with the `Ripple` library as an example. If you are
    sending library types over the wire, you'll need to create proxy
@@ -138,7 +138,7 @@ At a high level you need the following:
 
 1. Provide an API for submitting payment instructions. The API should
    return the ID of the payment transaction. This probably already exists.
-2. Provide an API to checking the status of the payment. The API should
+2. Provide an API for checking the status of the payment. The API should
    only return "SUCCESS" if and only if the payment credits the specified
    beneficiaries account. This will likely need adding to your API.
 

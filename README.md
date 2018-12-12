@@ -14,18 +14,23 @@ plugin to handle off-ledger settlement in XRP.
 
 ## Usage
 
-Clone and locally install the Ripple Java Library (Note: You will need
-Maven installed):
+Clone and locally install the Ripple Java Library:
+**Note:** You will need Maven and Android Platform/API level 10 (2.3.3 APIs)
 
     git clone https://github.com/ripple-unmaintained/ripple-lib-java
     cd ripple-lib-java
     mvn install
+
+**Note**: A guide to installing Maven can be found [here](https://www.baeldung.com/install-maven-on-windows-linux-mac)
+**Note**: Download [Android Studio](https://developer.android.com/studio/) or the [Android CLI](https://developer.android.com/studio/command-line/) in order to install 2.3.3 APIs.
 
 Clone the Corda Settler repository and deploy locally:
 
     git clone http://github.com/corda/corda-settler
     cd corda-settler
     ./gradlew clean deployNodes
+
+**Note**: In the OffLedgerSettleObligation flow, XRP will be sent from the account specified in the xrp.conf file located in main/kotlin/resources.
 
 Run the nodes:
 
@@ -151,8 +156,8 @@ E-mail roger [dot] willis [@] r3 [dot] com for more information.
 
 As at 4/12/18.
 
-This repo usea the obligation contract created for project Ubin with a
-couple of differences/additions. For example, ther are new propties called
+This repo uses the obligation contract created for project Ubin with a
+couple of differences/additions. For example, there are new properties called
 `settlementmethod` and `payments`, both of an interface type.
 
 Settlement can either be on-ledger or off-ledger. For on-ledger we can
@@ -323,11 +328,11 @@ not need to sign.
   made by. Note that each ledger number takes about 3-5 seconds. The Oracle
   currently waits up to 60 seconds for a payment to settle. This is more
   than enough time!
-* The unit tests require Internet connectivity specifically, you need to
+* The unit tests require Internet connectivity, specifically, you need to
   be able to access the Ripple testnet node and the exchange rate
   provider.
 * The Unit tests require you to use an XRP account that has enough XRP
-  to make the payments. If you specified account in `xrp.conf` has ran
+  to make the payments. If your specified account in `xrp.conf` has ran
   out of XRP then get a new one here [here](https://developers.ripple.com/xrp-test-net-faucet.html).
 * For now, the unit tests require that you have an account with
   http://cryptocompare.com to get the XRP/USD exchange rate. NOTE: There

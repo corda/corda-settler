@@ -69,7 +69,9 @@ Next, from the `Party A` node, novate the obligation face value token to XRP:
 Next, from the `Party B` node, we need to add the settlement instructions.
 You will need to use an XRP address of an XRP account which you control. If
 you don't have an XRP account then you can get one from the testnet
-Faucet: https://developers.ripple.com/xrp-test-net-faucet.html
+Faucet: https://developers.ripple.com/xrp-test-net-faucet.html. This account 
+should be different to the one that the XRP is being sent from, defined in 
+`xrp.conf`.
 
     start UpdateSettlementMethod linearId: PASTE_UUID, settlementMethod: { accountToPay: PASTE_ACCOUNT, settlementOracle: Oracle, _type: com.r3.corda.finance.ripple.types.XrpSettlement }
 

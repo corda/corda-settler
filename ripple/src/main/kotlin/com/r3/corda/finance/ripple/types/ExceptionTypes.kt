@@ -24,3 +24,7 @@ class InsufficientBalanceException : RippleRpcException() {
 class AlreadysubmittedException : RippleRpcException() {
     override fun toString() = "The transaction has already been submitted."
 }
+
+class PaymentToSelfException : RippleRpcException() {
+    override fun toString() = "The payment is being made from and to the same account."
+}

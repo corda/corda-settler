@@ -31,7 +31,7 @@ Clone the Corda Settler repository and deploy locally:
     cd corda-settler
     ./gradlew clean deployNodes
 
-**Note**: In the OffLedgerSettleObligation flow, XRP will be sent from the account specified in the xrp.conf file located in main/kotlin/resources. You will need to rerun the deploy command when you change this information.
+**Note**: In the OffLedgerSettleObligation flow, XRP will be sent from the account specified in the xrp.conf file located in cordapp/src/main/resources. You will need to rerun the deploy command when you change this information.
 
 Run the nodes:
 

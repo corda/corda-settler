@@ -26,8 +26,9 @@ interface ReadWriteXRPClient : ReadOnlyXRPClient {
             "tecUNFUNDED_PAYMENT" -> throw InsufficientBalanceException()
             "tefPAST_SEQ", "terPRE_SEQ" -> throw IncorrectSequenceNumberException()
             "tefALREADY" -> throw IncorrectSequenceNumberException()
+            "temREDUNDANT" -> throw PaymentToSelfException()
             "tesSUCCESS" -> deserializedResponse
-            else -> throw IllegalStateException("Unhandled error.")
+            else -> throw IllegalStateException("Unhandled error: $deserializedResponse")
         }
     }
 

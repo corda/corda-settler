@@ -74,7 +74,7 @@ class XrpClientTests {
 
     @Test
     fun `get transaction info for valid transaction id`() {
-        println(client.transaction("58FB45D3A81B1F5AEA9E8A114056F3637312A043C24226EE4A62BE9B8051CBE2"))
+        println(client.transaction("06B7AE6CF95A6181E14635383247FB379428309F02A8279D6FD38BA268F89F12"))
     }
 
     @Test

@@ -2,7 +2,6 @@ package com.r3.corda.finance.swift.services
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.fuel.httpPost
 import com.r3.corda.finance.obligation.types.FiatCurrency
 import com.r3.corda.finance.swift.types.SWIFTErrorResponse
@@ -13,9 +12,8 @@ import com.r3.corda.finance.swift.types.SWIFTParticipantInfo
 import com.r3.corda.finance.swift.types.SWIFTParticipantOrganisationIdentification
 import com.r3.corda.finance.swift.types.SWIFTPaymentAmount
 import com.r3.corda.finance.swift.types.SWIFTPaymentIdentification
-import com.r3.corda.finance.swift.types.SWIFTRequestedExecutionDate
 import com.r3.corda.finance.swift.types.SWIFTPaymentResponse
-import com.r3.corda.finance.swift.types.SWIFTPaymentStatus
+import com.r3.corda.finance.swift.types.SWIFTRequestedExecutionDate
 import com.r3.corda.finance.swift.types.SwiftPaymentInstruction
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
@@ -26,14 +24,11 @@ import net.corda.core.node.services.CordaService
 import net.corda.core.serialization.SingletonSerializeAsToken
 import org.slf4j.LoggerFactory
 import java.io.File
-import java.lang.IllegalArgumentException
 import java.math.BigDecimal
 import java.nio.file.Paths
 import java.text.DecimalFormat
-import java.util.*
 import java.text.SimpleDateFormat
-
-
+import java.util.*
 
 @CordaService
 class SWIFTService(private val appServiceHub : AppServiceHub) : SingletonSerializeAsToken() {
@@ -43,8 +38,11 @@ class SWIFTService(private val appServiceHub : AppServiceHub) : SingletonSeriali
 
     private var _config = loadConfig()
 
-    private fun settlementUrl() = _config.getString("settlementUrl")
-            ?: throw IllegalArgumentException("settlementUrl must be provided")
+    private fun apiUrl() = _config.getString("apiUrl")
+            ?: throw IllegalArgumentException("apiUrl must be provided")
+
+    private fun apiKey() = _config.getString("apiKey")
+            ?: throw IllegalArgumentException("apiKey must be provided")
 
     private fun creditorName() = _config.getString("creditorName")
             ?: throw IllegalArgumentException("creditorName must be provided")
@@ -99,7 +97,7 @@ class SWIFTService(private val appServiceHub : AppServiceHub) : SingletonSeriali
                 remittanceInformation)
 
         val mapper = jacksonObjectMapper()
-        val paymentUrl = "${settlementUrl()}/payment_initiation"
+        val paymentUrl = "${apiUrl()}/payment_initiation"
         val paymentInstructionId = swiftPaymentInstruction.paymentIdentification.e2eIdentification
 
         logger.info("Submitting payment instruction $swiftPaymentInstruction to $paymentUrl. PAYMENT_INSTRUCTION_ID=$paymentInstructionId")
@@ -108,6 +106,7 @@ class SWIFTService(private val appServiceHub : AppServiceHub) : SingletonSeriali
         val (req, res, result) = paymentUrl
                 .httpPost()
                 .header("Content-Type" to "application/json")
+                .header("x-api-key" to apiKey())
                 .body(mapper.writeValueAsString(swiftPaymentInstruction))
                 .response()
 
@@ -125,31 +124,6 @@ class SWIFTService(private val appServiceHub : AppServiceHub) : SingletonSeriali
             return mapper.readValue(responseData)
         }
     }
-
-    /**
-     * Fetches SWIFT payment status
-     */
-    fun checkPaymentStatus(uetr: String) : SWIFTPaymentStatus {
-        val checkStatusUrl = "${settlementUrl()}/$uetr/tracker_status"
-
-        logger.info("Submitting payment status request. UETR=$uetr")
-        val (req, res, result) = checkStatusUrl.httpGet().response()
-
-        val responseData = String(res.data)
-        val mapper = jacksonObjectMapper()
-        if (res.httpStatusCode >= 400) {
-            logger.warn("Error during retrieving payment status. UETR=$uetr, SWIFT_HTTP_STATUS=${res.httpStatusCode}, SWIFT_HTTP_ERROR_RESPONSE=$responseData")
-            val parsedResponse = mapper.readValue<SWIFTErrorResponse>(responseData)
-            throw SWIFTPaymentException("Error during retrieving payment status request. " +
-                    "Payment UETR=$uetr, " +
-                    "HTTP status=${res.httpStatusCode}, " +
-                    "HTTP response=$responseData", parsedResponse)
-        } else {
-            logger.info("Successfully retrieved payment status. UETR=$uetr, SWIFT_HTTP_STATUS=${res.httpStatusCode}, SWIFT_HTTP_ERROR_RESPONSE=$responseData")
-            return mapper.readValue(responseData)
-        }
-    }
-
 }
 
 class SWIFTPaymentException(message : String, val errorResponse : SWIFTErrorResponse) : FlowException(message)

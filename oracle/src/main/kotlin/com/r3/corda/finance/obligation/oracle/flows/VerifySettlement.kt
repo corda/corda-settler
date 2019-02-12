@@ -5,12 +5,18 @@ import com.r3.corda.finance.obligation.types.SettlementOracleResult
 import com.r3.corda.finance.obligation.commands.ObligationCommands
 import com.r3.corda.finance.obligation.contracts.ObligationContract
 import com.r3.corda.finance.obligation.flows.AbstractSendToSettlementOracle
+import com.r3.corda.finance.obligation.oracle.services.SwiftOracleService
 import com.r3.corda.finance.obligation.oracle.services.XrpOracleService
 import com.r3.corda.finance.obligation.states.Obligation
 import com.r3.corda.finance.obligation.types.DigitalCurrency
+import com.r3.corda.finance.obligation.types.FiatCurrency
+import com.r3.corda.finance.obligation.types.Money
 import com.r3.corda.finance.obligation.types.PaymentStatus
 import com.r3.corda.finance.ripple.types.XrpPayment
 import com.r3.corda.finance.ripple.types.XrpSettlement
+import com.r3.corda.finance.swift.types.SWIFTPaymentStatusType
+import com.r3.corda.finance.swift.types.SwiftPayment
+import com.r3.corda.finance.swift.types.SwiftSettlement
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.*
 import net.corda.core.transactions.SignedTransaction
@@ -23,7 +29,7 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
 
     override val progressTracker: ProgressTracker = ProgressTracker()
 
-    enum class VerifyResult { TIMEOUT, SUCCESS, PENDING }
+    enum class VerifyResult { TIMEOUT, SUCCESS, PENDING, REJECTED }
 
     @Suspendable
     fun verifyXrpSettlement(obligation: Obligation<DigitalCurrency>, xrpPayment: XrpPayment<DigitalCurrency>): VerifyResult {
@@ -41,8 +47,19 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
         }
     }
 
+    @Suspendable
+    fun verifySwiftSettlement(obligation: Obligation<FiatCurrency>, swiftPayment: SwiftPayment): VerifyResult {
+        val oracleService = serviceHub.cordaService(SwiftOracleService::class.java)
+        val paymentStatus = oracleService.getPaymentStatus(swiftPayment.paymentReference)
+        return when (SWIFTPaymentStatusType.valueOf(paymentStatus.transactionStatus.status)) {
+            SWIFTPaymentStatusType.RJCT -> VerifyResult.REJECTED
+            SWIFTPaymentStatusType.ACSP -> VerifyResult.SUCCESS
+            SWIFTPaymentStatusType.ACCC -> VerifyResult.SUCCESS
+        }
+    }
+
     private fun createTransaction(
-            obligationStateAndRef: StateAndRef<Obligation<DigitalCurrency>>,
+            obligationStateAndRef: StateAndRef<Obligation<Money>>,
             status: PaymentStatus
     ): SignedTransaction {
         // Update payment status.
@@ -67,7 +84,7 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
     @Suspendable
     override fun call() {
         // 1. Receive the obligation state we are verifying settlement of.
-        val obligationStateAndRef = subFlow(ReceiveStateAndRefFlow<Obligation<DigitalCurrency>>(otherSession)).single()
+        val obligationStateAndRef = subFlow(ReceiveStateAndRefFlow<Obligation<Money>>(otherSession)).single()
         val obligation = obligationStateAndRef.state.data
         val settlementMethod = obligation.settlementMethod
 
@@ -83,11 +100,12 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
         val lastPayment = if (payments.isEmpty()) {
             otherSession.send(SettlementOracleResult.Failure(null, "No payments have been made for this obligation."))
             return
-        } else obligation.payments.last() as XrpPayment<DigitalCurrency>
+        } else obligation.payments.last()
 
         // 4. Handle different settlement methods.
         val verifyResult = when (settlementMethod) {
-            is XrpSettlement -> verifyXrpSettlement(obligation, lastPayment)
+            is XrpSettlement -> verifyXrpSettlement(obligation as Obligation<DigitalCurrency>, lastPayment as XrpPayment<DigitalCurrency>)
+            is SwiftSettlement -> verifySwiftSettlement(obligation as Obligation<FiatCurrency>, lastPayment as SwiftPayment)
             else -> throw IllegalStateException("This Oracle only handles XRP settlement.")
         }
 

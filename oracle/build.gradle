@@ -53,6 +53,7 @@ dependencies {
     // CorDapp dependencies
     // Specify your CorDapp's dependencies below, including dependent CorDapps.
     cordaCompile project(":ripple")
+    cordaCompile project(":swift")
 }
 
 task integrationTest(type: Test, dependsOn: []) {

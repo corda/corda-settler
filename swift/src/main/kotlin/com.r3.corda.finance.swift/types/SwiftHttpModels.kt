@@ -119,3 +119,7 @@ data class SWIFTTransactionStatus(
         @JsonProperty("reason")
         val reason : String
 )
+
+enum class SWIFTPaymentStatusType {
+        RJCT, ACSP, ACCC
+}

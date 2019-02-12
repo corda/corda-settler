@@ -12,7 +12,12 @@ apply plugin: 'net.corda.plugins.cordformation'
 sourceSets {
     main {
         resources {
-            srcDir "../config/dev"
+            srcDir "config/dev"
+        }
+    }
+    test {
+        resources {
+            srcDir "config/test"
         }
     }
 }

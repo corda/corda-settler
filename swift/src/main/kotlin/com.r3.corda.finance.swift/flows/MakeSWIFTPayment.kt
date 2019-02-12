@@ -28,7 +28,7 @@ class MakeSWIFTPayment<T : Money>(
 
     /** Don't want to serialize this. */
     private fun createAndSignAndSubmitPayment(obligation: Obligation<*>, amount: Amount<T>): SWIFTPaymentResponse {
-        val swiftService = serviceHub.cordaService(SWIFTService::class.java)
+        val swiftService = serviceHub.cordaService(SWIFTService::class.java).swiftClient()
 
         if (obligation.dueBy == null)
             throw FlowException("Due date must be provided for SWIFT payment")

@@ -5,7 +5,6 @@ import com.r3.corda.finance.obligation.types.SettlementOracleResult
 import com.r3.corda.finance.obligation.commands.ObligationCommands
 import com.r3.corda.finance.obligation.contracts.ObligationContract
 import com.r3.corda.finance.obligation.flows.AbstractSendToSettlementOracle
-import com.r3.corda.finance.obligation.oracle.services.SwiftOracleService
 import com.r3.corda.finance.obligation.oracle.services.XrpOracleService
 import com.r3.corda.finance.obligation.states.Obligation
 import com.r3.corda.finance.obligation.types.DigitalCurrency
@@ -14,6 +13,7 @@ import com.r3.corda.finance.obligation.types.Money
 import com.r3.corda.finance.obligation.types.PaymentStatus
 import com.r3.corda.finance.ripple.types.XrpPayment
 import com.r3.corda.finance.ripple.types.XrpSettlement
+import com.r3.corda.finance.swift.services.SWIFTService
 import com.r3.corda.finance.swift.types.SWIFTPaymentStatusType
 import com.r3.corda.finance.swift.types.SwiftPayment
 import com.r3.corda.finance.swift.types.SwiftSettlement
@@ -49,11 +49,11 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
 
     @Suspendable
     fun verifySwiftSettlement(obligation: Obligation<FiatCurrency>, swiftPayment: SwiftPayment): VerifyResult {
-        val oracleService = serviceHub.cordaService(SwiftOracleService::class.java)
-        val paymentStatus = oracleService.getPaymentStatus(swiftPayment.paymentReference)
+        val oracleService = serviceHub.cordaService(SWIFTService::class.java)
+        val paymentStatus = oracleService.swiftClient().getPaymentStatus(swiftPayment.paymentReference)
         return when (SWIFTPaymentStatusType.valueOf(paymentStatus.transactionStatus.status)) {
             SWIFTPaymentStatusType.RJCT -> VerifyResult.REJECTED
-            SWIFTPaymentStatusType.ACSP -> VerifyResult.SUCCESS
+            SWIFTPaymentStatusType.ACSP -> VerifyResult.PENDING
             SWIFTPaymentStatusType.ACCC -> VerifyResult.SUCCESS
         }
     }

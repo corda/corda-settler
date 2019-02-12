@@ -32,6 +32,7 @@ interface Money : Fungible
 
 /** A wrapper for currency as it doesn't implement our interfaces and adds specificity around the currency being fiat. */
 data class FiatCurrency(private val currency: Currency) : Money {
+    val currencyCode: String get() = currency.currencyCode
     override val symbol: String get() = currency.symbol
     override val description: String get() = currency.displayName
     override val displayTokenSize: BigDecimal get() = BigDecimal.ONE.scaleByPowerOfTen(-currency.defaultFractionDigits)

@@ -22,6 +22,7 @@ import net.corda.core.flows.*
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
+import org.apache.qpid.proton.codec.transport.FlowType
 import java.time.Duration
 
 @InitiatedBy(AbstractSendToSettlementOracle::class)
@@ -51,10 +52,11 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
     fun verifySwiftSettlement(obligation: Obligation<FiatCurrency>, swiftPayment: SwiftPayment): VerifyResult {
         val oracleService = serviceHub.cordaService(SWIFTService::class.java)
         val paymentStatus = oracleService.swiftClient().getPaymentStatus(swiftPayment.paymentReference)
-        return when (SWIFTPaymentStatusType.valueOf(paymentStatus.transactionStatus.status)) {
+        return when (paymentStatus.transactionStatus) {
             SWIFTPaymentStatusType.RJCT -> VerifyResult.REJECTED
             SWIFTPaymentStatusType.ACSP -> VerifyResult.PENDING
             SWIFTPaymentStatusType.ACCC -> VerifyResult.SUCCESS
+            else -> throw FlowException("Invalid payment status ${paymentStatus.transactionStatus}")
         }
     }
 

@@ -14,6 +14,7 @@ import com.r3.corda.finance.ripple.services.XRPService
 import com.r3.corda.finance.ripple.types.XrpPayment
 import com.r3.corda.finance.ripple.types.XrpSettlement
 import com.r3.corda.finance.ripple.utilities.XRP
+import com.r3.corda.finance.swift.types.SwiftSettlement
 import com.ripple.core.coretypes.AccountID
 import net.corda.core.contracts.Amount
 import net.corda.core.flows.FinalityFlow
@@ -25,6 +26,7 @@ import net.corda.core.utilities.getOrThrow
 import net.corda.testing.node.StartedMockNode
 import org.junit.Before
 import org.junit.Test
+import java.time.Instant
 import java.util.concurrent.CompletableFuture
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -128,6 +130,41 @@ class ObligationTestsWithOracle : MockNetworkTest(numberOfNodes = 3) {
         val settledObligation = A.queryObligationById(obligationId)
         println(settledObligation.state.data)
         println(settledObligation.state.data.settlementMethod as XrpSettlement)
+    }
+
+
+    @Test
+    fun `end to end test with swift payment`() {
+        // Create obligation.
+        val newObligation = A.createObligation(10.GBP, B, CreateObligation.InitiatorRole.OBLIGOR, Instant.now().plusSeconds(10000)).getOrThrow()
+        val obligation = newObligation.singleOutput<Obligation<DigitalCurrency>>()
+        val obligationId = obligation.linearId()
+
+        // Add settlement instructions.
+        val debtorName = "Receiving corp"
+        val debtorLei = "6299300D2N76ADNE4Y55"
+        val debtorIban = "BE0473244135"
+        val debtorBicfi = "CITIGB2L"
+        val remittanceInformation = "arn:aws:acm-pca:eu-west-1:522843637103:certificate-authority/e2a9c0fd-b62e-44a9-bcc2-02e46a1f61c2"
+
+        val settlementInstructions = SwiftSettlement(debtorIban, O.legalIdentity(), debtorName, debtorLei, debtorBicfi, remittanceInformation)
+
+        // Add the settlement instructions.
+        B.addSettlementInstructions(obligationId, settlementInstructions).getOrThrow()
+
+        // Make the payment.
+        val obligationWithPaymentMade = A.transaction { A.makePayment(10.GBP, obligationId).getOrThrow() }
+        val transactionHash = obligationWithPaymentMade.id
+
+        // Wait for the updates on both nodes.
+        val aObligation = A.watchForTransaction(transactionHash).toCompletableFuture()
+        val bObligation = B.watchForTransaction(transactionHash).toCompletableFuture()
+        CompletableFuture.allOf(aObligation, bObligation)
+
+        // Print settled obligation info.
+        val settledObligation = A.queryObligationById(obligationId)
+        println(settledObligation.state.data)
+        println(settledObligation.state.data.settlementMethod as SwiftSettlement)
     }
 
     @Test

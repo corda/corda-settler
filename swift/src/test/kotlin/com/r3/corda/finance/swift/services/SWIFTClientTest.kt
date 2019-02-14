@@ -1,15 +1,17 @@
 package com.r3.corda.finance.swift.services
 
 import com.r3.corda.finance.obligation.types.FiatCurrency
+import com.r3.corda.finance.swift.types.SWIFTPaymentStatusType
 import net.corda.core.contracts.Amount
 import org.junit.Ignore
 import org.junit.Test
 import java.util.*
+import kotlin.test.assertEquals
 
 @Ignore
 class SWIFTClientTest {
     private val swiftService = SWIFTClient(
-            "https://gpi.swiftlabapis.com/beta",
+            "https://cos.swiftlabapis.com/beta",
             "zpZxo32bK27q0EVO36B25ETGzaC0SyilThD2Ry00",
             "PayingCorporate",
             "5299000J2N45DDNE4Y28",
@@ -28,7 +30,9 @@ class SWIFTClientTest {
                 "arn:aws:acm-pca:eu-west-1:522843637103:certificate-authority/e2a9c0fd-b62e-44a9-bcc2-02e46a1f61c2")
         println("Payment result $submissionResult")
 
-        val paymentStatus = swiftService.getPaymentStatus(submissionResult.uetr)
+        val paymentStatus =  swiftService.getPaymentStatus(submissionResult.uetr)
         println("Payment status: $paymentStatus")
+
+        assertEquals(SWIFTPaymentStatusType.ACSP, paymentStatus.transactionStatus)
     }
 }

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.fuel.httpPost
 import com.r3.corda.finance.obligation.types.FiatCurrency
-import com.r3.corda.finance.swift.types.SWIFTErrorResponse
 import com.r3.corda.finance.swift.types.SWIFTInstructedPaymentAmount
 import com.r3.corda.finance.swift.types.SWIFTParticipantAccount
 import com.r3.corda.finance.swift.types.SWIFTParticipantAgent
@@ -87,11 +86,7 @@ class SWIFTClient(
         // if the payment attempt resulted to error - logging and throwing FlowException
         if (res.httpStatusCode >= 400) {
             logger.warn("Error during submitting payment. PAYMENT_INSTRUCTION_ID=$paymentInstructionId, SWIFT_HTTP_STATUS=${res.httpStatusCode}, SWIFT_HTTP_ERROR_RESPONSE=$responseData")
-            val parsedResponse = mapper.readValue<SWIFTErrorResponse>(responseData)
-            throw SWIFTPaymentException("Error during submitting payment instruction. " +
-                    "Payment instruction=$swiftPaymentInstruction, " +
-                    "HTTP status=${res.httpStatusCode}, " +
-                    "HTTP response=$responseData", parsedResponse)
+            throw SWIFTPaymentException("Error during submitting payment instruction. Http status=${res.httpStatusCode}, response data=$responseData.")
         } else {
             logger.info("Successfully submitted payment instruction. PAYMENT_INSTRUCTION_ID=$paymentInstructionId, SWIFT_HTTP_STATUS=${res.httpStatusCode}, SWIFT_HTTP_ERROR_RESPONSE=$responseData")
             return mapper.readValue(responseData)
@@ -102,23 +97,21 @@ class SWIFTClient(
      * Fetches SWIFT payment status
      */
     fun getPaymentStatus(uetr: String) : SWIFTPaymentStatus {
-        val checkStatusUrl = "$apiUrl/$uetr/tracker_status"
+        val checkStatusUrl = "$apiUrl/payment_initiation/$uetr/tracker_status"
 
         SWIFTClient.logger.info("Submitting payment status request. UETR=$uetr")
         val (req, res, result) = checkStatusUrl
                 .httpGet()
                 .header("x-api-key" to apiKey)
+                .header("accept" to "application/json")
+                .header("content-type" to "application/json")
                 .response()
 
         val responseData = String(res.data)
         val mapper = jacksonObjectMapper()
         if (res.httpStatusCode >= 400) {
             SWIFTClient.logger.warn("Error during retrieving payment status. UETR=$uetr, SWIFT_HTTP_STATUS=${res.httpStatusCode}, SWIFT_HTTP_ERROR_RESPONSE=$responseData")
-            val parsedResponse = mapper.readValue<SWIFTErrorResponse>(responseData)
-            throw SWIFTPaymentException("Error during retrieving payment status request. " +
-                    "Payment UETR=$uetr, " +
-                    "HTTP status=${res.httpStatusCode}, " +
-                    "HTTP response=$responseData", parsedResponse)
+            throw SWIFTPaymentException("Error during retrieving payment status request. Http status=${res.httpStatusCode}, response data=$responseData.")
         } else {
             SWIFTClient.logger.info("Successfully retrieved payment status. UETR=$uetr, SWIFT_HTTP_STATUS=${res.httpStatusCode}, SWIFT_HTTP_ERROR_RESPONSE=$responseData")
             return mapper.readValue(responseData)
@@ -126,4 +119,4 @@ class SWIFTClient(
     }
 }
 
-class SWIFTPaymentException(message : String, val errorResponse : SWIFTErrorResponse) : FlowException(message)
+class SWIFTPaymentException(message : String) : FlowException(message)

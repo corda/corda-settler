@@ -29,6 +29,10 @@ import java.time.Duration
 class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
 
     override val progressTracker: ProgressTracker = ProgressTracker()
+    companion object {
+        private const val TIME_TO_WAIT_FOR_SETTLEMENT = 5L
+    }
+
 
     enum class VerifyResult { TIMEOUT, SUCCESS, PENDING, REJECTED }
 
@@ -43,7 +47,7 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
                 // Sleep for five seconds before we try again. The Oracle might receive the request to verify payment
                 // before the payment succeed. Also it takes a bit of time for all the nodes to receive the new ledger
                 // version. Note: sleep is a suspendable operation.
-                VerifyResult.PENDING -> sleep(Duration.ofSeconds(5))
+                VerifyResult.PENDING -> sleep(Duration.ofSeconds(TIME_TO_WAIT_FOR_SETTLEMENT))
             }
         }
     }
@@ -51,12 +55,15 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
     @Suspendable
     fun verifySwiftSettlement(obligation: Obligation<FiatCurrency>, swiftPayment: SwiftPayment): VerifyResult {
         val oracleService = serviceHub.cordaService(SWIFTService::class.java)
-        val paymentStatus = oracleService.swiftClient().getPaymentStatus(swiftPayment.paymentReference)
-        return when (paymentStatus.transactionStatus) {
-            SWIFTPaymentStatusType.RJCT -> VerifyResult.REJECTED
-            SWIFTPaymentStatusType.ACSP -> VerifyResult.PENDING
-            SWIFTPaymentStatusType.ACCC -> VerifyResult.SUCCESS
-            else -> throw FlowException("Invalid payment status ${paymentStatus.transactionStatus}")
+        while (true) {
+            val paymentStatus = oracleService.swiftClient().getPaymentStatus(swiftPayment.paymentReference)
+            when (paymentStatus.transactionStatus) {
+                SWIFTPaymentStatusType.RJCT -> return VerifyResult.REJECTED
+                SWIFTPaymentStatusType.ACCC -> return VerifyResult.SUCCESS
+                // TODO: we need to come up with some more clever way of waiting for the status to be updated. Maybe exponential back-off
+                SWIFTPaymentStatusType.ACSP -> sleep(Duration.ofSeconds(TIME_TO_WAIT_FOR_SETTLEMENT))
+                else -> throw FlowException("Invalid payment status ${paymentStatus.transactionStatus}")
+            }
         }
     }
 
@@ -112,7 +119,7 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
         }
 
         when (verifyResult) {
-            VerifyResult.TIMEOUT -> {
+            VerifyResult.TIMEOUT, VerifyResult.REJECTED -> {
                 val stx = createTransaction(obligationStateAndRef, PaymentStatus.FAILED)
                 otherSession.send(SettlementOracleResult.Failure(stx, "Payment wasn't made by the deadline."))
             }

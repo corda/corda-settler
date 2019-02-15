@@ -14,6 +14,7 @@ import com.r3.corda.finance.swift.types.SWIFTPaymentAmount
 import com.r3.corda.finance.swift.types.SWIFTPaymentIdentification
 import com.r3.corda.finance.swift.types.SWIFTPaymentResponse
 import com.r3.corda.finance.swift.types.SWIFTPaymentStatus
+import com.r3.corda.finance.swift.types.SWIFTPaymentStatusType
 import com.r3.corda.finance.swift.types.SWIFTRequestedExecutionDate
 import com.r3.corda.finance.swift.types.SwiftPaymentInstruction
 import net.corda.core.contracts.Amount
@@ -85,8 +86,8 @@ class SWIFTClient(
 
         // if the payment attempt resulted to error - logging and throwing FlowException
         if (res.httpStatusCode >= 400) {
-            logger.warn("Error during submitting payment. PAYMENT_INSTRUCTION_ID=$paymentInstructionId, SWIFT_HTTP_STATUS=${res.httpStatusCode}, SWIFT_HTTP_ERROR_RESPONSE=$responseData")
-            throw SWIFTPaymentException("Error during submitting payment instruction. Http status=${res.httpStatusCode}, response data=$responseData.")
+            logger.warn("Error while submitting payment. PAYMENT_INSTRUCTION_ID=$paymentInstructionId, SWIFT_HTTP_STATUS=${res.httpStatusCode}, SWIFT_HTTP_ERROR_RESPONSE=$responseData")
+            throw SWIFTPaymentException("Error while submitting payment instruction. Http status=${res.httpStatusCode}, response data=$responseData.")
         } else {
             logger.info("Successfully submitted payment instruction. PAYMENT_INSTRUCTION_ID=$paymentInstructionId, SWIFT_HTTP_STATUS=${res.httpStatusCode}, SWIFT_HTTP_ERROR_RESPONSE=$responseData")
             return mapper.readValue(responseData)
@@ -99,7 +100,7 @@ class SWIFTClient(
     fun getPaymentStatus(uetr: String) : SWIFTPaymentStatus {
         val checkStatusUrl = "$apiUrl/payment_initiation/$uetr/tracker_status"
 
-        SWIFTClient.logger.info("Submitting payment status request. UETR=$uetr")
+        SWIFTClient.logger.info("Getting payment status. UETR=$uetr")
         val (req, res, result) = checkStatusUrl
                 .httpGet()
                 .header("x-api-key" to apiKey)
@@ -110,11 +111,34 @@ class SWIFTClient(
         val responseData = String(res.data)
         val mapper = jacksonObjectMapper()
         if (res.httpStatusCode >= 400) {
-            SWIFTClient.logger.warn("Error during retrieving payment status. UETR=$uetr, SWIFT_HTTP_STATUS=${res.httpStatusCode}, SWIFT_HTTP_ERROR_RESPONSE=$responseData")
-            throw SWIFTPaymentException("Error during retrieving payment status request. Http status=${res.httpStatusCode}, response data=$responseData.")
+            SWIFTClient.logger.warn("Error while retrieving payment status. UETR=$uetr, SWIFT_HTTP_STATUS=${res.httpStatusCode}, SWIFT_HTTP_ERROR_RESPONSE=$responseData")
+            throw SWIFTPaymentException("Error while retrieving payment status request. Http status=${res.httpStatusCode}, response data=$responseData.")
         } else {
             SWIFTClient.logger.info("Successfully retrieved payment status. UETR=$uetr, SWIFT_HTTP_STATUS=${res.httpStatusCode}, SWIFT_HTTP_ERROR_RESPONSE=$responseData")
             return mapper.readValue(responseData)
+        }
+    }
+
+    /**
+     * TODO: This method should be eventually removed. This API is open for testing only.
+     */
+    fun updatePaymentStatus(uetr: String, status : SWIFTPaymentStatusType) {
+        val checkStatusUrl = "$apiUrl/payment_initiation/$uetr/tracker_status?newstatus=$status"
+
+        SWIFTClient.logger.info("Updating payment status. UETR=$uetr")
+        val (req, res, result) = checkStatusUrl
+                .httpPost()
+                .header("x-api-key" to apiKey)
+                .header("accept" to "application/json")
+                .header("content-type" to "application/json")
+                .response()
+
+        val responseData = String(res.data)
+        if (res.httpStatusCode >= 400) {
+            SWIFTClient.logger.warn("Error during updating payment status. UETR=$uetr, SWIFT_HTTP_STATUS=${res.httpStatusCode}, SWIFT_HTTP_ERROR_RESPONSE=$responseData")
+            throw SWIFTPaymentException("Error during updating payment status request. Http status=${res.httpStatusCode}, response data=$responseData.")
+        } else {
+            SWIFTClient.logger.info("Successfully updated payment status. UETR=$uetr, SWIFT_HTTP_STATUS=${res.httpStatusCode}, SWIFT_HTTP_ERROR_RESPONSE=$responseData")
         }
     }
 }

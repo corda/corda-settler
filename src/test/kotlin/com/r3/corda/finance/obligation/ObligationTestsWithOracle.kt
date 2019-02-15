@@ -1,6 +1,7 @@
 package com.r3.corda.finance.obligation
 
 import com.r3.corda.finance.obligation.client.flows.CreateObligation
+import com.r3.corda.finance.obligation.client.flows.MakeOffLedgerPayment
 import com.r3.corda.finance.obligation.client.flows.SendToSettlementOracle
 import com.r3.corda.finance.obligation.commands.ObligationCommands
 import com.r3.corda.finance.obligation.contracts.ObligationContract
@@ -8,11 +9,13 @@ import com.r3.corda.finance.obligation.states.Obligation
 import com.r3.corda.finance.obligation.types.DigitalCurrency
 import com.r3.corda.finance.obligation.types.Money
 import com.r3.corda.finance.obligation.types.PaymentStatus
+import com.r3.corda.finance.ripple.flows.MakeXrpPayment
 import com.r3.corda.finance.ripple.services.XRPService
 import com.r3.corda.finance.ripple.types.XrpPayment
 import com.r3.corda.finance.ripple.types.XrpSettlement
 import com.r3.corda.finance.ripple.utilities.XRP
 import com.ripple.core.coretypes.AccountID
+import net.corda.core.contracts.Amount
 import net.corda.core.flows.FinalityFlow
 import net.corda.core.node.services.Vault
 import net.corda.core.node.services.queryBy
@@ -126,7 +129,6 @@ class ObligationTestsWithOracle : MockNetworkTest(numberOfNodes = 3) {
         println(settledObligation.state.data)
         println(settledObligation.state.data.settlementMethod as XrpSettlement)
     }
-
 
     @Test
     fun `partial settlement`() {

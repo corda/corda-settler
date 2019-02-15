@@ -69,7 +69,7 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
             faceAmount: Amount<T>,
             counterparty: StartedMockNode,
             role: CreateObligation.InitiatorRole,
-            dueBy: Instant? = null
+            dueBy: Instant = Instant.now().plusSeconds(10000)
     ): CordaFuture<WireTransaction> {
         return transaction {
             val flow = CreateObligation.Initiator(faceAmount, role, counterparty.legalIdentity(), dueBy)

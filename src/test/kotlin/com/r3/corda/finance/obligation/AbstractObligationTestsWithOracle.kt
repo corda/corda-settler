@@ -2,12 +2,10 @@ package com.r3.corda.finance.obligation
 
 import com.r3.corda.finance.obligation.client.flows.CreateObligation
 import com.r3.corda.finance.obligation.client.flows.SendToSettlementOracle
-import com.r3.corda.finance.obligation.commands.ObligationCommands
 import com.r3.corda.finance.obligation.states.Obligation
 import com.r3.corda.finance.obligation.types.DigitalCurrency
 import com.r3.corda.finance.obligation.types.Money
 import com.r3.corda.finance.obligation.types.OffLedgerPayment
-import com.r3.corda.finance.ripple.utilities.XRP
 import net.corda.core.identity.Party
 import net.corda.core.node.services.Vault
 import net.corda.core.node.services.queryBy
@@ -21,6 +19,9 @@ import java.util.concurrent.CompletableFuture
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
+/**
+ * Each new payment rails need to extend from this class to implement basic integration tests
+ */
 abstract class AbstractObligationTestsWithOracle<out T : OffLedgerPayment<*>>(
         protected val currency : Money
 ) : MockNetworkTest(numberOfNodes = 3) {
@@ -39,38 +40,6 @@ abstract class AbstractObligationTestsWithOracle<out T : OffLedgerPayment<*>>(
         A = nodes[0]
         B = nodes[1]
         O = nodes[2]
-    }
-
-    @Test
-    fun `newly created obligation is stored in vaults of participants`() {
-        // Create obligation.
-        val newTransaction = A.createObligation(10000.XRP, B, CreateObligation.InitiatorRole.OBLIGOR).getOrThrow()
-        val obligation = newTransaction.singleOutput<Obligation<DigitalCurrency>>()
-        val obligationId = obligation.linearId()
-
-        // Check both parties have the same obligation.
-        val aObligation = A.queryObligationById(obligationId)
-        val bObligation = B.queryObligationById(obligationId)
-        assertEquals(aObligation, bObligation)
-    }
-
-    @Test
-    fun `novate obligation currency`() {
-        // Create obligation.
-        val newTransaction = A.createObligation(10000.USD, B, CreateObligation.InitiatorRole.OBLIGOR).getOrThrow()
-        val obligation = newTransaction.singleOutput<Obligation<DigitalCurrency>>()
-        val obligationId = obligation.linearId()
-
-        val novationCommand = ObligationCommands.Novate.UpdateFaceAmountToken<Money, Money>(
-                oldToken = USD,
-                newToken = XRP,
-                oracle = O.legalIdentity(),
-                fxRate = null
-        )
-
-        val result = A.transaction { A.novateObligation(obligationId, novationCommand).getOrThrow() }
-        val novatedObligation = result.singleOutput<Obligation<Money>>()
-        assertEquals(XRP, novatedObligation.state.data.faceAmount.token)
     }
 
     @Test

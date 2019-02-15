@@ -19,7 +19,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.test.assertEquals
 
-class SWIFTSettlementTests : MockNetworkTest(numberOfNodes = 3) {
+class SWIFTObligationTestsWithOracle : MockNetworkTest(numberOfNodes = 3) {
     lateinit var A: StartedMockNode
     lateinit var B: StartedMockNode
     lateinit var O: StartedMockNode

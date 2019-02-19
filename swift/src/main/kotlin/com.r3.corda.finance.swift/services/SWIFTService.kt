@@ -12,11 +12,23 @@ import java.nio.file.Paths
 class SWIFTService(val appServiceHub : AppServiceHub) : SingletonSerializeAsToken() {
     private var _config = loadConfig()
 
-    private fun apiUrl() = _config.getString("apiUrl")
-            ?: throw IllegalArgumentException("apiUrl must be provided")
+    private val apiUrl : String
+            get() = _config.getString("apiUrl") ?: throw IllegalArgumentException("apiUrl must be provided")
 
-    private fun apiKey() = _config.getString("apiKey")
-            ?: throw IllegalArgumentException("apiKey must be provided")
+    private val apiKey: String
+            get() = _config.getString("apiKey") ?: throw IllegalArgumentException("apiKey must be provided")
+
+    val debtorName : String
+            get() = _config.getString("debtorName") ?: throw IllegalArgumentException("debtorName must be provided")
+
+    val debtorLei: String
+            get() = _config.getString("debtorLei") ?: throw IllegalArgumentException("debtorLei must be provided")
+
+    val debtorIban: String
+            get() = _config.getString("debtorIban") ?: throw IllegalArgumentException("debtorIban must be provided")
+
+    val debtorBicfi: String
+            get() = _config.getString("debtorBicfi") ?: throw IllegalArgumentException("debtorBicfi must be provided")
 
     /**
      * Attempts to load service configuration from cordapps/config with a fallback to classpath
@@ -28,18 +40,5 @@ class SWIFTService(val appServiceHub : AppServiceHub) : SingletonSerializeAsToke
         else ConfigFactory.parseFile(File(SWIFTClient::class.java.classLoader.getResource(fileName).toURI()))
     }
 
-    private fun debtorName() = _config.getString("debtorName")
-            ?: throw IllegalArgumentException("debtorName must be provided")
-
-    private fun debtorLei() = _config.getString("debtorLei")
-            ?: throw IllegalArgumentException("debtorLei must be provided")
-
-    private fun debtorIban() = _config.getString("debtorIban")
-            ?: throw IllegalArgumentException("debtorIban must be provided")
-
-    private fun debtorBicfi() = _config.getString("debtorBicfi")
-            ?: throw IllegalArgumentException("debtorBicfi must be provided")
-
-
-    fun swiftClient() = SWIFTClient(apiUrl(), apiKey(), debtorName(), debtorLei(), debtorIban(), debtorBicfi())
+    fun swiftClient() = SWIFTClient(apiUrl, apiKey)
 }

@@ -12,17 +12,17 @@ import kotlin.test.assertEquals
 class SWIFTClientTest {
     private val swiftService = SWIFTClient(
             "https://cos.swiftlabapis.com/beta",
-            "zpZxo32bK27q0EVO36B25ETGzaC0SyilThD2Ry00",
-            "PayingCorporate",
-            "5299000J2N45DDNE4Y28",
-            "BE0473244135",
-            "CITIGB2L")
+            "zpZxo32bK27q0EVO36B25ETGzaC0SyilThD2Ry00")
 
     @Test
     fun `test submit payment and get status`() {
         val submissionResult = swiftService.makePayment("MyInVoice2You",
                 Date(),
                 Amount(1000, FiatCurrency("GBP")),
+                "PayingCorporate",
+                "5299000J2N45DDNE4Y28",
+                "BE0473244135",
+                "CITIGB2L",
                 "Receiving corp",
                 "6299300D2N76ADNE4Y55",
                 "BE0473244135",

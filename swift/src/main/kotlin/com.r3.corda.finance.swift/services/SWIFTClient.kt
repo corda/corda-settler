@@ -27,12 +27,7 @@ import java.util.*
 
 class SWIFTClient(
         private val apiUrl : String,
-        private val apiKey : String,
-        private val debtorName : String,
-        private val debtorLei : String,
-        private val debtorIban : String,
-        private val debtorBicfi : String
-        ) {
+        private val apiKey : String) {
     companion object {
         val logger = LoggerFactory.getLogger(SWIFTClient::class.java)
     }
@@ -43,6 +38,10 @@ class SWIFTClient(
     fun makePayment(e2eId : String,
                     executionDate : Date,
                     amount : Amount<FiatCurrency>,
+                    debtorName : String,
+                    debtorLei : String,
+                    debtorIban : String,
+                    debtorBicfi : String,
                     creditorName : String,
                     creditorLei : String,
                     creditorIban : String,

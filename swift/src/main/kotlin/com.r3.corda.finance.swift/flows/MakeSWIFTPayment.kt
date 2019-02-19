@@ -28,7 +28,8 @@ class MakeSWIFTPayment<T : Money>(
 
     /** Don't want to serialize this. */
     private fun createAndSignAndSubmitPayment(obligation: Obligation<*>, amount: Amount<T>): SWIFTPaymentResponse {
-        val swiftService = serviceHub.cordaService(SWIFTService::class.java).swiftClient()
+        val swiftService = serviceHub.cordaService(SWIFTService::class.java)
+        val swiftClient = swiftService.swiftClient()
 
         if (obligation.dueBy == null)
             throw FlowException("Due date must be provided for SWIFT payment")
@@ -41,16 +42,20 @@ class MakeSWIFTPayment<T : Money>(
 
         val swiftSettlement = obligation.settlementMethod as SwiftSettlement
 
-        return swiftService.makePayment(
+        return swiftClient.makePayment(
                 // TODO: for now we taking obligations's linearId as an e2e payment id. This behaviour needs to be changed,
                 // we need to let API consumers to provide their own e2e ids as strings, which would also give us idempotence out-of-the-box
                 obligation.linearId.toString(),
                 Date.from(obligation.dueBy),
                 amount as Amount<FiatCurrency>,
-                swiftSettlement.debtorName,
-                swiftSettlement.debtorLei,
+                swiftService.debtorName,
+                swiftService.debtorLei,
+                swiftService.debtorIban,
+                swiftService.debtorBicfi,
+                swiftSettlement.creditorName,
+                swiftSettlement.creditorLei,
                 swiftSettlement.accountToPay,
-                swiftSettlement.debtorBicfi,
+                swiftSettlement.creditorBicfi,
                 swiftSettlement.remittanceInformation
         )
     }

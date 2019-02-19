@@ -12,7 +12,7 @@ import kotlin.test.assertEquals
 class SWIFTClientTest {
     private val swiftService = SWIFTClient(
             "https://cos.swiftlabapis.com/beta",
-            "zpZxo32bK27q0EVO36B25ETGzaC0SyilThD2Ry00")
+            "EMAIL IVAN/ROGER FOR API KEY")
 
     @Test
     fun `test submit payment and get status`() {

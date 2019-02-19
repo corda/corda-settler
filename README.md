@@ -110,7 +110,10 @@ There are four modules in this repo:
    defines the types, serialisers and client interface necessary for
    interacting with Ripple nodes. The interfaces are defined in the `services`
    package.
-4. `oracle` which contains an implementation of the `XrpOracleService` which
+4. `swift` which contains an implementation of the `MakeOffLedgerPayment` flow
+   called `MakeSWIFTPayment`. `MakeSWIFTPayment` uses SWIFT http APIs
+   to submit SWIFT payment instruction. 
+5. `oracle` which contains an implementation of the `XrpOracleService` which
    checks whether an XRP payment specified by a transaction hash has
    credited a specific XRP account. There is also a stubbed-out exchange rate
    Oracle which is required for novating obligation face value token types.

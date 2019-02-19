@@ -38,7 +38,7 @@ class SWIFTObligationTestsWithOracle : AbstractObligationTestsWithOracle<SwiftSe
             // we need to craft a swift client manually here because status update endpoint requires a different apiUrl
             val swiftClient = SWIFTClient(
                     "https://gpi.swiftlabapis.com/beta",
-                    "zpZxo32bK27q0EVO36B25ETGzaC0SyilThD2Ry00")
+                    "EMAIL IVAN/ROGER FOR API KEY")
 
             // we know that there is only one obligation there
             val swiftObligation = A.services.vaultService.queryBy<Obligation<Money>>().states.single()

@@ -22,6 +22,7 @@ import net.corda.testing.node.MockNetwork
 import net.corda.testing.node.StartedMockNode
 import org.junit.After
 import org.junit.Before
+import java.time.Instant
 
 abstract class MockNetworkTest(val numberOfNodes: Int) {
 
@@ -31,7 +32,8 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
                     "com.r3.corda.finance.obligation.client",
                     "com.r3.corda.finance.ripple",
                     "com.r3.corda.finance.obligation.oracle",
-                    "com.r3.corda.finance.obligation"
+                    "com.r3.corda.finance.obligation",
+                    "com.r3.corda.finance.swift"
             ),
             threadPerNode = true
     )
@@ -66,10 +68,11 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
     fun <T : Money> StartedMockNode.createObligation(
             faceAmount: Amount<T>,
             counterparty: StartedMockNode,
-            role: CreateObligation.InitiatorRole
+            role: CreateObligation.InitiatorRole,
+            dueBy: Instant = Instant.now().plusSeconds(10000)
     ): CordaFuture<WireTransaction> {
         return transaction {
-            val flow = CreateObligation.Initiator(faceAmount, role, counterparty.legalIdentity())
+            val flow = CreateObligation.Initiator(faceAmount, role, counterparty.legalIdentity(), dueBy)
             startFlow(flow)
         }
     }

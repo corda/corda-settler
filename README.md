@@ -2,15 +2,14 @@
 
 ## Background
 
-Obligations which arise on a Corda ledger can be settled individually,
-in whole, with off-ledger payments, in this case XRP. Example: Alice
+Obligations which are represented on a Corda ledger can be settled individually,
+in whole or in part, with Corda Settler. Example: Alice
 incurs an obligation to pay Bob an amount of USD at some point in the
 future. Alice should only be able to mark the obligation as paid if she
-can prove that the required amount of XRP was paid to Bob via the XRP
-ledger.
+can prove that the required amount payment was made to Bob via the specified method
 
 This repository contains an implementation of the Corda Settler with a
-plugin to handle off-ledger settlement in XRP.
+plugin to handle off-ledger settlement in other non-Corda payment systems.
 
 ## Usage
 
@@ -67,6 +66,8 @@ Next, from the `Party A` node, novate the obligation face value token to XRP:
     start NovateObligation linearId: PASTE_UUID, novationCommand: { oldToken: { currencyCode: USD, type: fiat }, newToken: { currencyCode: XRP, type: digital }, oracle: Oracle, type: token }
 
 Next, from the `Party B` node, we need to add the settlement instructions.
+
+## Using XRP as the settlement rail
 You will need to use an XRP address of an XRP account which you control. If
 you don't have an XRP account then you can get one from the testnet
 Faucet: https://developers.ripple.com/xrp-test-net-faucet.html. This account 
@@ -87,7 +88,7 @@ Oracle in this repository, the demo uses a fixed exchange rate of XRP/USD 0.50.
 
 ## Repo structure
 
-There are four modules in this repo:
+There are five modules in this repo:
 
 1. `cordapp-states-contracts` which contains the `Obligation` state and
    `ObligationContract`, as well as some abstract flows  definitions and
@@ -364,6 +365,7 @@ not need to sign.
   parts of the `XrpOracleService` to the abstract class.
 * Add the option to use a mock Fx Oracle that just provides a single
   fixed Fx rate.
+* Make readme agnostic to payment method
 
 
 

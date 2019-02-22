@@ -115,7 +115,7 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
         val verifyResult = when (settlementMethod) {
             is XrpSettlement -> verifyXrpSettlement(obligation as Obligation<DigitalCurrency>, lastPayment as XrpPayment<DigitalCurrency>)
             is SwiftSettlement -> verifySwiftSettlement(obligation as Obligation<FiatCurrency>, lastPayment as SwiftPayment)
-            else -> throw IllegalStateException("This Oracle only handles XRP settlement.")
+            else -> throw IllegalStateException("Invalid settlement method $settlementMethod.")
         }
 
         when (verifyResult) {

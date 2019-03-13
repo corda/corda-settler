@@ -85,10 +85,10 @@ class SWIFTClient(
 
         // if the payment attempt resulted to error - logging and throwing FlowException
         if (res.httpStatusCode >= 400) {
-            logger.warn("Error while submitting payment. PAYMENT_INSTRUCTION_ID=$paymentInstructionId, SWIFT_HTTP_STATUS=${res.httpStatusCode}, SWIFT_HTTP_ERROR_RESPONSE=$responseData")
+            logger.warn("Error while submitting payment. PAYMENT_INSTRUCTION_ID=$paymentInstructionId, SWIFT_HTTP_STATUS=${res.httpStatusCode}, SWIFT_HTTP_RESPONSE=$responseData")
             throw SWIFTPaymentException("Error while submitting payment instruction. Http status=${res.httpStatusCode}, response data=$responseData.")
         } else {
-            logger.info("Successfully submitted payment instruction. PAYMENT_INSTRUCTION_ID=$paymentInstructionId, SWIFT_HTTP_STATUS=${res.httpStatusCode}, SWIFT_HTTP_ERROR_RESPONSE=$responseData")
+            logger.info("Successfully submitted payment instruction. PAYMENT_INSTRUCTION_ID=$paymentInstructionId, SWIFT_HTTP_STATUS=${res.httpStatusCode}, SWIFT_HTTP_RESPONSE=$responseData")
             return mapper.readValue(responseData)
         }
     }
@@ -110,10 +110,10 @@ class SWIFTClient(
         val responseData = String(res.data)
         val mapper = jacksonObjectMapper()
         if (res.httpStatusCode >= 400) {
-            SWIFTClient.logger.warn("Error while retrieving payment status. UETR=$uetr, SWIFT_HTTP_STATUS=${res.httpStatusCode}, SWIFT_HTTP_ERROR_RESPONSE=$responseData")
+            SWIFTClient.logger.warn("Error while retrieving payment status. UETR=$uetr, SWIFT_HTTP_STATUS=${res.httpStatusCode}, SWIFT_HTTP_RESPONSE=$responseData")
             throw SWIFTPaymentException("Error while retrieving payment status request. Http status=${res.httpStatusCode}, response data=$responseData.")
         } else {
-            SWIFTClient.logger.info("Successfully retrieved payment status. UETR=$uetr, SWIFT_HTTP_STATUS=${res.httpStatusCode}, SWIFT_HTTP_ERROR_RESPONSE=$responseData")
+            SWIFTClient.logger.info("Successfully retrieved payment status. UETR=$uetr, SWIFT_HTTP_STATUS=${res.httpStatusCode}, SWIFT_HTTP_RESPONSE=$responseData")
             return mapper.readValue(responseData)
         }
     }
@@ -134,10 +134,10 @@ class SWIFTClient(
 
         val responseData = String(res.data)
         if (res.httpStatusCode >= 400) {
-            SWIFTClient.logger.warn("Error during updating payment status. UETR=$uetr, SWIFT_HTTP_STATUS=${res.httpStatusCode}, SWIFT_HTTP_ERROR_RESPONSE=$responseData")
+            SWIFTClient.logger.warn("Error during updating payment status. UETR=$uetr, SWIFT_HTTP_STATUS=${res.httpStatusCode}, SWIFT_HTTP_RESPONSE=$responseData")
             throw SWIFTPaymentException("Error during updating payment status request. Http status=${res.httpStatusCode}, response data=$responseData.")
         } else {
-            SWIFTClient.logger.info("Successfully updated payment status. UETR=$uetr, SWIFT_HTTP_STATUS=${res.httpStatusCode}, SWIFT_HTTP_ERROR_RESPONSE=$responseData")
+            SWIFTClient.logger.info("Successfully updated payment status. UETR=$uetr, SWIFT_HTTP_STATUS=${res.httpStatusCode}, SWIFT_HTTP_RESPONSE=$responseData")
         }
     }
 }

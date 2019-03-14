@@ -82,6 +82,7 @@ dependencies {
     cordapp project(":cordapp-contracts-states")
     cordapp project(":ripple")
     cordapp project(":oracle")
+    cordapp project(":swift")
     cordapp "$corda_release_group:corda-finance:$corda_release_version"
 
     testCompile project(path: ':cordapp', configuration: 'testOutput')
@@ -122,6 +123,7 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
             adminAddress("localhost:10046")
         }
         cordapps = [
+                "$project.group:swift:$project.version",
                 "$project.group:ripple:$project.version",
                 "$project.group:cordapp-contracts-states:$project.version",
                 "$project.group:cordapp:$project.version",
@@ -137,6 +139,7 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
             adminAddress("localhost:10049")
         }
         cordapps = [
+                "$project.group:swift:$project.version",
                 "$project.group:ripple:$project.version",
                 "$project.group:cordapp-contracts-states:$project.version",
                 "$project.group:cordapp:$project.version",
@@ -152,6 +155,7 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
             adminAddress("localhost:10052")
         }
         cordapps = [
+                "$project.group:swift:$project.version",
                 "$project.group:ripple:$project.version",
                 "$project.group:cordapp-contracts-states:$project.version",
                 "$project.group:oracle:$project.version",

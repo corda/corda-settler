@@ -1,8 +1,6 @@
 package com.r3.corda.finance.swift.types
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.annotation.JsonCreator
-import com.fasterxml.jackson.annotation.JsonValue
 
 /**
  * Data class that represents a POST payload to submit SWIFT payment
@@ -106,13 +104,16 @@ data class SWIFTErrorResponseStatus(
  * TODO: add all fields from the SWIFT payload if needed
  */
 data class SWIFTPaymentStatus(
-        @JsonProperty("tracker_status_resource_identification")
-        val trackerStatusResourceIdentification : String?,
         @JsonProperty("uetr")
         val uetr : String,
         @JsonProperty("transaction_status")
-        val transactionStatus : SWIFTPaymentStatusType
+        val transactionStatus : SWIFTTransactionStatus
 )
+
+
+data class SWIFTTransactionStatus(
+        @JsonProperty("status")
+        val status : SWIFTPaymentStatusType)
 
 enum class SWIFTPaymentStatusType {
         RJCT, ACSP, ACCC

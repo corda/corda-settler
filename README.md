@@ -347,6 +347,9 @@ not need to sign.
   that worked easily! Feel free to replace it with your own provider. The
   exchange rate oracle for this project is really just a stub so we can
   handle token novation.
+* SWIFT tests require a correct API key to be provided (look for `EMAIL IVAN/ROGER FOR API KEY`
+  in the codebase).
+* SWIFT tests expect a file `swiftKey.pem` with a private key on the classpath. 
 
 ## TODO
 

@@ -22,7 +22,6 @@ import net.corda.core.flows.*
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
-import org.apache.qpid.proton.codec.transport.FlowType
 import java.time.Duration
 
 @InitiatedBy(AbstractSendToSettlementOracle::class)
@@ -57,7 +56,7 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
         val oracleService = serviceHub.cordaService(SWIFTService::class.java)
         while (true) {
             val paymentStatus = oracleService.swiftClient().getPaymentStatus(swiftPayment.paymentReference)
-            when (paymentStatus.transactionStatus) {
+            when (paymentStatus.transactionStatus.status) {
                 SWIFTPaymentStatusType.RJCT -> return VerifyResult.REJECTED
                 SWIFTPaymentStatusType.ACCC -> return VerifyResult.SUCCESS
                 // TODO: we need to come up with some more clever way of waiting for the status to be updated. Maybe exponential back-off

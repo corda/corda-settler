@@ -16,6 +16,7 @@ import com.r3.corda.finance.swift.types.SWIFTPaymentResponse
 import com.r3.corda.finance.swift.types.SWIFTPaymentStatus
 import com.r3.corda.finance.swift.types.SWIFTPaymentStatusType
 import com.r3.corda.finance.swift.types.SWIFTRequestedExecutionDate
+import com.r3.corda.finance.swift.types.SWIFTUnsignedPayload
 import com.r3.corda.finance.swift.types.SwiftPaymentInstruction
 import net.corda.core.contracts.Amount
 import net.corda.core.flows.FlowException
@@ -73,7 +74,7 @@ class SWIFTClient(
                 remittanceInformation)
 
         val unsignedPayload = getUnsignedPayload(paymentResponse.uetr)
-        val signedPayload = signBytes(unsignedPayload)
+        val signedPayload = signBytes(unsignedPayload.payload.toByteArray())
         val base64Payload = Base64.getEncoder().encodeToString(signedPayload)
         submitSignedBase64Payload(paymentResponse.uetr, base64Payload)
         return paymentResponse
@@ -88,7 +89,6 @@ class SWIFTClient(
         signGen.addSignerInfoGenerator(JcaSignerInfoGeneratorBuilder(
                 JcaDigestCalculatorProviderBuilder().build()).build(sha1Signer, certificate))
         signGen.addCertificates(certs)
-
 
         val content = CMSProcessableByteArray(data)
         val signedData = signGen.generate(content, true)
@@ -156,7 +156,7 @@ class SWIFTClient(
     }
 
 
-    private fun getUnsignedPayload(uetr : String) : ByteArray {
+    private fun getUnsignedPayload(uetr : String) : SWIFTUnsignedPayload {
         val url = "$apiUrl/payment_initiation/$uetr/payload_unsigned"
 
         SWIFTClient.logger.info(messageWithParams("Getting unsigned payload", "UETR" to uetr))
@@ -173,8 +173,9 @@ class SWIFTClient(
             SWIFTClient.logger.warn(message)
             throw SWIFTPaymentException(message)
         } else {
+            val mapper = jacksonObjectMapper()
             SWIFTClient.logger.info(httpResultMessage("Successfully retrieved unsigned payment payload", res.httpStatusCode, responseData, "UETR" to uetr))
-            return res.data
+            return mapper.readValue(res.data)
         }
     }
 

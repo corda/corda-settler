@@ -111,6 +111,13 @@ data class SWIFTPaymentStatus(
 )
 
 
+data class SWIFTUnsignedPayload(
+        @JsonProperty("payload")
+        val payload : String
+)
+
+
+
 data class SWIFTTransactionStatus(
         @JsonProperty("status")
         val status : SWIFTPaymentStatusType)

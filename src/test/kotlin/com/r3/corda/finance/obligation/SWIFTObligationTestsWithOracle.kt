@@ -3,6 +3,7 @@ package com.r3.corda.finance.obligation
 import com.r3.corda.finance.obligation.states.Obligation
 import com.r3.corda.finance.obligation.types.Money
 import com.r3.corda.finance.swift.services.SWIFTClient
+import com.r3.corda.finance.swift.services.SWIFTService.Companion.certificate
 import com.r3.corda.finance.swift.services.SWIFTService.Companion.privateKey
 import com.r3.corda.finance.swift.types.SWIFTPaymentStatusType
 import com.r3.corda.finance.swift.types.SwiftPayment
@@ -40,7 +41,8 @@ class SWIFTObligationTestsWithOracle : AbstractObligationTestsWithOracle<SwiftSe
             val swiftClient = SWIFTClient(
                     "https://gpi.swiftlabapis.com/beta2",
                     "EMAIL IVAN/ROGER FOR API KEY",
-                    privateKey())
+                    privateKey(),
+                    certificate())
 
             // we know that there is only one obligation there
             val swiftObligation = A.services.vaultService.queryBy<Obligation<Money>>().states.single()

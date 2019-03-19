@@ -1,6 +1,7 @@
 package com.r3.corda.finance.swift.services
 
 import com.r3.corda.finance.obligation.types.FiatCurrency
+import com.r3.corda.finance.swift.services.SWIFTService.Companion.certificate
 import com.r3.corda.finance.swift.services.SWIFTService.Companion.privateKey
 import com.r3.corda.finance.swift.types.SWIFTPaymentStatusType
 import net.corda.core.contracts.Amount
@@ -14,7 +15,8 @@ class SWIFTClientTest {
     private val swiftService = SWIFTClient(
             "https://cos.swiftlabapis.com/beta2",
             "EMAIL IVAN/ROGER FOR API KEY",
-            privateKey())
+            privateKey(),
+            certificate())
 
     @Test
     fun `test submit payment and get status`() {

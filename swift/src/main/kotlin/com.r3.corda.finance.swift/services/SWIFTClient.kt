@@ -18,11 +18,17 @@ import com.r3.corda.finance.swift.types.SWIFTPaymentStatusType
 import com.r3.corda.finance.swift.types.SWIFTRequestedExecutionDate
 import com.r3.corda.finance.swift.types.SwiftPaymentInstruction
 import net.corda.core.contracts.Amount
-import net.corda.core.crypto.Crypto
 import net.corda.core.flows.FlowException
+import org.bouncycastle.cert.jcajce.JcaCertStore
+import org.bouncycastle.cms.CMSProcessableByteArray
+import org.bouncycastle.cms.CMSSignedDataGenerator
+import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
+import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
 import java.security.PrivateKey
+import java.security.cert.X509Certificate
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -30,7 +36,8 @@ import java.util.*
 class SWIFTClient(
         private val apiUrl : String,
         private val apiKey : String,
-        private val privateKey : PrivateKey) {
+        private val privateKey : PrivateKey,
+        private val certificate : X509Certificate) {
     companion object {
         private val logger = LoggerFactory.getLogger(SWIFTClient::class.java)!!
     }
@@ -66,10 +73,28 @@ class SWIFTClient(
                 remittanceInformation)
 
         val unsignedPayload = getUnsignedPayload(paymentResponse.uetr)
-        val signedPayloadBase64 = Base64.getEncoder().encodeToString(Crypto.doSign(privateKey, unsignedPayload))
-        submitSignedPayload(paymentResponse.uetr, signedPayloadBase64)
+        val signedPayload = signBytes(unsignedPayload)
+        val base64Payload = Base64.getEncoder().encodeToString(signedPayload)
+        submitSignedBase64Payload(paymentResponse.uetr, base64Payload)
         return paymentResponse
     }
+
+    private fun signBytes(data : ByteArray) : ByteArray {
+        val certList = listOf(certificate)
+        val certs = JcaCertStore(certList)
+        val signGen = CMSSignedDataGenerator()
+
+        val sha1Signer = JcaContentSignerBuilder("SHA1withRSA").setProvider("BC").build(privateKey)
+        signGen.addSignerInfoGenerator(JcaSignerInfoGeneratorBuilder(
+                JcaDigestCalculatorProviderBuilder().build()).build(sha1Signer, certificate))
+        signGen.addCertificates(certs)
+
+
+        val content = CMSProcessableByteArray(data)
+        val signedData = signGen.generate(content, true)
+        return signedData.encoded
+    }
+
 
     private fun submitPaymentInstruction(e2eId : String,
                                          executionDate : Date,
@@ -135,7 +160,7 @@ class SWIFTClient(
         val url = "$apiUrl/payment_initiation/$uetr/payload_unsigned"
 
         SWIFTClient.logger.info(messageWithParams("Getting unsigned payload", "UETR" to uetr))
-        val (req, res, result) = url
+        val (_, res, _) = url
                 .httpGet()
                 .header("x-api-key" to apiKey)
                 .header("accept" to "application/json")
@@ -153,18 +178,18 @@ class SWIFTClient(
         }
     }
 
-    private fun submitSignedPayload(uetr : String, signedPayload : String) {
+    private fun submitSignedBase64Payload(uetr : String, signedBase64Payload : String) {
         val paymentUrl = "$apiUrl/payment_initiation/$uetr/payload_signed"
 
         logger.info(messageWithParams("Submitting signed payload", "UETR" to uetr))
 
         // making HTTP request
-        val (req, res, result) = paymentUrl
+        val (_, res, _) = paymentUrl
                 .httpPost()
                 .header("accept" to "application/json")
                 .header("content-type" to "application/json")
                 .header("x-api-key" to apiKey)
-                .body(signedPayload)
+                .body(signedBase64Payload)
                 .response()
 
         val responseData = String(res.data)
@@ -186,7 +211,7 @@ class SWIFTClient(
         val checkStatusUrl = "$apiUrl/payment_initiation/$uetr/tracker_status"
 
         SWIFTClient.logger.info(messageWithParams("Getting payment status", "UETR" to uetr))
-        val (req, res, result) = checkStatusUrl
+        val (_, res, _) = checkStatusUrl
                 .httpGet()
                 .header("x-api-key" to apiKey)
                 .header("accept" to "application/json")
@@ -212,7 +237,7 @@ class SWIFTClient(
         val checkStatusUrl = "$apiUrl/payment_initiation/$uetr/tracker_status?newstatus=$status"
 
         SWIFTClient.logger.info(messageWithParams("Updating payment status.", "UETR" to uetr))
-        val (req, res, result) = checkStatusUrl
+        val (_, res, _) = checkStatusUrl
                 .httpPost()
                 .header("x-api-key" to apiKey)
                 .header("accept" to "application/json")

@@ -2,23 +2,39 @@ package com.r3.corda.finance.swift.services
 
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
-import net.corda.core.crypto.Crypto
 import net.corda.core.node.AppServiceHub
 import net.corda.core.node.services.CordaService
 import net.corda.core.serialization.SingletonSerializeAsToken
-import sun.misc.BASE64Decoder
+import sun.security.provider.X509Factory
+import java.io.ByteArrayInputStream
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
+import java.security.KeyFactory
 import java.security.PrivateKey
+import java.security.cert.CertificateFactory
+import java.security.cert.X509Certificate
+import java.security.spec.PKCS8EncodedKeySpec
+import java.util.*
 
 @CordaService
 class SWIFTService(val appServiceHub : AppServiceHub) : SingletonSerializeAsToken() {
     companion object {
         // TODO: this should be driven by configuration parameter
         fun privateKey() : PrivateKey {
-            val key = BASE64Decoder().decodeBuffer(String(Files.readAllBytes(Paths.get(SWIFTService::class.java.classLoader.getResource("swiftKey.pem").toURI()))))
-            return Crypto.decodePrivateKey(Crypto.RSA_SHA256, key)
+            val fileContents = String(Files.readAllBytes(Paths.get(SWIFTService::class.java.classLoader.getResource("swiftKey.pem").toURI())))
+            val decodedContents = Base64.getDecoder().decode(fileContents.replace("\\n".toRegex(), "").replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", ""))
+            val keyFactory = KeyFactory.getInstance("RSA")
+            val keySpecPKCS8 = PKCS8EncodedKeySpec(decodedContents)
+            return keyFactory.generatePrivate(keySpecPKCS8)
+        }
+
+        // TODO: this should be driven by configuration parameter
+        fun certificate() : X509Certificate {
+            val certFactory = CertificateFactory.getInstance("X.509")
+            val fileContents = String(Files.readAllBytes(Paths.get(SWIFTService::class.java.classLoader.getResource("swiftCert.pem").toURI())))
+            val decodedContents = Base64.getDecoder().decode(fileContents.replace(X509Factory.BEGIN_CERT, "").replace(X509Factory.END_CERT, "").replace("\\n".toRegex(), ""))
+            return certFactory.generateCertificate(ByteArrayInputStream(decodedContents)) as X509Certificate
         }
     }
 
@@ -52,5 +68,5 @@ class SWIFTService(val appServiceHub : AppServiceHub) : SingletonSerializeAsToke
         else ConfigFactory.parseFile(File(SWIFTClient::class.java.classLoader.getResource(fileName).toURI()))
     }
 
-    fun swiftClient() = SWIFTClient(apiUrl, apiKey, privateKey())
+    fun swiftClient() = SWIFTClient(apiUrl, apiKey, privateKey(), certificate())
 }

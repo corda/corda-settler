@@ -1,6 +1,8 @@
 package com.r3.corda.finance.swift.services
 
 import com.r3.corda.finance.obligation.types.FiatCurrency
+import com.r3.corda.finance.swift.services.SWIFTService.Companion.certificate
+import com.r3.corda.finance.swift.services.SWIFTService.Companion.privateKey
 import com.r3.corda.finance.swift.types.SWIFTPaymentStatusType
 import net.corda.core.contracts.Amount
 import org.junit.Ignore
@@ -11,8 +13,10 @@ import kotlin.test.assertEquals
 @Ignore
 class SWIFTClientTest {
     private val swiftService = SWIFTClient(
-            "https://cos.swiftlabapis.com/beta",
-            "EMAIL IVAN/ROGER FOR API KEY")
+            "https://cos.swiftlabapis.com/beta2",
+            "EMAIL IVAN/ROGER FOR API KEY",
+            privateKey(),
+            certificate())
 
     @Test
     fun `test submit payment and get status`() {
@@ -33,6 +37,6 @@ class SWIFTClientTest {
         val paymentStatus =  swiftService.getPaymentStatus(submissionResult.uetr)
         println("Payment status: $paymentStatus")
 
-        assertEquals(SWIFTPaymentStatusType.ACSP, paymentStatus.transactionStatus)
+        assertEquals(SWIFTPaymentStatusType.ACSP, paymentStatus.transactionStatus.status)
     }
 }

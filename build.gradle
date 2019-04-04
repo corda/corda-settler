@@ -83,6 +83,9 @@ dependencies {
     cordapp project(":ripple")
     cordapp project(":oracle")
     cordapp "$corda_release_group:corda-finance:$corda_release_version"
+    cordapp "com.r3.corda.libs:contract:1.0-SNAPSHOT"
+    cordapp "com.r3.corda.libs:workflow:1.0-SNAPSHOT"
+    cordapp "com.r3.corda.libs:modules:money:1.0-SNAPSHOT"
 
     testCompile project(path: ':cordapp', configuration: 'testOutput')
 }

@@ -6,6 +6,7 @@ import com.r3.corda.finance.obligation.singleOutput
 import com.r3.corda.finance.obligation.states.Obligation
 import com.r3.corda.finance.obligation.types.Money
 import com.r3.corda.finance.obligation.types.PaymentStatus
+import com.r3.corda.sdk.token.contracts.types.TokenType
 import net.corda.core.contracts.*
 import net.corda.core.transactions.LedgerTransaction
 import java.math.BigDecimal
@@ -51,7 +52,7 @@ class ObligationContract : Contract {
     private fun handleCreate(tx: LedgerTransaction) {
         require(tx.outputs.size == 1) { "Create obligation transactions may only contain one output." }
         require(tx.inputs.isEmpty()) { "Create obligation transactions must not contain any inputs." }
-        val obligation = tx.singleOutput<Obligation<Money>>()
+        val obligation = tx.singleOutput<Obligation<TokenType>>()
         obligation.apply {
             require(faceAmount > Amount.zero(faceAmount.token)) { "Obligations must not be created with a zero face amount." }
             require(obligor != obligee) { "Obligations cannot be between the same legal identity." }

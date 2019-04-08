@@ -12,7 +12,9 @@ apply plugin: 'net.corda.plugins.cordformation'
 sourceSets {
     main {
         resources {
-            srcDir "../config/dev"
+            // This prevents you making changes to the project structure which is currently set to compile facets to 
+            // a 1.6 JVM so you get compilation errors. 
+            //  srcDir "../config/dev"
         }
     }
 }

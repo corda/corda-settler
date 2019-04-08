@@ -84,9 +84,9 @@ dependencies {
     cordapp project(":oracle")
     cordapp "$corda_release_group:corda-finance:$corda_release_version"
 
-    testCompile project(path: ':cordapp', configuration: 'testOutput')
     testCompile "com.r3.tokens-sdk:contract:1.0-SNAPSHOT"
     testCompile "com.r3.tokens-sdk:money:1.0-SNAPSHOT"
+    testCompile project(path: ':cordapp', configuration: 'testOutput')
 }
 
 task integrationTest(type: Test, dependsOn: []) {

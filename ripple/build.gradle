@@ -47,6 +47,7 @@ dependencies {
     compile 'com.typesafe:config:1.2.1'
 
     cordaCompile project(":cordapp")
+    cordapp "com.r3.tokens-sdk:money:1.0-SNAPSHOT"
 }
 
 task integrationTest(type: Test, dependsOn: []) {

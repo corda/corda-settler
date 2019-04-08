@@ -1,13 +1,14 @@
 package com.r3.corda.finance.obligation
 
 import com.r3.corda.finance.obligation.states.Obligation
-import com.r3.corda.finance.obligation.types.Money
 import com.r3.corda.finance.swift.services.SWIFTClient
 import com.r3.corda.finance.swift.services.SWIFTService.Companion.certificate
 import com.r3.corda.finance.swift.services.SWIFTService.Companion.privateKey
 import com.r3.corda.finance.swift.types.SWIFTPaymentStatusType
 import com.r3.corda.finance.swift.types.SwiftPayment
 import com.r3.corda.finance.swift.types.SwiftSettlement
+import com.r3.corda.sdk.token.contracts.types.TokenType
+import com.r3.corda.sdk.token.money.GBP
 import net.corda.core.identity.Party
 import net.corda.core.node.services.queryBy
 import java.util.concurrent.Executors
@@ -45,7 +46,7 @@ class SWIFTObligationTestsWithOracle : AbstractObligationTestsWithOracle<SwiftSe
                     certificate())
 
             // we know that there is only one obligation there
-            val swiftObligation = A.services.vaultService.queryBy<Obligation<Money>>().states.single()
+            val swiftObligation = A.services.vaultService.queryBy<Obligation<TokenType>>().states.single()
             val lastPayment = swiftObligation.state.data.payments.last() as  SwiftPayment
             swiftClient.updatePaymentStatus(lastPayment.paymentReference, SWIFTPaymentStatusType.ACCC)
         }, delay, TimeUnit.SECONDS)

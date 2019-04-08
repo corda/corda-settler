@@ -1,22 +1,22 @@
 package com.r3.corda.finance.obligation.oracle.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.types.SettlementOracleResult
 import com.r3.corda.finance.obligation.commands.ObligationCommands
 import com.r3.corda.finance.obligation.contracts.ObligationContract
 import com.r3.corda.finance.obligation.flows.AbstractSendToSettlementOracle
 import com.r3.corda.finance.obligation.oracle.services.XrpOracleService
 import com.r3.corda.finance.obligation.states.Obligation
-import com.r3.corda.finance.obligation.types.DigitalCurrency
-import com.r3.corda.finance.obligation.types.FiatCurrency
-import com.r3.corda.finance.obligation.types.Money
 import com.r3.corda.finance.obligation.types.PaymentStatus
+import com.r3.corda.finance.obligation.types.SettlementOracleResult
 import com.r3.corda.finance.ripple.types.XrpPayment
 import com.r3.corda.finance.ripple.types.XrpSettlement
 import com.r3.corda.finance.swift.services.SWIFTService
 import com.r3.corda.finance.swift.types.SWIFTPaymentStatusType
 import com.r3.corda.finance.swift.types.SwiftPayment
 import com.r3.corda.finance.swift.types.SwiftSettlement
+import com.r3.corda.sdk.token.contracts.types.TokenType
+import com.r3.corda.sdk.token.money.DigitalCurrency
+import com.r3.corda.sdk.token.money.FiatCurrency
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.*
 import net.corda.core.transactions.SignedTransaction
@@ -67,7 +67,7 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
     }
 
     private fun createTransaction(
-            obligationStateAndRef: StateAndRef<Obligation<Money>>,
+            obligationStateAndRef: StateAndRef<Obligation<TokenType>>,
             status: PaymentStatus
     ): SignedTransaction {
         // Update payment status.
@@ -92,7 +92,7 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
     @Suspendable
     override fun call() {
         // 1. Receive the obligation state we are verifying settlement of.
-        val obligationStateAndRef = subFlow(ReceiveStateAndRefFlow<Obligation<Money>>(otherSession)).single()
+        val obligationStateAndRef = subFlow(ReceiveStateAndRefFlow<Obligation<TokenType>>(otherSession)).single()
         val obligation = obligationStateAndRef.state.data
         val settlementMethod = obligation.settlementMethod
 

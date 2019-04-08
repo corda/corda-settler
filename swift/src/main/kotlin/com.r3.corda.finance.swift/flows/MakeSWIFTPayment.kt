@@ -3,8 +3,6 @@ package com.r3.corda.finance.swift.flows
 import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.finance.obligation.client.flows.MakeOffLedgerPayment
 import com.r3.corda.finance.obligation.states.Obligation
-import com.r3.corda.finance.obligation.types.FiatCurrency
-import com.r3.corda.finance.obligation.types.Money
 import com.r3.corda.finance.obligation.types.OffLedgerPayment
 import com.r3.corda.finance.obligation.types.Payment
 import com.r3.corda.finance.obligation.types.PaymentStatus
@@ -12,6 +10,8 @@ import com.r3.corda.finance.swift.services.SWIFTService
 import com.r3.corda.finance.swift.types.SWIFTPaymentResponse
 import com.r3.corda.finance.swift.types.SwiftPayment
 import com.r3.corda.finance.swift.types.SwiftSettlement
+import com.r3.corda.sdk.token.contracts.types.TokenType
+import com.r3.corda.sdk.token.money.FiatCurrency
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.FlowException
@@ -19,7 +19,7 @@ import net.corda.core.utilities.ProgressTracker
 import java.time.Duration
 import java.util.*
 
-class MakeSWIFTPayment<T : Money>(
+class MakeSWIFTPayment<T : TokenType>(
         amount: Amount<T>,
         obligationStateAndRef: StateAndRef<Obligation<*>>,
         settlementMethod: OffLedgerPayment<*>,

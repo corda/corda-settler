@@ -2,6 +2,7 @@ package com.r3.corda.finance.obligation.types
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.r3.corda.finance.obligation.flows.AbstractMakeOffLedgerPayment
+import com.r3.corda.sdk.token.contracts.types.TokenType
 import net.corda.core.identity.Party
 import net.corda.core.serialization.CordaSerializable
 import java.security.PublicKey
@@ -20,7 +21,7 @@ interface SettlementMethod {
  * TODO: Replace this with a proper fx library.
  */
 @CordaSerializable
-data class FxRate(val baseCurrency: Money, val counterCurrency: Money, val time: Instant, val rate: Number)
+data class FxRate(val baseCurrency: TokenType, val counterCurrency: TokenType, val time: Instant, val rate: Number)
 
 /**
  * This is an interface because some other custom fields might need to be added.
@@ -45,5 +46,5 @@ data class OnLedgerSettlement(
         /** Payments are always made to public keys on ledger. TODO: Add certificate for AML reasons. */
         override val accountToPay: PublicKey,
         /** The type will eventually be a TokenType. */
-        val acceptableTokenTypes: List<Money>
+        val acceptableTokenTypes: List<TokenType>
 ) : SettlementMethod

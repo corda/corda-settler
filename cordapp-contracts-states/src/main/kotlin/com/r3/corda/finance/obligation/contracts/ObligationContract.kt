@@ -4,9 +4,12 @@ import com.r3.corda.finance.obligation.commands.ObligationCommands
 import com.r3.corda.finance.obligation.singleInput
 import com.r3.corda.finance.obligation.singleOutput
 import com.r3.corda.finance.obligation.states.Obligation
-import com.r3.corda.finance.obligation.types.Money
 import com.r3.corda.finance.obligation.types.PaymentStatus
-import net.corda.core.contracts.*
+import com.r3.corda.sdk.token.contracts.types.TokenType
+import net.corda.core.contracts.Amount
+import net.corda.core.contracts.Contract
+import net.corda.core.contracts.ContractClassName
+import net.corda.core.contracts.requireSingleCommand
 import net.corda.core.transactions.LedgerTransaction
 import java.math.BigDecimal
 import java.time.Instant
@@ -51,7 +54,7 @@ class ObligationContract : Contract {
     private fun handleCreate(tx: LedgerTransaction) {
         require(tx.outputs.size == 1) { "Create obligation transactions may only contain one output." }
         require(tx.inputs.isEmpty()) { "Create obligation transactions must not contain any inputs." }
-        val obligation = tx.singleOutput<Obligation<Money>>()
+        val obligation = tx.singleOutput<Obligation<TokenType>>()
         obligation.apply {
             require(faceAmount > Amount.zero(faceAmount.token)) { "Obligations must not be created with a zero face amount." }
             require(obligor != obligee) { "Obligations cannot be between the same legal identity." }
@@ -75,7 +78,7 @@ class ObligationContract : Contract {
     private fun handleCancel(tx: LedgerTransaction) {
         require(tx.inputs.size == 1) { "Cancel obligation transactions may only contain one input." }
         require(tx.outputs.isEmpty()) { "Cancel obligation transactions must not contain outputs." }
-        val obligation = tx.singleInput<Obligation<Money>>()
+        val obligation = tx.singleInput<Obligation<TokenType>>()
         val command = tx.commands.requireSingleCommand<ObligationCommands.Cancel>()
         require(command.signers.toSet() == obligation.participants.map { it.owningKey }.toSet()) {
             "Both the obligor and obligee must sign the transaction to cancel an obligation."

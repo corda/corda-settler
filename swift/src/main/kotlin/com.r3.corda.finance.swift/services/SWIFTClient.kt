@@ -4,20 +4,8 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.fuel.httpPost
-import com.r3.corda.finance.obligation.types.FiatCurrency
-import com.r3.corda.finance.swift.types.SWIFTInstructedPaymentAmount
-import com.r3.corda.finance.swift.types.SWIFTParticipantAccount
-import com.r3.corda.finance.swift.types.SWIFTParticipantAgent
-import com.r3.corda.finance.swift.types.SWIFTParticipantInfo
-import com.r3.corda.finance.swift.types.SWIFTParticipantOrganisationIdentification
-import com.r3.corda.finance.swift.types.SWIFTPaymentAmount
-import com.r3.corda.finance.swift.types.SWIFTPaymentIdentification
-import com.r3.corda.finance.swift.types.SWIFTPaymentResponse
-import com.r3.corda.finance.swift.types.SWIFTPaymentStatus
-import com.r3.corda.finance.swift.types.SWIFTPaymentStatusType
-import com.r3.corda.finance.swift.types.SWIFTRequestedExecutionDate
-import com.r3.corda.finance.swift.types.SWIFTUnsignedPayload
-import com.r3.corda.finance.swift.types.SwiftPaymentInstruction
+import com.r3.corda.finance.swift.types.*
+import com.r3.corda.sdk.token.money.FiatCurrency
 import net.corda.core.contracts.Amount
 import net.corda.core.flows.FlowException
 import org.bouncycastle.cert.jcajce.JcaCertStore
@@ -118,7 +106,7 @@ class SWIFTClient(
         val swiftPaymentInstruction = SwiftPaymentInstruction(
                 SWIFTPaymentIdentification(e2eId),
                 SWIFTRequestedExecutionDate(dateFormatter.format(executionDate)),
-                SWIFTPaymentAmount(SWIFTInstructedPaymentAmount(amount.token.currencyCode, amount = amountFormatter.format(doubleAmount))),
+                SWIFTPaymentAmount(SWIFTInstructedPaymentAmount(amount.token.tokenIdentifier, amount = amountFormatter.format(doubleAmount))),
                 SWIFTParticipantInfo(debtorName, SWIFTParticipantOrganisationIdentification(debtorLei)),
                 SWIFTParticipantAgent(debtorBicfi),
                 SWIFTParticipantAccount(debtorIban),

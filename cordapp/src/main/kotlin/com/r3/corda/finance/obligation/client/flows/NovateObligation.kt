@@ -1,14 +1,14 @@
 package com.r3.corda.finance.obligation.client.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.types.FxRateRequest
-import com.r3.corda.finance.obligation.types.Money
 import com.r3.corda.finance.obligation.client.getLinearStateById
 import com.r3.corda.finance.obligation.client.resolver
 import com.r3.corda.finance.obligation.commands.ObligationCommands
 import com.r3.corda.finance.obligation.contracts.ObligationContract
 import com.r3.corda.finance.obligation.states.Obligation
+import com.r3.corda.finance.obligation.types.FxRateRequest
 import com.r3.corda.finance.obligation.types.FxRateResponse
+import com.r3.corda.sdk.token.contracts.types.TokenType
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.contracts.UniqueIdentifier
@@ -49,7 +49,7 @@ object NovateObligation {
         override val progressTracker: ProgressTracker = tracker()
 
         @Suspendable
-        fun handleUpdateFaceAmountToken(obligation: Obligation<Money>): Pair<Obligation<Money>, ObligationCommands.Novate> {
+        fun handleUpdateFaceAmountToken(obligation: Obligation<TokenType>): Pair<Obligation<TokenType>, ObligationCommands.Novate> {
             // We know that this is a token change.
             novationCommand as ObligationCommands.Novate.UpdateFaceAmountToken<*, *>
             // If no fx rate is supplied then get one from the Oracle.
@@ -66,8 +66,8 @@ object NovateObligation {
 
         @Suspendable
         fun handleNovationCommand(
-                obligationStateAndRef: StateAndRef<Obligation<Money>>
-        ): Pair<Obligation<Money>, ObligationCommands.Novate> {
+                obligationStateAndRef: StateAndRef<Obligation<TokenType>>
+        ): Pair<Obligation<TokenType>, ObligationCommands.Novate> {
             val obligation = obligationStateAndRef.state.data
             return when (novationCommand) {
                 is ObligationCommands.Novate.UpdateDueBy ->
@@ -84,7 +84,7 @@ object NovateObligation {
         override fun call(): WireTransaction {
             // Get the obligation from our vault.
             progressTracker.currentStep = INITIALISING
-            val obligationStateAndRef = getLinearStateById<Obligation<Money>>(linearId, serviceHub)
+            val obligationStateAndRef = getLinearStateById<Obligation<TokenType>>(linearId, serviceHub)
                     ?: throw IllegalArgumentException("LinearId not recognised.")
             // Generate output and required signers list based based upon supplied command.
             progressTracker.currentStep = HANDLING

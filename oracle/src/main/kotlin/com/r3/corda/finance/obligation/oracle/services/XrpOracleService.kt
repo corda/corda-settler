@@ -51,7 +51,7 @@ class XrpOracleService(val services: AppServiceHub) : SingletonSerializeAsToken(
             }
         }
         // All nodes should report the same result.
-        val destinationCorrect = results.all { it.destination == obligation.settlementMethod?.accountToPay }
+        val destinationCorrect = results.all { it.destination.address == obligation.settlementMethod?.accountToPay }
         val amountCorrect = results.all { it.amount == xrpPayment.amount.toXRPAmount() }
         val referenceCorrect = results.all { it.invoiceId == SecureHash.sha256(obligation.linearId.id.toString()).toString() }
         val hasSucceeded = results.all { it.hasSucceeded() }

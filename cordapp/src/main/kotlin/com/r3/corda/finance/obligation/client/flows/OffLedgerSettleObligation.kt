@@ -37,11 +37,11 @@ class OffLedgerSettleObligation<T : TokenType>(
     override val progressTracker: ProgressTracker = tracker()
 
     private fun getFlowInstance(
-            settlementInstructions: OffLedgerPayment<*>,
+            settlementInstructions: OffLedgerPayment,
             obligationStateAndRef: StateAndRef<Obligation<*>>,
             progressTracker: ProgressTracker
     ): FlowLogic<SignedTransaction> {
-        val paymentFlowClass = settlementInstructions.paymentFlow
+        val paymentFlowClass = Class.forName(settlementInstructions.paymentFlow)
 
         check(MakeOffLedgerPayment::class.java.isAssignableFrom(paymentFlowClass)) {
             "Specified payment flow does not sub-class MakeOffLedgerPayment. Aborting..."
@@ -58,7 +58,7 @@ class OffLedgerSettleObligation<T : TokenType>(
                 obligationStateAndRef,
                 settlementInstructions,
                 progressTracker
-        )
+        ) as FlowLogic<SignedTransaction>
     }
 
     @Suspendable
@@ -73,7 +73,7 @@ class OffLedgerSettleObligation<T : TokenType>(
         progressTracker.currentStep = PAYING
         when (settlementMethod) {
             is OnLedgerSettlement -> throw IllegalStateException("ObligationContract to be settled on-ledger. Aborting...")
-            is OffLedgerPayment<*> -> subFlow(getFlowInstance(settlementMethod, obligationStateAndRef, PAYING.childProgressTracker()))
+            is OffLedgerPayment -> subFlow(getFlowInstance(settlementMethod, obligationStateAndRef, PAYING.childProgressTracker()))
             else -> throw IllegalStateException("No settlement instructions added to obligation.")
         }
 

@@ -14,8 +14,8 @@ import net.corda.core.utilities.ProgressTracker
 
 abstract class MakeOffLedgerPayment<T : TokenType>(
         val amount: Amount<T>,
-        private val obligationStateAndRef: StateAndRef<Obligation<*>>,
-        open val settlementMethod: OffLedgerPayment<*>,
+        val obligationStateAndRef: StateAndRef<Obligation<*>>,
+        open val settlementMethod: OffLedgerPayment,
         override val progressTracker: ProgressTracker = MakeOffLedgerPayment.tracker()
 ) : AbstractMakeOffLedgerPayment() {
 

@@ -10,7 +10,6 @@ import com.r3.corda.finance.swift.services.SWIFTService
 import com.r3.corda.finance.swift.types.SWIFTPaymentResponse
 import com.r3.corda.finance.swift.types.SwiftPayment
 import com.r3.corda.finance.swift.types.SwiftSettlement
-import com.r3.corda.sdk.token.contracts.types.TokenType
 import com.r3.corda.sdk.token.money.FiatCurrency
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.StateAndRef
@@ -19,23 +18,20 @@ import net.corda.core.utilities.ProgressTracker
 import java.time.Duration
 import java.util.*
 
-class MakeSWIFTPayment<T : TokenType>(
-        amount: Amount<T>,
+class MakeSWIFTPayment(
+        amount: Amount<FiatCurrency>,
         obligationStateAndRef: StateAndRef<Obligation<*>>,
-        settlementMethod: OffLedgerPayment<*>,
+        settlementMethod: OffLedgerPayment,
         progressTracker: ProgressTracker
-) : MakeOffLedgerPayment<T>(amount, obligationStateAndRef, settlementMethod, progressTracker) {
+) : MakeOffLedgerPayment<FiatCurrency>(amount, obligationStateAndRef, settlementMethod, progressTracker) {
 
     /** Don't want to serialize this. */
-    private fun createAndSignAndSubmitPayment(obligation: Obligation<*>, amount: Amount<T>): SWIFTPaymentResponse {
+    private fun createAndSignAndSubmitPayment(obligation: Obligation<*>, amount: Amount<FiatCurrency>): SWIFTPaymentResponse {
         val swiftService = serviceHub.cordaService(SWIFTService::class.java)
         val swiftClient = swiftService.swiftClient()
 
         if (obligation.dueBy == null)
             throw FlowException("Due date must be provided for SWIFT payment")
-
-        if (amount.token !is FiatCurrency)
-            throw FlowException("Amount for SWIFT payment must be in FiatCurrency")
 
         if (obligation.settlementMethod == null || obligation.settlementMethod !is SwiftSettlement)
             throw FlowException("settlementMethod of SwiftSettlement must be provided for SWIFT payment")
@@ -47,7 +43,7 @@ class MakeSWIFTPayment<T : TokenType>(
                 // we need to let API consumers to provide their own e2e ids as strings, which would also give us idempotence out-of-the-box
                 obligation.linearId.toString(),
                 Date.from(obligation.dueBy),
-                amount as Amount<FiatCurrency>,
+                amount,
                 swiftService.debtorName,
                 swiftService.debtorLei,
                 swiftService.debtorIban,
@@ -68,12 +64,10 @@ class MakeSWIFTPayment<T : TokenType>(
     }
 
     @Suspendable
-    override fun makePayment(obligation: Obligation<*>, amount: Amount<T>): Payment<T> {
-        if (amount.token !is FiatCurrency)
-            throw FlowException("SWIFT payment amount must be in FiatCurrency")
+    override fun makePayment(obligation: Obligation<*>, amount: Amount<FiatCurrency>): Payment<FiatCurrency> {
         val paymentResponse = createAndSignAndSubmitPayment(obligation, amount)
         val paymentReference = paymentResponse.uetr
         sleep(Duration.ofMillis(1))
-        return SwiftPayment(paymentReference, amount as Amount<FiatCurrency>, PaymentStatus.SENT) as Payment<T>
+        return SwiftPayment(paymentReference, amount, PaymentStatus.SENT)
     }
 }

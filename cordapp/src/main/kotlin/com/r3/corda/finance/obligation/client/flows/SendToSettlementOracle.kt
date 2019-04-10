@@ -40,7 +40,7 @@ class SendToSettlementOracle(
 
         // Get the Oracle from the settlement instructions.
         val obligationState = obligationStateAndRef.state.data
-        val settlementMethod = obligationState.settlementMethod as OffLedgerPayment<*>
+        val settlementMethod = obligationState.settlementMethod as OffLedgerPayment
 
         // Send the Oracle the ObligationContract state.
         progressTracker.currentStep = SENDING

@@ -11,6 +11,7 @@ import com.r3.corda.finance.ripple.utilities.DEFAULT_XRP_FEE
 import com.r3.corda.finance.ripple.utilities.toXRPAmount
 import com.r3.corda.finance.ripple.utilities.toXRPHash
 import com.r3.corda.sdk.token.contracts.types.TokenType
+import com.ripple.core.coretypes.AccountID
 import com.ripple.core.coretypes.uint.UInt32
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.StateAndRef
@@ -20,21 +21,20 @@ import net.corda.core.utilities.ProgressTracker
 import java.time.Duration
 import com.ripple.core.coretypes.Amount as RippleAmount
 
-
 // For testing.
 //
-// Address     ra6mzL1Xy9aN5eRdjzn9CHTMwcczG1uMpN
-// Secret      sasKgJbTbka3ahFew2BZybfNg494C
+// Address     rwqgAYSKQTCuEXXAsxi32V2jCTjDo12F8m
+// Secret      ssPwDZsd6bXt3cWPWFx1dPkYyU2fS
 // Balance     10,000 XRP
 //
-// Address     rNmkj4AtjEHJh3D9hMRC4rS3CXQ9mX4S4b
-// Secret      ssn8cYYksFFexYq97sw9UnvLnMKgh
+// Address     rB3dt6GP3VUgtZ29ppSD3L3kJkYktdqDFQ
+// Secret      sp1qRrGPy48679R2iMVctvbYcPRGd
 // Balance     10,000 XRP
 
 class MakeXrpPayment<T : TokenType>(
         amount: Amount<T>,
         obligationStateAndRef: StateAndRef<Obligation<*>>,
-        settlementMethod: OffLedgerPayment<*>,
+        settlementMethod: OffLedgerPayment,
         progressTracker: ProgressTracker
 ) : MakeOffLedgerPayment<T>(amount, obligationStateAndRef, settlementMethod, progressTracker) {
 
@@ -68,7 +68,7 @@ class MakeXrpPayment<T : TokenType>(
                 // Always use the sequence number provided. It will never be null at this point.
                 sequence = seqNo!!,
                 source = xrpService.address,
-                destination = (settlementMethod as XrpSettlement).accountToPay,
+                destination = AccountID.fromString((settlementMethod as XrpSettlement).accountToPay),
                 amount = amount.toXRPAmount(),
                 fee = DEFAULT_XRP_FEE,
                 linearId = SecureHash.sha256(obligation.linearId.id.toString()).toXRPHash()

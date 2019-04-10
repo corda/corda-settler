@@ -5,19 +5,18 @@ import com.r3.corda.finance.obligation.client.flows.SendToSettlementOracle
 import com.r3.corda.finance.obligation.commands.ObligationCommands
 import com.r3.corda.finance.obligation.contracts.ObligationContract
 import com.r3.corda.finance.obligation.states.Obligation
-import com.r3.corda.finance.obligation.types.Payment
 import com.r3.corda.finance.obligation.types.PaymentStatus
 import com.r3.corda.finance.ripple.services.XRPService
 import com.r3.corda.finance.ripple.types.XrpPayment
 import com.r3.corda.finance.ripple.types.XrpSettlement
 import com.r3.corda.finance.ripple.utilities.XRP
 import com.r3.corda.sdk.token.contracts.types.TokenType
-import com.ripple.core.coretypes.AccountID
+import com.r3.corda.sdk.token.contracts.utilities.of
 import net.corda.core.flows.FinalityFlow
 import net.corda.core.identity.Party
+import net.corda.core.internal.uncheckedCast
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.getOrThrow
-import net.corda.finance.AMOUNT
 import net.corda.testing.node.StartedMockNode
 import org.junit.Test
 import kotlin.test.assertFailsWith
@@ -32,19 +31,13 @@ class XRPObligationTestsWithOracle : AbstractObligationTestsWithOracle<XrpSettle
 
 
     override fun createSettlement(party : Party) : XrpSettlement {
-        val addressString = when (party) {
-            O.legalIdentity() -> "ra6mzL1Xy9aN5eRdjzn9CHTMwcczG1uMpN"
-            A.legalIdentity() -> "rNmkj4AtjEHJh3D9hMRC4rS3CXQ9mX4S4b"
-            else -> throw IllegalArgumentException("Unsupported party $party")
-        }
-        val xrpAddress = AccountID.fromString(addressString)
-        return XrpSettlement(xrpAddress, O.legalIdentity())
+        return XrpSettlement("ra6mzL1Xy9aN5eRdjzn9CHTMwcczG1uMpN", O.legalIdentity())
     }
 
     @Test
     fun `Payment not made by deadline`() {
         // Create obligation.
-        val newObligation = A.createObligation(AMOUNT(10000, currency), B, CreateObligation.InitiatorRole.OBLIGOR).getOrThrow()
+        val newObligation = A.createObligation(10000 of currency, B, CreateObligation.InitiatorRole.OBLIGOR).getOrThrow()
         val obligation = newObligation.singleOutput<Obligation<TokenType>>()
         val obligationId = obligation.linearId()
         // Add settlement instructions.
@@ -61,7 +54,7 @@ class XRPObligationTestsWithOracle : AbstractObligationTestsWithOracle<XrpSettle
                 status = PaymentStatus.SENT,
                 amount = 10.XRP
         )
-        val obligationWithFakePayment = latestObligation.state.data.withPayment(fakePayment as Payment<TokenType>)
+        val obligationWithFakePayment = latestObligation.state.data.withPayment(uncheckedCast(fakePayment))
         val notary = B.services.networkMapCache.notaryIdentities.first()
         val stx = B.services.signInitialTransaction(TransactionBuilder(notary = notary).apply {
             addInputState(latestObligation)

@@ -1,7 +1,6 @@
 package com.r3.corda.finance.obligation.types
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import com.r3.corda.finance.obligation.flows.AbstractMakeOffLedgerPayment
 import com.r3.corda.sdk.token.contracts.types.TokenType
 import net.corda.core.identity.Party
 import net.corda.core.serialization.CordaSerializable
@@ -28,11 +27,11 @@ data class FxRate(val baseCurrency: TokenType, val counterCurrency: TokenType, v
  * It could be the case that some currency conversation is required when the off-ledger payment is made. For example,
  * The obligation could be denominated in GBP but the payment could be made in XRP.
  */
-interface OffLedgerPayment<T : AbstractMakeOffLedgerPayment> : SettlementMethod {
+interface OffLedgerPayment : SettlementMethod {
     /** The Oracle used to determine if payment is made. */
     val settlementOracle: Party
     /** The flow used to initiate the off-ledger payment. */
-    val paymentFlow: Class<T>
+    val paymentFlow: String
 }
 
 /**

@@ -21,7 +21,7 @@ import kotlin.test.assertFailsWith
 /**
  * Each new payment rails need to extend from this class to implement basic integration tests
  */
-abstract class AbstractObligationTestsWithOracle<out T : OffLedgerPayment<*>>(
+abstract class AbstractObligationTestsWithOracle<out T : OffLedgerPayment>(
         protected val currency : TokenType
 ) : MockNetworkTest(numberOfNodes = 3) {
 

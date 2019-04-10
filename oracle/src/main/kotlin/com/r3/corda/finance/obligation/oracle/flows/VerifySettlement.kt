@@ -19,6 +19,7 @@ import com.r3.corda.sdk.token.money.DigitalCurrency
 import com.r3.corda.sdk.token.money.FiatCurrency
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.*
+import net.corda.core.internal.uncheckedCast
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
@@ -28,10 +29,10 @@ import java.time.Duration
 class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
 
     override val progressTracker: ProgressTracker = ProgressTracker()
+
     companion object {
         private const val TIME_TO_WAIT_FOR_SETTLEMENT = 5L
     }
-
 
     enum class VerifyResult { TIMEOUT, SUCCESS, PENDING, REJECTED }
 
@@ -47,6 +48,7 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
                 // before the payment succeed. Also it takes a bit of time for all the nodes to receive the new ledger
                 // version. Note: sleep is a suspendable operation.
                 VerifyResult.PENDING -> sleep(Duration.ofSeconds(TIME_TO_WAIT_FOR_SETTLEMENT))
+                else -> throw IllegalStateException("Should only be in a SUCCESS or PENDING state.")
             }
         }
     }
@@ -112,8 +114,8 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
 
         // 4. Handle different settlement methods.
         val verifyResult = when (settlementMethod) {
-            is XrpSettlement -> verifyXrpSettlement(obligation as Obligation<DigitalCurrency>, lastPayment as XrpPayment<DigitalCurrency>)
-            is SwiftSettlement -> verifySwiftSettlement(obligation as Obligation<FiatCurrency>, lastPayment as SwiftPayment)
+            is XrpSettlement -> verifyXrpSettlement(uncheckedCast(obligation), uncheckedCast(lastPayment))
+            is SwiftSettlement -> verifySwiftSettlement(uncheckedCast(obligation), lastPayment as SwiftPayment)
             else -> throw IllegalStateException("Invalid settlement method $settlementMethod.")
         }
 

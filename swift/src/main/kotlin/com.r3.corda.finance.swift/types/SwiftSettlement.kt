@@ -15,8 +15,8 @@ data class SwiftSettlement(
         val creditorLei : String,
         val creditorBicfi : String,
         val remittanceInformation : String,
-        override val paymentFlow: Class<MakeSWIFTPayment<*>> = MakeSWIFTPayment::class.java
-) : OffLedgerPayment<MakeSWIFTPayment<*>> {
+        override val paymentFlow: String = MakeSWIFTPayment::class.java.canonicalName
+) : OffLedgerPayment {
     override fun toString(): String {
         return "Pay SWIFT IBAN $accountToPay and use $settlementOracle as settlement Oracle."
     }

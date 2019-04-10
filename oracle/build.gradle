@@ -53,7 +53,7 @@ dependencies {
 
     // CorDapp dependencies
     // Specify your CorDapp's dependencies below, including dependent CorDapps.
-    compile "com.r3.tokens-sdk:money:1.0-SNAPSHOT"
+    cordaCompile "com.r3.tokens-sdk:money:1.0-SNAPSHOT"
     cordaCompile project(":ripple")
     cordaCompile project(":swift")
 }

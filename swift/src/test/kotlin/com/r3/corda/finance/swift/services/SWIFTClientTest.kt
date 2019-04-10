@@ -3,8 +3,7 @@ package com.r3.corda.finance.swift.services
 import com.r3.corda.finance.swift.services.SWIFTService.Companion.certificate
 import com.r3.corda.finance.swift.services.SWIFTService.Companion.privateKey
 import com.r3.corda.finance.swift.types.SWIFTPaymentStatusType
-import com.r3.corda.sdk.token.money.FiatCurrency
-import net.corda.core.contracts.Amount
+import com.r3.corda.sdk.token.money.GBP
 import org.junit.Ignore
 import org.junit.Test
 import java.util.*
@@ -22,7 +21,7 @@ class SWIFTClientTest {
     fun `test submit payment and get status`() {
         val submissionResult = swiftService.makePayment("MyInVoice2You",
                 Date(),
-                Amount(1000, FiatCurrency(Currency.getInstance("GBP"))),
+                1000.GBP,
                 "PayingCorporate",
                 "5299000J2N45DDNE4Y28",
                 "BE0473244135",

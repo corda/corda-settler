@@ -30,8 +30,6 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
                     "com.r3.corda.finance.obligation",
                     "com.r3.corda.finance.obligation.client",
                     "com.r3.corda.finance.ripple",
-                    "com.r3.corda.finance.obligation.oracle",
-                    "com.r3.corda.finance.obligation",
                     "com.r3.corda.finance.swift",
                     "com.r3.corda.sdk.token.contracts",
                     "com.r3.corda.sdk.token.money"

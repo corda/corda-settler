@@ -1,8 +1,8 @@
 buildscript {
     ext.corda_release_group = 'net.corda'
-    ext.corda_release_version = '3.3-corda'
-    ext.corda_gradle_plugins_version = '3.2.1'
-    ext.kotlin_version = '1.2.51'
+    ext.corda_release_version = '5.0-SNAPSHOT'
+    ext.corda_gradle_plugins_version = '4.0.25'
+    ext.kotlin_version = '1.2.71'
     ext.junit_version = '4.12'
     ext.quasar_version = '0.7.9'
 
@@ -25,8 +25,10 @@ allprojects {
         mavenLocal()
         jcenter()
         mavenCentral()
+        maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda' }
         maven { url 'https://jitpack.io' }
         maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda-dev/' }
+        maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda-tokens-dev/' }
     }
 }
 
@@ -82,7 +84,6 @@ dependencies {
     cordapp project(":cordapp-contracts-states")
     cordapp project(":ripple")
     cordapp project(":oracle")
-    cordapp "$corda_release_group:corda-finance:$corda_release_version"
 
     testCompile "com.r3.tokens-sdk:contract:1.0-SNAPSHOT"
     testCompile "com.r3.tokens-sdk:money:1.0-SNAPSHOT"
@@ -126,8 +127,7 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
         cordapps = [
                 "$project.group:ripple:$project.version",
                 "$project.group:cordapp-contracts-states:$project.version",
-                "$project.group:cordapp:$project.version",
-                "$corda_release_group:corda-finance:$corda_release_version"
+                "$project.group:cordapp:$project.version"
         ]
         rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
     }
@@ -141,8 +141,7 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
         cordapps = [
                 "$project.group:ripple:$project.version",
                 "$project.group:cordapp-contracts-states:$project.version",
-                "$project.group:cordapp:$project.version",
-                "$corda_release_group:corda-finance:$corda_release_version"
+                "$project.group:cordapp:$project.version"
         ]
         rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
     }
@@ -157,8 +156,7 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
                 "$project.group:ripple:$project.version",
                 "$project.group:cordapp-contracts-states:$project.version",
                 "$project.group:oracle:$project.version",
-                "$project.group:cordapp:$project.version",
-                "$corda_release_group:corda-finance:$corda_release_version"
+                "$project.group:cordapp:$project.version"
         ]
         rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
     }

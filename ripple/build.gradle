@@ -38,15 +38,16 @@ dependencies {
     testCompile "junit:junit:$junit_version"
 
     // Jackson.
-    compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.9.5"
+    cordaCompile "com.fasterxml.jackson.module:jackson-module-kotlin:2.9.5"
 
     // Ripple library.
     compile 'com.ripple:ripple-core:0.0.1-SNAPSHOT'
 
     // Typesafe config.
-    compile 'com.typesafe:config:1.2.1'
+    cordaCompile 'com.typesafe:config:1.2.1'
 
-    compile "com.r3.tokens-sdk:money:1.0-SNAPSHOT"
+    // Token SDK.
+    cordaCompile "com.r3.tokens-sdk:money:1.0-SNAPSHOT"
 
     cordaCompile project(":cordapp")
 }

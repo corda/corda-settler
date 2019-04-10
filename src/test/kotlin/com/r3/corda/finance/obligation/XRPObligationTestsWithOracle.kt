@@ -47,7 +47,6 @@ class XRPObligationTestsWithOracle : AbstractObligationTestsWithOracle<XrpSettle
         val newObligation = A.createObligation(AMOUNT(10000, currency), B, CreateObligation.InitiatorRole.OBLIGOR).getOrThrow()
         val obligation = newObligation.singleOutput<Obligation<TokenType>>()
         val obligationId = obligation.linearId()
-
         // Add settlement instructions.
         val settlementInstructions = createSettlement(O.legalIdentity())
 

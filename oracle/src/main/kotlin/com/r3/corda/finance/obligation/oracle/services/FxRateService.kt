@@ -11,7 +11,6 @@ import net.corda.core.node.AppServiceHub
 import net.corda.core.node.services.CordaService
 import net.corda.core.serialization.SingletonSerializeAsToken
 import java.net.URI
-import java.util.*
 
 @CordaService
 class FxRateService(val services: AppServiceHub) : SingletonSerializeAsToken() {
@@ -50,9 +49,9 @@ class FxRateService(val services: AppServiceHub) : SingletonSerializeAsToken() {
     private fun parseResponse(response: String, request: FxRateRequest): Double {
         val jsonObject: JsonNode = mapper.readTree(response)
         checkForErrors(jsonObject)
-        val base = Currency.getInstance(request.baseCurrency.tokenIdentifier).symbol
+        val base = request.baseCurrency.tokenIdentifier
         val baseCurrencyNode = jsonObject.get(base)
-        val counter = Currency.getInstance(request.counterCurrency.tokenIdentifier).symbol
+        val counter = request.counterCurrency.tokenIdentifier
         return baseCurrencyNode.get(counter).asDouble()
     }
 

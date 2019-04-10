@@ -46,7 +46,7 @@ dependencies {
     // Typesafe config.
     compile 'com.typesafe:config:1.2.1'
 
-    compile "com.r3.tokens-sdk:money:1.0-SNAPSHOT"
+    cordaCompile "com.r3.tokens-sdk:money:1.0-SNAPSHOT"
 
     cordaCompile project(":cordapp")
 }

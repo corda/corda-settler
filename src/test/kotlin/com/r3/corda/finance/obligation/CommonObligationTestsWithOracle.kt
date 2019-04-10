@@ -3,9 +3,9 @@ package com.r3.corda.finance.obligation
 import com.r3.corda.finance.obligation.client.flows.CreateObligation
 import com.r3.corda.finance.obligation.commands.ObligationCommands
 import com.r3.corda.finance.obligation.states.Obligation
-import com.r3.corda.finance.obligation.types.DigitalCurrency
-import com.r3.corda.finance.obligation.types.Money
 import com.r3.corda.finance.ripple.utilities.XRP
+import com.r3.corda.sdk.token.contracts.types.TokenType
+import com.r3.corda.sdk.token.money.USD
 import net.corda.core.utilities.getOrThrow
 import net.corda.testing.node.StartedMockNode
 import org.junit.Before
@@ -32,7 +32,7 @@ class CommonObligationTestsWithOracle : MockNetworkTest(numberOfNodes = 3) {
     fun `newly created obligation is stored in vaults of participants`() {
         // Create obligation.
         val newTransaction = A.createObligation(10000.XRP, B, CreateObligation.InitiatorRole.OBLIGOR).getOrThrow()
-        val obligation = newTransaction.singleOutput<Obligation<DigitalCurrency>>()
+        val obligation = newTransaction.singleOutput<Obligation<TokenType>>()
         val obligationId = obligation.linearId()
 
         // Check both parties have the same obligation.
@@ -45,10 +45,10 @@ class CommonObligationTestsWithOracle : MockNetworkTest(numberOfNodes = 3) {
     fun `novate obligation currency`() {
         // Create obligation.
         val newTransaction = A.createObligation(10000.USD, B, CreateObligation.InitiatorRole.OBLIGOR).getOrThrow()
-        val obligation = newTransaction.singleOutput<Obligation<DigitalCurrency>>()
+        val obligation = newTransaction.singleOutput<Obligation<TokenType>>()
         val obligationId = obligation.linearId()
 
-        val novationCommand = ObligationCommands.Novate.UpdateFaceAmountToken<Money, Money>(
+        val novationCommand = ObligationCommands.Novate.UpdateFaceAmountToken<TokenType, TokenType>(
                 oldToken = USD,
                 newToken = XRP,
                 oracle = O.legalIdentity(),
@@ -56,7 +56,7 @@ class CommonObligationTestsWithOracle : MockNetworkTest(numberOfNodes = 3) {
         )
 
         val result = A.transaction { A.novateObligation(obligationId, novationCommand).getOrThrow() }
-        val novatedObligation = result.singleOutput<Obligation<Money>>()
+        val novatedObligation = result.singleOutput<Obligation<TokenType>>()
         assertEquals(XRP, novatedObligation.state.data.faceAmount.token)
     }
 }

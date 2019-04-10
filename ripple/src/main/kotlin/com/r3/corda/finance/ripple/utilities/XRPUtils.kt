@@ -1,7 +1,7 @@
 package com.r3.corda.finance.ripple.utilities
 
-import com.r3.corda.finance.obligation.types.DigitalCurrency
 import com.r3.corda.finance.ripple.types.TransactionInfoResponse
+import com.r3.corda.sdk.token.money.DigitalCurrency
 import com.ripple.core.coretypes.hash.Hash256
 import net.corda.core.contracts.Amount
 import net.corda.core.crypto.SecureHash

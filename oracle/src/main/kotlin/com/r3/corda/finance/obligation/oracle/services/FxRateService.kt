@@ -1,21 +1,17 @@
 package com.r3.corda.finance.obligation.oracle.services
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.r3.corda.finance.obligation.GBP
-import com.r3.corda.finance.obligation.USD
 import com.r3.corda.finance.obligation.types.FxRateRequest
 import com.r3.corda.finance.obligation.types.FxRateResponse
-import com.r3.corda.finance.obligation.types.Money
-import com.r3.corda.finance.ripple.utilities.XRP
 import com.r3.corda.finance.ripple.utilities.mapper
+import com.r3.corda.sdk.token.contracts.types.TokenType
 import com.typesafe.config.ConfigFactory
 import net.corda.core.internal.openHttpConnection
 import net.corda.core.node.AppServiceHub
 import net.corda.core.node.services.CordaService
 import net.corda.core.serialization.SingletonSerializeAsToken
 import java.net.URI
-import java.time.Instant
-import javax.json.JsonObject
+import java.util.*
 
 @CordaService
 class FxRateService(val services: AppServiceHub) : SingletonSerializeAsToken() {
@@ -33,10 +29,10 @@ class FxRateService(val services: AppServiceHub) : SingletonSerializeAsToken() {
         }
     }
 
-    private fun createRequestUrl(base: Money, foreign: Money, timestamp: Long): String {
+    private fun createRequestUrl(base: TokenType, foreign: TokenType, timestamp: Long): String {
         return "$apiUrl?" +
-                "fsym=${base.symbol}" +
-                "&tsyms=${foreign.symbol}" +
+                "fsym=${base.tokenIdentifier}" +
+                "&tsyms=${base.tokenIdentifier}" +
                 "&api_key=$apiKey" +
                 "&ts=$timestamp" +
                 "&calculationType=MidHighLow"
@@ -54,9 +50,9 @@ class FxRateService(val services: AppServiceHub) : SingletonSerializeAsToken() {
     private fun parseResponse(response: String, request: FxRateRequest): Double {
         val jsonObject: JsonNode = mapper.readTree(response)
         checkForErrors(jsonObject)
-        val base = request.baseCurrency.symbol
+        val base = Currency.getInstance(request.baseCurrency.tokenIdentifier).symbol
         val baseCurrencyNode = jsonObject.get(base)
-        val counter = request.counterCurrency.symbol
+        val counter = Currency.getInstance(request.counterCurrency.tokenIdentifier).symbol
         return baseCurrencyNode.get(counter).asDouble()
     }
 

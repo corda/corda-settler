@@ -1,13 +1,13 @@
 package com.r3.corda.finance.ripple.types
 
-import com.r3.corda.finance.obligation.types.Money
 import com.r3.corda.finance.obligation.types.Payment
 import com.r3.corda.finance.obligation.types.PaymentReference
 import com.r3.corda.finance.obligation.types.PaymentStatus
+import com.r3.corda.sdk.token.contracts.types.TokenType
 import net.corda.core.contracts.Amount
 
 /** Represents a payment of XRP. */
-data class XrpPayment<T : Money>(
+data class XrpPayment<T : TokenType>(
         override val paymentReference: PaymentReference,
         /** It is expected that the payment reaches the beneficiary by this ledger number. */
         val lastLedgerSequence: Long,

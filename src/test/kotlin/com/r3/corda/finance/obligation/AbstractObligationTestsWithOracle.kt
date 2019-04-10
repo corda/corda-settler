@@ -3,9 +3,8 @@ package com.r3.corda.finance.obligation
 import com.r3.corda.finance.obligation.client.flows.CreateObligation
 import com.r3.corda.finance.obligation.client.flows.SendToSettlementOracle
 import com.r3.corda.finance.obligation.states.Obligation
-import com.r3.corda.finance.obligation.types.DigitalCurrency
-import com.r3.corda.finance.obligation.types.Money
 import com.r3.corda.finance.obligation.types.OffLedgerPayment
+import com.r3.corda.sdk.token.contracts.types.TokenType
 import net.corda.core.identity.Party
 import net.corda.core.node.services.Vault
 import net.corda.core.node.services.queryBy
@@ -23,7 +22,7 @@ import kotlin.test.assertFailsWith
  * Each new payment rails need to extend from this class to implement basic integration tests
  */
 abstract class AbstractObligationTestsWithOracle<out T : OffLedgerPayment<*>>(
-        protected val currency : Money
+        protected val currency : TokenType
 ) : MockNetworkTest(numberOfNodes = 3) {
 
     lateinit var A: StartedMockNode
@@ -46,7 +45,7 @@ abstract class AbstractObligationTestsWithOracle<out T : OffLedgerPayment<*>>(
     fun `create new obligation and add settlement instructions`() {
         // Create obligation.
         val newObligation = A.createObligation(AMOUNT(10000, currency), B, CreateObligation.InitiatorRole.OBLIGOR).getOrThrow()
-        val obligation = newObligation.singleOutput<Obligation<DigitalCurrency>>()
+        val obligation = newObligation.singleOutput<Obligation<TokenType>>()
         val obligationId = obligation.linearId()
 
         // Just use party A as the oracle for now.
@@ -66,7 +65,7 @@ abstract class AbstractObligationTestsWithOracle<out T : OffLedgerPayment<*>>(
     fun `end to end test with single payment`() {
         // Create obligation.
         val newObligation = A.createObligation(AMOUNT(10, currency), B, CreateObligation.InitiatorRole.OBLIGOR).getOrThrow()
-        val obligation = newObligation.singleOutput<Obligation<DigitalCurrency>>()
+        val obligation = newObligation.singleOutput<Obligation<TokenType>>()
         val obligationId = obligation.linearId()
 
         // Add settlement instructions.
@@ -96,7 +95,7 @@ abstract class AbstractObligationTestsWithOracle<out T : OffLedgerPayment<*>>(
     fun `partial settlement`() {
         // Create obligation.
         val newObligation = A.createObligation(AMOUNT(10, currency), B, CreateObligation.InitiatorRole.OBLIGOR).getOrThrow()
-        val obligation = newObligation.singleOutput<Obligation<DigitalCurrency>>()
+        val obligation = newObligation.singleOutput<Obligation<TokenType>>()
         val obligationId = obligation.linearId()
 
         // Add settlement instructions.
@@ -128,7 +127,7 @@ abstract class AbstractObligationTestsWithOracle<out T : OffLedgerPayment<*>>(
     fun `settle with multiple payments`() {
         // Create obligation.
         val newObligation = A.createObligation(AMOUNT(10, currency), B, CreateObligation.InitiatorRole.OBLIGOR).getOrThrow()
-        val obligation = newObligation.singleOutput<Obligation<DigitalCurrency>>()
+        val obligation = newObligation.singleOutput<Obligation<TokenType>>()
         val obligationId = obligation.linearId()
 
         // Add settlement instructions.
@@ -161,7 +160,7 @@ abstract class AbstractObligationTestsWithOracle<out T : OffLedgerPayment<*>>(
     fun `No payments made`() {
         // Create obligation.
         val newObligation = A.createObligation(AMOUNT(10000, currency), B, CreateObligation.InitiatorRole.OBLIGOR).getOrThrow()
-        val obligation = newObligation.singleOutput<Obligation<DigitalCurrency>>()
+        val obligation = newObligation.singleOutput<Obligation<TokenType>>()
         val obligationId = obligation.linearId()
 
         // Add settlement instructions.
@@ -180,7 +179,7 @@ abstract class AbstractObligationTestsWithOracle<out T : OffLedgerPayment<*>>(
     fun `create obligation then cancel it`() {
         // Create obligation.
         val newTransaction = A.createObligation(AMOUNT(10000, currency), B, CreateObligation.InitiatorRole.OBLIGOR).getOrThrow()
-        val obligation = newTransaction.singleOutput<Obligation<DigitalCurrency>>()
+        val obligation = newTransaction.singleOutput<Obligation<TokenType>>()
         val obligationId = obligation.linearId()
 
         // Cancel it.
@@ -190,7 +189,7 @@ abstract class AbstractObligationTestsWithOracle<out T : OffLedgerPayment<*>>(
         val query = QueryCriteria.LinearStateQueryCriteria(linearId = listOf(obligationId), status = Vault.StateStatus.UNCONSUMED)
         // Hack: It takes a moment for the vaults to update...
         Thread.sleep(100)
-        assertEquals(null, A.transaction { A.services.vaultService.queryBy<Obligation<Money>>(query).states.singleOrNull() })
-        assertEquals(null, B.transaction { B.services.vaultService.queryBy<Obligation<Money>>(query).states.singleOrNull() })
+        assertEquals(null, A.transaction { A.services.vaultService.queryBy<Obligation<TokenType>>(query).states.singleOrNull() })
+        assertEquals(null, B.transaction { B.services.vaultService.queryBy<Obligation<TokenType>>(query).states.singleOrNull() })
     }
 }

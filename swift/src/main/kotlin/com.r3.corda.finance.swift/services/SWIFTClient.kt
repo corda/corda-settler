@@ -122,7 +122,7 @@ class SWIFTClient(
         logger.info(messageWithParams("Submitting payment instruction $swiftPaymentInstruction to $paymentUrl", "PAYMENT_INSTRUCTION_ID" to paymentInstructionId))
 
         // making HTTP request
-        val (req, res, result) = paymentUrl
+        val (_, res, _) = paymentUrl
                 .httpPost()
                 .header("accept" to "application/json")
                 .header("content-type" to "application/json")

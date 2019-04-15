@@ -1,16 +1,15 @@
 package com.r3.corda.finance.obligation.oracle.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.types.SettlementOracleResult
 import com.r3.corda.finance.obligation.commands.ObligationCommands
 import com.r3.corda.finance.obligation.contracts.ObligationContract
 import com.r3.corda.finance.obligation.flows.AbstractSendToSettlementOracle
 import com.r3.corda.finance.obligation.oracle.services.XrpOracleService
 import com.r3.corda.finance.obligation.states.Obligation
 import com.r3.corda.finance.obligation.types.DigitalCurrency
-import com.r3.corda.finance.obligation.types.FiatCurrency
 import com.r3.corda.finance.obligation.types.Money
 import com.r3.corda.finance.obligation.types.PaymentStatus
+import com.r3.corda.finance.obligation.types.SettlementOracleResult
 import com.r3.corda.finance.ripple.types.XrpPayment
 import com.r3.corda.finance.ripple.types.XrpSettlement
 import com.r3.corda.finance.swift.services.SWIFTService
@@ -24,8 +23,9 @@ import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
 import java.time.Duration
 
+@Suppress("UNCHECKED_CAST")
 @InitiatedBy(AbstractSendToSettlementOracle::class)
-class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
+class VerifySettlement(private val otherSession: FlowSession) : FlowLogic<Unit>() {
 
     override val progressTracker: ProgressTracker = ProgressTracker()
     companion object {
@@ -42,7 +42,7 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
             logger.info("Checking for settlement...")
             val result = oracleService.hasPaymentSettled(xrpPayment, obligation)
             when (result) {
-                VerifyResult.SUCCESS, VerifyResult.TIMEOUT -> return result
+                VerifyResult.SUCCESS, VerifyResult.TIMEOUT, VerifyResult.REJECTED -> return result
                 // Sleep for five seconds before we try again. The Oracle might receive the request to verify payment
                 // before the payment succeed. Also it takes a bit of time for all the nodes to receive the new ledger
                 // version. Note: sleep is a suspendable operation.
@@ -52,7 +52,7 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
     }
 
     @Suspendable
-    fun verifySwiftSettlement(obligation: Obligation<FiatCurrency>, swiftPayment: SwiftPayment): VerifyResult {
+    fun verifySwiftSettlement(swiftPayment: SwiftPayment): VerifyResult {
         val oracleService = serviceHub.cordaService(SWIFTService::class.java)
         while (true) {
             val paymentStatus = oracleService.swiftClient().getPaymentStatus(swiftPayment.paymentReference)
@@ -113,7 +113,7 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
         // 4. Handle different settlement methods.
         val verifyResult = when (settlementMethod) {
             is XrpSettlement -> verifyXrpSettlement(obligation as Obligation<DigitalCurrency>, lastPayment as XrpPayment<DigitalCurrency>)
-            is SwiftSettlement -> verifySwiftSettlement(obligation as Obligation<FiatCurrency>, lastPayment as SwiftPayment)
+            is SwiftSettlement -> verifySwiftSettlement(lastPayment as SwiftPayment)
             else -> throw IllegalStateException("Invalid settlement method $settlementMethod.")
         }
 

@@ -18,11 +18,10 @@ lib/dokka.jar
 
 ### JetBrains template
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio
-
 *.iml
 
 ## Directory-based project format:
-#.idea
+.idea/
 
 # if you remove the above rule, at least ignore the following:
 
@@ -58,6 +57,9 @@ lib/dokka.jar
 /out/
 cordapp/out/
 cordapp-contracts-states/out/
+oracle/out/
+ripple/out/
+swift/out/
 
 # mpeltonen/sbt-idea plugin
 .idea_modules/

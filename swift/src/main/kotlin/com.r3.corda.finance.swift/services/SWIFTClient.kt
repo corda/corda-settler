@@ -5,19 +5,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.fuel.httpPost
 import com.r3.corda.finance.obligation.types.FiatCurrency
-import com.r3.corda.finance.swift.types.SWIFTInstructedPaymentAmount
-import com.r3.corda.finance.swift.types.SWIFTParticipantAccount
-import com.r3.corda.finance.swift.types.SWIFTParticipantAgent
-import com.r3.corda.finance.swift.types.SWIFTParticipantInfo
-import com.r3.corda.finance.swift.types.SWIFTParticipantOrganisationIdentification
-import com.r3.corda.finance.swift.types.SWIFTPaymentAmount
-import com.r3.corda.finance.swift.types.SWIFTPaymentIdentification
-import com.r3.corda.finance.swift.types.SWIFTPaymentResponse
-import com.r3.corda.finance.swift.types.SWIFTPaymentStatus
-import com.r3.corda.finance.swift.types.SWIFTPaymentStatusType
-import com.r3.corda.finance.swift.types.SWIFTRequestedExecutionDate
-import com.r3.corda.finance.swift.types.SWIFTUnsignedPayload
-import com.r3.corda.finance.swift.types.SwiftPaymentInstruction
+import com.r3.corda.finance.swift.types.*
 import net.corda.core.contracts.Amount
 import net.corda.core.flows.FlowException
 import org.bouncycastle.cert.jcajce.JcaCertStore
@@ -134,7 +122,7 @@ class SWIFTClient(
         logger.info(messageWithParams("Submitting payment instruction $swiftPaymentInstruction to $paymentUrl", "PAYMENT_INSTRUCTION_ID" to paymentInstructionId))
 
         // making HTTP request
-        val (req, res, result) = paymentUrl
+        val (_, res, _) = paymentUrl
                 .httpPost()
                 .header("accept" to "application/json")
                 .header("content-type" to "application/json")

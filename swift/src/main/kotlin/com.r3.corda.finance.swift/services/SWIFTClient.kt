@@ -4,13 +4,8 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.fuel.httpPost
-<<<<<<< HEAD
 import com.r3.corda.finance.swift.types.*
 import com.r3.corda.sdk.token.money.FiatCurrency
-=======
-import com.r3.corda.finance.obligation.types.FiatCurrency
-import com.r3.corda.finance.swift.types.*
->>>>>>> a88434278a086f26a585d1cfb92b0401a4134612
 import net.corda.core.contracts.Amount
 import net.corda.core.flows.FlowException
 import org.bouncycastle.cert.jcajce.JcaCertStore

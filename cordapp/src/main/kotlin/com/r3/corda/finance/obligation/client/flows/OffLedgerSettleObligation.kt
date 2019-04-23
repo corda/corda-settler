@@ -73,13 +73,14 @@ class OffLedgerSettleObligation<T : TokenType>(
         progressTracker.currentStep = PAYING
         when (settlementMethod) {
             is OnLedgerSettlement -> throw IllegalStateException("ObligationContract to be settled on-ledger. Aborting...")
-            is OffLedgerPayment<*> -> subFlow(getFlowInstance(settlementMethod, obligationStateAndRef, PAYING.childProgressTracker()))
+            is OffLedgerPayment<*> -> {
+                val tx = subFlow(getFlowInstance(settlementMethod, obligationStateAndRef, PAYING.childProgressTracker()))
+                // Checks the payment settled only if settlementOracle != null
+                // We only supply the linear ID because this flow can be called from the shell on its own.
+                return if (settlementMethod.settlementOracle == null) tx.tx
+                else subFlow(SendToSettlementOracle(linearId, SENDING.childProgressTracker())).tx
+            }
             else -> throw IllegalStateException("No settlement instructions added to obligation.")
         }
-
-        // Checks the payment settled.
-        // We only supply the linear ID because this flow can be called from the shell on its own.
-        return subFlow(SendToSettlementOracle(linearId, SENDING.childProgressTracker())).tx
     }
-
 }

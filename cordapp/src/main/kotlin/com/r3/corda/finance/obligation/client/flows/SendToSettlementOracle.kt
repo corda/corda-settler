@@ -7,6 +7,7 @@ import com.r3.corda.finance.obligation.states.Obligation
 import com.r3.corda.finance.obligation.types.OffLedgerPayment
 import com.r3.corda.finance.obligation.types.SettlementOracleResult
 import net.corda.core.contracts.UniqueIdentifier
+import net.corda.core.contracts.requireThat
 import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.SendStateAndRefFlow
 import net.corda.core.flows.StartableByRPC
@@ -42,9 +43,13 @@ class SendToSettlementOracle(
         val obligationState = obligationStateAndRef.state.data
         val settlementMethod = obligationState.settlementMethod as OffLedgerPayment<*>
 
+        requireThat {
+            "Settlement Oracle is not null" using (settlementMethod.settlementOracle != null)
+        }
+
         // Send the Oracle the ObligationContract state.
         progressTracker.currentStep = SENDING
-        val session = initiateFlow(settlementMethod.settlementOracle)
+        val session = initiateFlow(settlementMethod.settlementOracle!!)
         subFlow(SendStateAndRefFlow(session, listOf(obligationStateAndRef)))
 
         // Receive a SignedTransaction from the oracle that exits the obligation, or throw an exception if we timed out.

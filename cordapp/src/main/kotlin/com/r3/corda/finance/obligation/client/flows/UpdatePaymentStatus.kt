@@ -1,0 +1,108 @@
+package com.r3.corda.finance.obligation.client.flows
+
+import co.paralleluniverse.fibers.Suspendable
+import com.r3.corda.finance.obligation.client.getLinearStateById
+import com.r3.corda.finance.obligation.client.resolver
+import com.r3.corda.finance.obligation.commands.ObligationCommands
+import com.r3.corda.finance.obligation.contracts.ObligationContract
+import com.r3.corda.finance.obligation.states.Obligation
+import com.r3.corda.finance.obligation.types.PaymentReference
+import com.r3.corda.finance.obligation.types.PaymentStatus
+import net.corda.core.contracts.UniqueIdentifier
+import net.corda.core.flows.*
+import net.corda.core.transactions.SignedTransaction
+import net.corda.core.transactions.TransactionBuilder
+import net.corda.core.transactions.WireTransaction
+import net.corda.core.utilities.ProgressTracker
+
+object UpdatePaymentStatus {
+
+    @InitiatingFlow
+    @StartableByRPC
+    class Initiator(
+            private val paymentReference: PaymentReference,
+            private val status: PaymentStatus,
+            private val linearId: UniqueIdentifier
+    ) : FlowLogic<WireTransaction>() {
+
+        companion object {
+            object INITIALISING : ProgressTracker.Step("Performing initial steps.")
+            object BUILDING : ProgressTracker.Step("Building and verifying transaction.")
+            object SIGNING : ProgressTracker.Step("signing transaction.")
+
+            object COLLECTING : ProgressTracker.Step("Collecting counterparty signature.") {
+                override fun childProgressTracker() = CollectSignaturesFlow.tracker()
+            }
+
+            object FINALISING : ProgressTracker.Step("Finalising transaction.") {
+                override fun childProgressTracker() = FinalityFlow.tracker()
+            }
+
+            fun tracker() = ProgressTracker(INITIALISING, BUILDING, SIGNING, COLLECTING, FINALISING)
+        }
+
+        override val progressTracker: ProgressTracker = tracker()
+
+        @Suspendable
+        override fun call(): WireTransaction {
+            progressTracker.currentStep = OffLedgerSettleObligation.Companion.INITIALISING
+            val obligationStateAndRef = getLinearStateById<Obligation<*>>(linearId, serviceHub)
+                    ?: throw IllegalArgumentException("LinearId not recognised.")
+            val obligationState = obligationStateAndRef.state.data
+
+            val os = obligationState.withWellKnownIdentities(resolver)
+            val obligee = os.obligee
+            check(ourIdentity == obligee) { "This flow can only be started by the obligee. " }
+            val obligorName = os.obligor.nameOrNull()
+            check(obligorName != null) { "Could not find obligor party name" }
+            val obligor = serviceHub.networkMapCache.getPeerByLegalName(obligorName!!)
+            check(obligor != null) { "Could not find obligor party for '$obligorName'" }
+            val payment = obligationState.payments.find { it.paymentReference == paymentReference }
+            check(payment != null) { "Could not find payment with reference '$paymentReference'" }
+
+            progressTracker.currentStep = BUILDING
+            payment!!.status = status
+            val notary = serviceHub.networkMapCache.notaryIdentities.firstOrNull()
+                    ?: throw FlowException("No available notary.")
+            val utx = TransactionBuilder(notary = notary).apply {
+                addInputState(obligationStateAndRef)
+                addCommand(ObligationCommands.UpdatePayment(payment.paymentReference), ourIdentity.owningKey)
+                addOutputState(obligationState, ObligationContract.CONTRACT_REF)
+            }
+
+            progressTracker.currentStep = SIGNING
+            val signedTx = serviceHub.signInitialTransaction(utx)
+
+            progressTracker.currentStep = COLLECTING
+            val obligorFlow = initiateFlow(obligor!!)
+            val stx = subFlow(CollectSignaturesFlow(
+                    partiallySignedTx = signedTx,
+                    sessionsToCollectFrom = setOf(obligorFlow),
+                    myOptionalKeys = listOf(ourIdentity.owningKey),
+                    progressTracker = COLLECTING.childProgressTracker())
+            )
+
+            // Step 6. Finalise and return the transaction.
+            progressTracker.currentStep = FINALISING
+            val ntx = subFlow(FinalityFlow(stx, FINALISING.childProgressTracker()))
+            return ntx.tx
+        }
+    }
+
+    @InitiatedBy(Initiator::class)
+    class Responder(val otherFlow: FlowSession) : FlowLogic<WireTransaction>() {
+        @Suspendable
+        override fun call(): WireTransaction {
+            val flow = object : SignTransactionFlow(otherFlow) {
+                @Suspendable
+                override fun checkTransaction(stx: SignedTransaction) {
+                    // TODO: Do some basic checking here.
+                    // Reach out to human operator when HCI is available.
+                }
+            }
+            val stx = subFlow(flow)
+            // Suspend this flow until the transaction is committed.
+            return waitForLedgerCommit(stx.id).tx
+        }
+    }
+}

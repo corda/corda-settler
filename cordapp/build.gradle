@@ -40,6 +40,7 @@ dependencies {
 
     // Corda integration dependencies
     cordaCompile "$corda_release_group:corda-core:$corda_release_version"
+    cordaCompile "$corda_release_group:corda-confidential-identities:$corda_release_version"
     cordaCompile "$corda_release_group:corda-finance:$corda_release_version"
     cordaCompile "$corda_release_group:corda-jackson:$corda_release_version"
     cordaCompile "$corda_release_group:corda-rpc:$corda_release_version"
@@ -60,8 +61,8 @@ task integrationTest(type: Test, dependsOn: []) {
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
     kotlinOptions {
-        languageVersion = "1.1"
-        apiVersion = "1.1"
+        languageVersion = "1.2"
+        apiVersion = "1.2"
         jvmTarget = "1.8"
         javaParameters = true   // Useful for reflection.
     }

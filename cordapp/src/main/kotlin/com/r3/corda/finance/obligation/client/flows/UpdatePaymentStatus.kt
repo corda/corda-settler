@@ -53,10 +53,7 @@ object UpdatePaymentStatus {
             val os = obligationState.withWellKnownIdentities(resolver)
             val obligee = os.obligee
             check(ourIdentity == obligee) { "This flow can only be started by the obligee. " }
-            val obligorName = os.obligor.nameOrNull()
-            check(obligorName != null) { "Could not find obligor party name" }
-            val obligor = serviceHub.networkMapCache.getPeerByLegalName(obligorName!!)
-            check(obligor != null) { "Could not find obligor party for '$obligorName'" }
+            val obligor = serviceHub.identityService.requireWellKnownPartyFromAnonymous(os.obligor)
             val payment = obligationState.payments.find { it.paymentReference == paymentReference }
             check(payment != null) { "Could not find payment with reference '$paymentReference'" }
 
@@ -74,7 +71,7 @@ object UpdatePaymentStatus {
             val signedTx = serviceHub.signInitialTransaction(utx)
 
             progressTracker.currentStep = COLLECTING
-            val obligorFlow = initiateFlow(obligor!!)
+            val obligorFlow = initiateFlow(obligor)
             val stx = subFlow(CollectSignaturesFlow(
                     partiallySignedTx = signedTx,
                     sessionsToCollectFrom = setOf(obligorFlow),

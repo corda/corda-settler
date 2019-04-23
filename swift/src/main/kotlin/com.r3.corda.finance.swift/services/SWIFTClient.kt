@@ -133,12 +133,12 @@ class SWIFTClient(
         val responseData = String(res.data)
 
         // if the payment attempt resulted to error - logging and throwing FlowException
-        if (res.httpStatusCode >= 400) {
-            val message = httpResultMessage("Error while submitting payment instruction", res.httpStatusCode, responseData, "PAYMENT_INSTRUCTION_ID" to paymentInstructionId)
+        if (res.statusCode >= 400) {
+            val message = httpResultMessage("Error while submitting payment instruction", res.statusCode, responseData, "PAYMENT_INSTRUCTION_ID" to paymentInstructionId)
             logger.warn(message)
             throw SWIFTPaymentException(message)
         } else {
-            logger.info(httpResultMessage("Successfully submitted payment instruction", res.httpStatusCode, responseData, "PAYMENT_INSTRUCTION_ID" to paymentInstructionId))
+            logger.info(httpResultMessage("Successfully submitted payment instruction", res.statusCode, responseData, "PAYMENT_INSTRUCTION_ID" to paymentInstructionId))
             return mapper.readValue(responseData)
         }
     }
@@ -156,13 +156,13 @@ class SWIFTClient(
                 .response()
 
         val responseData = String(res.data)
-        if (res.httpStatusCode >= 400) {
-            val message = httpResultMessage("Error while retrieving unsigned payment payload", res.httpStatusCode, responseData, "UETR" to uetr)
+        if (res.statusCode >= 400) {
+            val message = httpResultMessage("Error while retrieving unsigned payment payload", res.statusCode, responseData, "UETR" to uetr)
             SWIFTClient.logger.warn(message)
             throw SWIFTPaymentException(message)
         } else {
             val mapper = jacksonObjectMapper()
-            SWIFTClient.logger.info(httpResultMessage("Successfully retrieved unsigned payment payload", res.httpStatusCode, responseData, "UETR" to uetr))
+            SWIFTClient.logger.info(httpResultMessage("Successfully retrieved unsigned payment payload", res.statusCode, responseData, "UETR" to uetr))
             return mapper.readValue(res.data)
         }
     }
@@ -184,12 +184,12 @@ class SWIFTClient(
         val responseData = String(res.data)
 
         // if the payment attempt resulted to error - logging and throwing FlowException
-        if (res.httpStatusCode >= 400) {
-            val message = httpResultMessage("Error while submitting signed payload", res.httpStatusCode, responseData, "UETR" to uetr)
+        if (res.statusCode >= 400) {
+            val message = httpResultMessage("Error while submitting signed payload", res.statusCode, responseData, "UETR" to uetr)
             logger.warn(message)
             throw SWIFTPaymentException(message)
         } else {
-            logger.info(httpResultMessage("Successfully submitted signed payload", res.httpStatusCode, responseData, "UETR" to uetr))
+            logger.info(httpResultMessage("Successfully submitted signed payload", res.statusCode, responseData, "UETR" to uetr))
         }
     }
 
@@ -209,12 +209,12 @@ class SWIFTClient(
 
         val responseData = String(res.data)
         val mapper = jacksonObjectMapper()
-        if (res.httpStatusCode >= 400) {
-            val message = httpResultMessage("Error while retrieving payment status.", res.httpStatusCode, responseData, "UETR" to uetr)
+        if (res.statusCode >= 400) {
+            val message = httpResultMessage("Error while retrieving payment status.", res.statusCode, responseData, "UETR" to uetr)
             SWIFTClient.logger.warn(message)
             throw SWIFTPaymentException(message)
         } else {
-            SWIFTClient.logger.info(httpResultMessage("Successfully retrieved payment status", res.httpStatusCode, responseData, "UETR" to uetr))
+            SWIFTClient.logger.info(httpResultMessage("Successfully retrieved payment status", res.statusCode, responseData, "UETR" to uetr))
             return mapper.readValue(responseData)
         }
     }
@@ -234,12 +234,12 @@ class SWIFTClient(
                 .response()
 
         val responseData = String(res.data)
-        if (res.httpStatusCode >= 400) {
-            val message = httpResultMessage("Error during updating payment status", res.httpStatusCode, responseData, "UETR" to uetr)
+        if (res.statusCode >= 400) {
+            val message = httpResultMessage("Error during updating payment status", res.statusCode, responseData, "UETR" to uetr)
             SWIFTClient.logger.warn(message)
             throw SWIFTPaymentException(message)
         } else {
-            SWIFTClient.logger.info(httpResultMessage("Successfully updated payment status", res.httpStatusCode, responseData, "UETR" to uetr))
+            SWIFTClient.logger.info(httpResultMessage("Successfully updated payment status", res.statusCode, responseData, "UETR" to uetr))
         }
     }
 

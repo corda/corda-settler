@@ -4,10 +4,16 @@ repositories {
     mavenCentral()
 }
 
-apply plugin: 'kotlin'
-apply plugin: 'net.corda.plugins.cordapp'
-apply plugin: 'net.corda.plugins.cordformation'
-apply plugin: 'net.corda.plugins.quasar-utils'
+cordapp {
+    targetPlatformVersion 4
+    minimumPlatformVersion 4
+    contract {
+        name "Corda Settler"
+        versionId 1
+        vendor "R3"
+        licence "None"
+    }
+}
 
 sourceSets {
     main {
@@ -27,6 +33,10 @@ sourceSets {
             srcDir file('src/integrationTest/kotlin')
         }
     }
+}
+
+jar {
+    baseName = 'cordapp'
 }
 
 configurations {

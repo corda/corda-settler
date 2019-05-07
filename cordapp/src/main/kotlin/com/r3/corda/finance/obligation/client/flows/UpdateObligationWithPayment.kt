@@ -13,6 +13,7 @@ import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.FlowException
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.StartableByRPC
+import net.corda.core.identity.Party
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
@@ -45,7 +46,9 @@ class UpdateObligationWithPayment<T : TokenType>(
         val obligation = obligationStateAndRef.state.data
 
         // 2. This flow should only be started by the beneficiary.
-        val obligor = obligation.withWellKnownIdentities(resolver).obligor
+        val obligationResolved = obligation.withWellKnownIdentities(resolver)
+        val obligor = obligationResolved.obligor
+        val obligee = obligationResolved.obligee
         check(ourIdentity == obligor) { "This flow can only be started by the obligor. " }
 
         // 3. Add payment to obligation.
@@ -69,6 +72,7 @@ class UpdateObligationWithPayment<T : TokenType>(
 
         // 6. Finalise transaction and send to participants.
         progressTracker.currentStep = FINALISING
-        return subFlow(FinalityFlow(stx, FINALISING.childProgressTracker()))
+        val obligeeSession = initiateFlow(obligee as Party)
+        return subFlow(FinalityFlow(stx, setOf(obligeeSession), FINALISING.childProgressTracker()))
     }
 }

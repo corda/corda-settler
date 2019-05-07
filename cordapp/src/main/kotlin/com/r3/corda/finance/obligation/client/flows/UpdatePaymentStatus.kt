@@ -81,7 +81,7 @@ object UpdatePaymentStatus {
 
             // Step 6. Finalise and return the transaction.
             progressTracker.currentStep = FINALISING
-            val ntx = subFlow(FinalityFlow(stx, FINALISING.childProgressTracker()))
+            val ntx = subFlow(FinalityFlow(stx, setOf(obligorFlow), FINALISING.childProgressTracker()))
             return ntx.tx
         }
     }
@@ -98,8 +98,7 @@ object UpdatePaymentStatus {
                 }
             }
             val stx = subFlow(flow)
-            // Suspend this flow until the transaction is committed.
-            return waitForLedgerCommit(stx.id).tx
+            return subFlow(ReceiveFinalityFlow(otherFlow, stx.id)).tx
         }
     }
 }

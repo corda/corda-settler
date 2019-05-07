@@ -58,8 +58,8 @@ object CreateObligation {
         override val progressTracker: ProgressTracker = tracker()
 
         @Suspendable
-        private fun createAnonymousObligation(): Pair<Obligation<T>, PublicKey> {
-            val txKeys = subFlow(SwapIdentitiesFlow(counterparty))
+        private fun createAnonymousObligation(lenderFlow: FlowSession): Pair<Obligation<T>, PublicKey> {
+            val txKeys = subFlow(SwapIdentitiesFlow(lenderFlow))
             // SwapIdentityFlow should return two keys.
             check(txKeys.size == 2) { "Something went wrong when generating confidential identities." }
             val anonymousMe = txKeys[ourIdentity] ?: throw FlowException("Couldn't create our conf. identity.")
@@ -81,8 +81,9 @@ object CreateObligation {
         override fun call(): WireTransaction {
             // Step 1. Initialisation.
             progressTracker.currentStep = INITIALISING
+            val lenderFlow = initiateFlow(counterparty)
             val (obligation, signingKey) = if (anonymous) {
-                createAnonymousObligation()
+                createAnonymousObligation(lenderFlow)
             } else {
                 createObligation(us = ourIdentity, them = counterparty)
             }
@@ -112,7 +113,6 @@ object CreateObligation {
 
             // Step 5. Get the counterparty signature.
             progressTracker.currentStep = COLLECTING
-            val lenderFlow = initiateFlow(counterparty)
             val stx = subFlow(CollectSignaturesFlow(
                     partiallySignedTx = ptx,
                     sessionsToCollectFrom = setOf(lenderFlow),
@@ -122,7 +122,7 @@ object CreateObligation {
 
             // Step 6. Finalise and return the transaction.
             progressTracker.currentStep = FINALISING
-            val ntx = subFlow(FinalityFlow(stx, FINALISING.childProgressTracker()))
+            val ntx = subFlow(FinalityFlow(stx, setOf(lenderFlow), FINALISING.childProgressTracker()))
             return ntx.tx
         }
     }
@@ -140,7 +140,7 @@ object CreateObligation {
             }
             val stx = subFlow(flow)
             // Suspend this flow until the transaction is committed.
-            return waitForLedgerCommit(stx.id).tx
+            return subFlow(ReceiveFinalityFlow(otherFlow, stx.id)).tx
         }
     }
 }

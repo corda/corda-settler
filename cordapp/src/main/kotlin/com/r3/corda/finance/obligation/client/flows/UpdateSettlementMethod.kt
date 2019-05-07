@@ -10,6 +10,7 @@ import com.r3.corda.finance.obligation.types.SettlementMethod
 import com.r3.corda.sdk.token.contracts.types.TokenType
 import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.flows.*
+import net.corda.core.identity.Party
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.transactions.WireTransaction
 import net.corda.core.utilities.ProgressTracker
@@ -45,7 +46,9 @@ class UpdateSettlementMethod(
         val obligation = obligationStateAndRef.state.data
 
         // 2. This flow should only be started by the beneficiary.
-        val obligee = obligation.withWellKnownIdentities(resolver).obligee
+        val obligationResolved = obligation.withWellKnownIdentities(resolver)
+        val obligor = obligationResolved.obligor
+        val obligee = obligationResolved.obligee
         check(ourIdentity == obligee) { "This flow can only be started by the obligee. " }
 
         // 3. Add settlement instructions.
@@ -69,7 +72,8 @@ class UpdateSettlementMethod(
 
         // 6. Finalise transaction and send to participants.
         progressTracker.currentStep = FINALISING
-        return subFlow(FinalityFlow(stx, FINALISING.childProgressTracker())).tx
+        val obligorSession = initiateFlow(obligor as Party)
+        return subFlow(FinalityFlow(stx, setOf(obligorSession), FINALISING.childProgressTracker())).tx
     }
 
 }

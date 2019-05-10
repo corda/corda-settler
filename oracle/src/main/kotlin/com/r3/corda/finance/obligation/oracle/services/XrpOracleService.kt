@@ -3,7 +3,6 @@ package com.r3.corda.finance.obligation.oracle.services
 import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
 import com.r3.corda.finance.obligation.oracle.flows.VerifySettlement
 import com.r3.corda.finance.obligation.states.Obligation
-import com.r3.corda.finance.obligation.types.DigitalCurrency
 import com.r3.corda.finance.ripple.services.XRPClientForVerification
 import com.r3.corda.finance.ripple.types.TransactionNotFoundException
 import com.r3.corda.finance.ripple.types.XrpPayment

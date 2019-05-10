@@ -9,6 +9,20 @@ apply plugin: 'net.corda.plugins.cordapp'
 apply plugin: 'net.corda.plugins.cordformation'
 apply plugin: 'net.corda.plugins.quasar-utils'
 
+cordapp {
+    targetPlatformVersion 4
+    minimumPlatformVersion 4
+    contract {
+        name "Corda Settler"
+        versionId 1
+        vendor "R3"
+        licence "None"
+    }
+    signing {
+        enabled false
+    }
+}
+
 sourceSets {
     main {
         resources {
@@ -55,9 +69,9 @@ dependencies {
 
     // CorDapp dependencies
     // Specify your CorDapp's dependencies below, including dependent CorDapps.
-    cordaCompile "com.r3.tokens-sdk:money:1.0-SNAPSHOT"
-    cordaCompile project(":ripple")
-    cordaCompile project(":swift")
+    cordapp "com.r3.tokens-sdk:money:1.0-SNAPSHOT"
+    cordapp project(":ripple")
+    cordapp project(":swift")
 }
 
 task integrationTest(type: Test, dependsOn: []) {

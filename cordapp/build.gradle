@@ -13,6 +13,9 @@ cordapp {
         vendor "R3"
         licence "None"
     }
+    signing {
+        enabled false
+    }
 }
 
 sourceSets {
@@ -63,7 +66,7 @@ dependencies {
 
     // CorDapp dependencies
     // Specify your CorDapp's dependencies below, including dependent CorDapps.
-    cordaCompile project(":cordapp-contracts-states")
+    cordapp project(":cordapp-contracts-states")
 }
 
 task integrationTest(type: Test, dependsOn: []) {

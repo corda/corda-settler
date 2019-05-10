@@ -8,6 +8,20 @@ apply plugin: 'kotlin'
 apply plugin: 'net.corda.plugins.cordapp'
 apply plugin: 'net.corda.plugins.cordformation'
 
+cordapp {
+    targetPlatformVersion 4
+    minimumPlatformVersion 4
+    contract {
+        name "Corda Settler"
+        versionId 1
+        vendor "R3"
+        licence "None"
+    }
+    signing {
+        enabled false
+    }
+}
+
 sourceSets {
     main {
         resources {
@@ -47,7 +61,7 @@ dependencies {
 
     cordaCompile "com.r3.tokens-sdk:money:1.0-SNAPSHOT"
 
-    cordaCompile project(":cordapp")
+    cordapp project(":cordapp")
 }
 
 task integrationTest(type: Test, dependsOn: []) {

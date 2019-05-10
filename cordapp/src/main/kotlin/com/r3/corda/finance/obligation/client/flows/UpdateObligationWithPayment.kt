@@ -1,22 +1,24 @@
 package com.r3.corda.finance.obligation.client.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.types.Money
-import com.r3.corda.finance.obligation.types.Payment
 import com.r3.corda.finance.obligation.client.getLinearStateById
 import com.r3.corda.finance.obligation.client.resolver
 import com.r3.corda.finance.obligation.commands.ObligationCommands
 import com.r3.corda.finance.obligation.contracts.ObligationContract
 import com.r3.corda.finance.obligation.states.Obligation
+import com.r3.corda.finance.obligation.types.Payment
+import com.r3.corda.sdk.token.contracts.types.TokenType
 import net.corda.core.contracts.UniqueIdentifier
-import net.corda.core.flows.*
-import net.corda.core.identity.AbstractParty
+import net.corda.core.flows.FinalityFlow
+import net.corda.core.flows.FlowException
+import net.corda.core.flows.FlowLogic
+import net.corda.core.flows.StartableByRPC
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
 
 @StartableByRPC
-class UpdateObligationWithPayment<T : Money>(
+class UpdateObligationWithPayment<T : TokenType>(
         val linearId: UniqueIdentifier,
         val paymentInformation: Payment<T>,
         override val progressTracker: ProgressTracker = UpdateObligationWithPayment.tracker()

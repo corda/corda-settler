@@ -92,9 +92,7 @@ There are five modules in this repo:
 
 1. `cordapp-states-contracts` which contains the `Obligation` state and
    `ObligationContract`, as well as some abstract flows  definitions and
-   types for obligation payments and settlement methods. This module also
-   contains some token type definitions which will eventually be refactored
-   out of this repository when the Corda Token SDK binaries are available.
+   types for obligation payments and settlement methods.
    IMPORTANT: This module does not depend on the `Ripple` module. This module
    makes no assumption about the nature of the settlement rail.
 2. `cordapp` which contains the flows for issuing, cancelling, novating and
@@ -187,7 +185,7 @@ like a good approach for now just to get something done.
 **Step 1. Creating the obligation.**
 
 Alice and Bob record that Alice has incurred an obligation to pay Bob an
-amount of currency. The obligation specifies which token type the
+amount of currency. The obligation accepts a token type that the
 financial obligation is in respect of. For now, this will just be a new
 `DigitalCurrency` type (set to "XRP") which emulates the
 `java.util.Currency` class. The obligation will also specify a payment
@@ -347,6 +345,9 @@ not need to sign.
   that worked easily! Feel free to replace it with your own provider. The
   exchange rate oracle for this project is really just a stub so we can
   handle token novation.
+* SWIFT tests require a correct API key to be provided (look for `EMAIL IVAN/ROGER FOR API KEY`
+  in the codebase).
+* SWIFT tests expect a file `swiftKey.pem` with a private key on the classpath. 
 
 ## TODO
 

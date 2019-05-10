@@ -1,17 +1,16 @@
 package com.r3.corda.finance.obligation.client.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.types.Money
 import com.r3.corda.finance.obligation.commands.ObligationCommands
 import com.r3.corda.finance.obligation.contracts.ObligationContract
 import com.r3.corda.finance.obligation.states.Obligation
+import com.r3.corda.sdk.token.contracts.types.TokenType
 import net.corda.confidential.SwapIdentitiesFlow
 import net.corda.core.contracts.Amount
 import net.corda.core.flows.*
 import net.corda.core.identity.AbstractParty
 import net.corda.core.identity.Party
 import net.corda.core.serialization.CordaSerializable
-import net.corda.core.transactions.LedgerTransaction
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.transactions.WireTransaction
@@ -32,7 +31,7 @@ object CreateObligation {
 
     @InitiatingFlow
     @StartableByRPC
-    class Initiator<T : Money>(
+    class Initiator<T : TokenType>(
             private val amount: Amount<T>,
             private val role: InitiatorRole,
             private val counterparty: Party,

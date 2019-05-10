@@ -1,7 +1,7 @@
 buildscript {
     ext.corda_release_group = 'net.corda'
-    ext.corda_release_version = '3.3-corda'
-    ext.corda_gradle_plugins_version = '3.2.1'
+    ext.corda_release_version = '5.0-SNAPSHOT'
+    ext.corda_gradle_plugins_version = '4.0.42'
     ext.kotlin_version = '1.2.51'
     ext.junit_version = '4.12'
     ext.quasar_version = '0.7.9'
@@ -26,7 +26,9 @@ allprojects {
         jcenter()
         mavenCentral()
         maven { url 'https://jitpack.io' }
+        maven { url 'https://repo.gradle.org/gradle/libs-releases' }
         maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda-dev/' }
+        maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda-tokens-dev/' }
     }
 }
 
@@ -84,6 +86,8 @@ dependencies {
     cordapp project(":oracle")
     cordapp "$corda_release_group:corda-finance:$corda_release_version"
 
+    testCompile "com.r3.tokens-sdk:contract:1.0-SNAPSHOT"
+    testCompile "com.r3.tokens-sdk:money:1.0-SNAPSHOT"
     testCompile project(path: ':cordapp', configuration: 'testOutput')
 }
 

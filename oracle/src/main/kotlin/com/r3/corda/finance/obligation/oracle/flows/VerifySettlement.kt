@@ -13,6 +13,9 @@ import com.r3.corda.finance.swift.services.SWIFTService
 import com.r3.corda.finance.swift.types.SWIFTPaymentStatusType
 import com.r3.corda.finance.swift.types.SwiftPayment
 import com.r3.corda.finance.swift.types.SwiftSettlement
+import com.r3.corda.sdk.token.contracts.types.TokenType
+import com.r3.corda.sdk.token.money.DigitalCurrency
+import com.r3.corda.sdk.token.money.FiatCurrency
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.*
 import net.corda.core.transactions.SignedTransaction
@@ -55,7 +58,7 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
         val oracleService = serviceHub.cordaService(SWIFTService::class.java)
         while (true) {
             val paymentStatus = oracleService.swiftClient().getPaymentStatus(swiftPayment.paymentReference)
-            when (paymentStatus.transactionStatus) {
+            when (paymentStatus.transactionStatus.status) {
                 SWIFTPaymentStatusType.RJCT -> return VerifyResult.REJECTED
                 SWIFTPaymentStatusType.ACCC -> return VerifyResult.SUCCESS
                 // TODO: we need to come up with some more clever way of waiting for the status to be updated. Maybe exponential back-off
@@ -66,7 +69,7 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
     }
 
     private fun createTransaction(
-            obligationStateAndRef: StateAndRef<Obligation<Money>>,
+            obligationStateAndRef: StateAndRef<Obligation<TokenType>>,
             status: PaymentStatus
     ): SignedTransaction {
         // Update payment status.
@@ -91,7 +94,7 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
     @Suspendable
     override fun call() {
         // 1. Receive the obligation state we are verifying settlement of.
-        val obligationStateAndRef = subFlow(ReceiveStateAndRefFlow<Obligation<Money>>(otherSession)).single()
+        val obligationStateAndRef = subFlow(ReceiveStateAndRefFlow<Obligation<TokenType>>(otherSession)).single()
         val obligation = obligationStateAndRef.state.data
         val settlementMethod = obligation.settlementMethod
 

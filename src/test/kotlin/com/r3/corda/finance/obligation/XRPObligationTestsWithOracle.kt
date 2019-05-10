@@ -5,14 +5,13 @@ import com.r3.corda.finance.obligation.client.flows.SendToSettlementOracle
 import com.r3.corda.finance.obligation.commands.ObligationCommands
 import com.r3.corda.finance.obligation.contracts.ObligationContract
 import com.r3.corda.finance.obligation.states.Obligation
-import com.r3.corda.finance.obligation.types.DigitalCurrency
-import com.r3.corda.finance.obligation.types.Money
 import com.r3.corda.finance.obligation.types.Payment
 import com.r3.corda.finance.obligation.types.PaymentStatus
 import com.r3.corda.finance.ripple.services.XRPService
 import com.r3.corda.finance.ripple.types.XrpPayment
 import com.r3.corda.finance.ripple.types.XrpSettlement
 import com.r3.corda.finance.ripple.utilities.XRP
+import com.r3.corda.sdk.token.contracts.types.TokenType
 import com.ripple.core.coretypes.AccountID
 import net.corda.core.flows.FinalityFlow
 import net.corda.core.identity.Party
@@ -21,7 +20,6 @@ import net.corda.core.utilities.getOrThrow
 import net.corda.finance.AMOUNT
 import net.corda.testing.node.StartedMockNode
 import org.junit.Test
-import java.lang.IllegalArgumentException
 import kotlin.test.assertFailsWith
 
 class XRPObligationTestsWithOracle : AbstractObligationTestsWithOracle<XrpSettlement>(XRP) {
@@ -47,7 +45,7 @@ class XRPObligationTestsWithOracle : AbstractObligationTestsWithOracle<XrpSettle
     fun `Payment not made by deadline`() {
         // Create obligation.
         val newObligation = A.createObligation(AMOUNT(10000, currency), B, CreateObligation.InitiatorRole.OBLIGOR).getOrThrow()
-        val obligation = newObligation.singleOutput<Obligation<DigitalCurrency>>()
+        val obligation = newObligation.singleOutput<Obligation<TokenType>>()
         val obligationId = obligation.linearId()
 
         // Add settlement instructions.
@@ -57,14 +55,14 @@ class XRPObligationTestsWithOracle : AbstractObligationTestsWithOracle<XrpSettle
         val result = B.addSettlementInstructions(obligationId, settlementInstructions).getOrThrow()
 
         // Manually update the obligation with a fake payment.
-        val latestObligation = result.singleOutput<Obligation<Money>>()
+        val latestObligation = result.singleOutput<Obligation<TokenType>>()
         val fakePayment = XrpPayment(
                 paymentReference = "wrong reference",
                 lastLedgerSequence = B.ledgerIndex() + 3, // 15 seconds or so.
                 status = PaymentStatus.SENT,
                 amount = 10.XRP
         )
-        val obligationWithFakePayment = latestObligation.state.data.withPayment(fakePayment as Payment<Money>)
+        val obligationWithFakePayment = latestObligation.state.data.withPayment(fakePayment as Payment<TokenType>)
         val notary = B.services.networkMapCache.notaryIdentities.first()
         val stx = B.services.signInitialTransaction(TransactionBuilder(notary = notary).apply {
             addInputState(latestObligation)

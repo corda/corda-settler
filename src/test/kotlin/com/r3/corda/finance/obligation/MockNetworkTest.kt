@@ -3,9 +3,8 @@ package com.r3.corda.finance.obligation
 import com.r3.corda.finance.obligation.client.flows.*
 import com.r3.corda.finance.obligation.commands.ObligationCommands
 import com.r3.corda.finance.obligation.states.Obligation
-import com.r3.corda.finance.obligation.types.DigitalCurrency
-import com.r3.corda.finance.obligation.types.Money
 import com.r3.corda.finance.obligation.types.SettlementMethod
+import com.r3.corda.sdk.token.contracts.types.TokenType
 import net.corda.core.concurrent.CordaFuture
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.LinearState
@@ -33,7 +32,9 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
                     "com.r3.corda.finance.ripple",
                     "com.r3.corda.finance.obligation.oracle",
                     "com.r3.corda.finance.obligation",
-                    "com.r3.corda.finance.swift"
+                    "com.r3.corda.finance.swift",
+                    "com.r3.corda.sdk.token.contracts",
+                    "com.r3.corda.sdk.token.money"
             ),
             threadPerNode = true
     )
@@ -65,7 +66,7 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
     }
 
     /** Create a new obligation with the supplied parameters. */
-    fun <T : Money> StartedMockNode.createObligation(
+    fun <T : TokenType> StartedMockNode.createObligation(
             faceAmount: Amount<T>,
             counterparty: StartedMockNode,
             role: CreateObligation.InitiatorRole,
@@ -105,7 +106,7 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
     }
 
     /** Add settlement instructions to existing obligation. */
-    fun <T : Money>StartedMockNode.makePayment(amount: Amount<T>, linearId: UniqueIdentifier): CordaFuture<WireTransaction> {
+    fun <T : TokenType>StartedMockNode.makePayment(amount: Amount<T>, linearId: UniqueIdentifier): CordaFuture<WireTransaction> {
         return transaction { startFlow(OffLedgerSettleObligation(amount, linearId)) }
     }
 
@@ -116,10 +117,10 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
 
     inline fun <reified T : LinearState> StateAndRef<T>.linearId() = state.data.linearId
 
-    fun StartedMockNode.queryObligationById(linearId: UniqueIdentifier): StateAndRef<Obligation<DigitalCurrency>> {
+    fun StartedMockNode.queryObligationById(linearId: UniqueIdentifier): StateAndRef<Obligation<TokenType>> {
         return transaction {
             val query = QueryCriteria.LinearStateQueryCriteria(linearId = listOf(linearId))
-            services.vaultService.queryBy<Obligation<DigitalCurrency>>(query).states.single()
+            services.vaultService.queryBy<Obligation<TokenType>>(query).states.single()
         }
     }
 

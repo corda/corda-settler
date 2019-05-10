@@ -96,9 +96,13 @@ data class TransactionInfoResponse(
         @JsonProperty("hash") val hash: String,
         @JsonProperty("inLedger") val inLedger: Int,
         @JsonProperty("ledger_index") val ledgerIndex: Int,
+        @JsonProperty("meta") val meta: Meta,
         @JsonProperty("status") val status: String,
         @JsonProperty("validated") val validated: Boolean
 )
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class Meta(@JsonProperty("delivered_amount") val deliveredAmount: Amount)
 
 /** Server settlementStatus. */
 

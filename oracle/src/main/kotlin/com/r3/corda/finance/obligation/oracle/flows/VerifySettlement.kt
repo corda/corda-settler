@@ -36,7 +36,7 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
     fun verifyXrpSettlement(obligation: Obligation<DigitalCurrency>, xrpPayment: XrpPayment<DigitalCurrency>): VerifyResult {
         val oracleService = serviceHub.cordaService(XrpOracleService::class.java)
         // We wait for a couple of sessions before checking for settlement (The ripple nodes need to catch-up).
-        //sleep(Duration.ofSeconds(INITIAL_TIME_TO_WAIT_FOR_SETTLEMENT))
+        sleep(Duration.ofSeconds(INITIAL_TIME_TO_WAIT_FOR_SETTLEMENT))
         while (true) {
             logger.info("Checking for settlement...")
             val result = oracleService.hasPaymentSettled(xrpPayment, obligation)

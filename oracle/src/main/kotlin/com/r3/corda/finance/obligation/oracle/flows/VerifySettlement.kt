@@ -1,16 +1,12 @@
 package com.r3.corda.finance.obligation.oracle.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.types.SettlementOracleResult
 import com.r3.corda.finance.obligation.commands.ObligationCommands
 import com.r3.corda.finance.obligation.contracts.ObligationContract
 import com.r3.corda.finance.obligation.flows.AbstractSendToSettlementOracle
 import com.r3.corda.finance.obligation.oracle.services.XrpOracleService
 import com.r3.corda.finance.obligation.states.Obligation
-import com.r3.corda.finance.obligation.types.DigitalCurrency
-import com.r3.corda.finance.obligation.types.FiatCurrency
-import com.r3.corda.finance.obligation.types.Money
-import com.r3.corda.finance.obligation.types.PaymentStatus
+import com.r3.corda.finance.obligation.types.*
 import com.r3.corda.finance.ripple.types.XrpPayment
 import com.r3.corda.finance.ripple.types.XrpSettlement
 import com.r3.corda.finance.swift.services.SWIFTService
@@ -22,7 +18,6 @@ import net.corda.core.flows.*
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
-import org.apache.qpid.proton.codec.transport.FlowType
 import java.time.Duration
 
 @InitiatedBy(AbstractSendToSettlementOracle::class)
@@ -30,7 +25,8 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
 
     override val progressTracker: ProgressTracker = ProgressTracker()
     companion object {
-        private const val TIME_TO_WAIT_FOR_SETTLEMENT = 5L
+        private const val INITIAL_TIME_TO_WAIT_FOR_SETTLEMENT = 3L
+        private const val RETRY_TIME_TO_WAIT_FOR_SETTLEMENT = 5L
     }
 
 
@@ -39,6 +35,8 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
     @Suspendable
     fun verifyXrpSettlement(obligation: Obligation<DigitalCurrency>, xrpPayment: XrpPayment<DigitalCurrency>): VerifyResult {
         val oracleService = serviceHub.cordaService(XrpOracleService::class.java)
+        // We wait for a couple of sessions before checking for settlement (The ripple nodes need to catch-up).
+        //sleep(Duration.ofSeconds(INITIAL_TIME_TO_WAIT_FOR_SETTLEMENT))
         while (true) {
             logger.info("Checking for settlement...")
             val result = oracleService.hasPaymentSettled(xrpPayment, obligation)
@@ -47,7 +45,7 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
                 // Sleep for five seconds before we try again. The Oracle might receive the request to verify payment
                 // before the payment succeed. Also it takes a bit of time for all the nodes to receive the new ledger
                 // version. Note: sleep is a suspendable operation.
-                VerifyResult.PENDING -> sleep(Duration.ofSeconds(TIME_TO_WAIT_FOR_SETTLEMENT))
+                VerifyResult.PENDING -> sleep(Duration.ofSeconds(RETRY_TIME_TO_WAIT_FOR_SETTLEMENT))
             }
         }
     }
@@ -61,7 +59,7 @@ class VerifySettlement(val otherSession: FlowSession) : FlowLogic<Unit>() {
                 SWIFTPaymentStatusType.RJCT -> return VerifyResult.REJECTED
                 SWIFTPaymentStatusType.ACCC -> return VerifyResult.SUCCESS
                 // TODO: we need to come up with some more clever way of waiting for the status to be updated. Maybe exponential back-off
-                SWIFTPaymentStatusType.ACSP -> sleep(Duration.ofSeconds(TIME_TO_WAIT_FOR_SETTLEMENT))
+                SWIFTPaymentStatusType.ACSP -> sleep(Duration.ofSeconds(RETRY_TIME_TO_WAIT_FOR_SETTLEMENT))
                 else -> throw FlowException("Invalid payment status ${paymentStatus.transactionStatus}")
             }
         }

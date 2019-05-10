@@ -1,8 +1,9 @@
 package com.r3.corda.finance.obligation.oracle.services
 
-import com.r3.corda.finance.obligation.types.DigitalCurrency
+import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
 import com.r3.corda.finance.obligation.oracle.flows.VerifySettlement
 import com.r3.corda.finance.obligation.states.Obligation
+import com.r3.corda.finance.obligation.types.DigitalCurrency
 import com.r3.corda.finance.ripple.services.XRPClientForVerification
 import com.r3.corda.finance.ripple.types.TransactionNotFoundException
 import com.r3.corda.finance.ripple.types.XrpPayment
@@ -48,11 +49,21 @@ class XrpOracleService(val services: AppServiceHub) : SingletonSerializeAsToken(
             } catch (e: TransactionNotFoundException) {
                 // The transaction is not recognised by the Oracle.
                 return false
+            } catch (e: MissingKotlinParameterException) {
+                // The transaction has no associated metadata yet. In which case, Jackson will not be able to deserialize
+                // the response to the TransactionInfoResponse object due to the missing "meta" property.
+                if (e.msg.contains("""JSON property meta""")) {
+                    return false
+                } else {
+                    throw e
+                }
             }
         }
         // All nodes should report the same result.
         val destinationCorrect = results.all { it.destination == obligation.settlementMethod?.accountToPay }
-        val amountCorrect = results.all { it.amount == xrpPayment.amount.toXRPAmount() }
+        // Using delivered amount instead of amount.
+        // See https://developers.ripple.com/partial-payments.html#partial-payments-exploit for further info.
+        val amountCorrect = results.all { it.meta.deliveredAmount == xrpPayment.amount.toXRPAmount() }
         val referenceCorrect = results.all { it.invoiceId == SecureHash.sha256(obligation.linearId.id.toString()).toString() }
         val hasSucceeded = results.all { it.hasSucceeded() }
         return destinationCorrect && amountCorrect && referenceCorrect && hasSucceeded

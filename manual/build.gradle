@@ -33,7 +33,7 @@ configurations {
     integrationTestRuntime.extendsFrom testRuntime
 }
 
-publishing.publications.mavenJava.artifactId = "settler-swift"
+publishing.publications.mavenJava.artifactId = "settler-manual"
 
 dependencies {
     testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
@@ -44,9 +44,6 @@ dependencies {
 
     // gson
     compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.9.5"
-
-    // http client
-    compile 'com.github.kittinunf.fuel:fuel:1.15.1'
 
     cordaCompile "com.r3.tokens-sdk:money:1.0-SNAPSHOT"
 

@@ -33,6 +33,8 @@ configurations {
     integrationTestRuntime.extendsFrom testRuntime
 }
 
+publishing.publications.mavenJava.artifactId = "settler-ripple"
+
 dependencies {
     testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
     testCompile "junit:junit:$junit_version"

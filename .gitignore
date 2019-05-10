@@ -60,6 +60,7 @@ cordapp-contracts-states/out/
 oracle/out/
 ripple/out/
 swift/out/
+manual/out/
 
 # mpeltonen/sbt-idea plugin
 .idea_modules/

@@ -35,6 +35,8 @@ sourceSets {
     }
 }
 
+publishing.publications.mavenJava.artifactId = "settler-cordapp"
+
 jar {
     baseName = 'cordapp'
 }

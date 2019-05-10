@@ -26,8 +26,10 @@ sourceSets {
     }
 }
 
+publishing.publications.mavenJava.artifactId = "settler-cordapp-contracts-states"
+
 jar {
-    baseName = 'cordapp-contract-states'
+    baseName = 'cordapp-contracts-states'
 }
 
 dependencies {

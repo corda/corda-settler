@@ -24,7 +24,7 @@ abstract class MakeOffLedgerPayment<T : TokenType>(
         object CHECKING : ProgressTracker.Step("Checking balance.")
         object PAYING : ProgressTracker.Step("Making payment.")
         object UPDATING : ProgressTracker.Step("Updating obligation with payment details.") {
-            override fun childProgressTracker() = UpdateObligationWithPayment.tracker()
+            override fun childProgressTracker() = UpdateObligationWithPayment.Initiator.tracker()
         }
 
         fun tracker() = ProgressTracker(SETUP, CHECKING, PAYING, UPDATING)
@@ -63,7 +63,7 @@ abstract class MakeOffLedgerPayment<T : TokenType>(
 
         // 5. Add payment reference to settlement instructions and update state.
         progressTracker.currentStep = UPDATING
-        return subFlow(UpdateObligationWithPayment(
+        return subFlow(UpdateObligationWithPayment.Initiator(
                 linearId = obligation.linearId,
                 paymentInformation = paymentInformation,
                 progressTracker = UPDATING.childProgressTracker()

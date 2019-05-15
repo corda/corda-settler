@@ -7,7 +7,6 @@ import com.r3.corda.finance.obligation.client.flows.MakeOffLedgerPayment
 import com.r3.corda.finance.obligation.states.Obligation
 import com.r3.corda.finance.obligation.types.OffLedgerPayment
 import com.r3.corda.finance.obligation.types.Payment
-import com.r3.corda.finance.obligation.types.PaymentReference
 import com.r3.corda.finance.obligation.types.PaymentStatus
 import com.r3.corda.sdk.token.contracts.types.TokenType
 import com.r3.corda.sdk.token.money.FiatCurrency
@@ -19,7 +18,6 @@ import java.time.Duration
 
 class MakeManualPayment<T : TokenType>(
         amount: Amount<T>,
-        private val paymentReference: PaymentReference,
         obligationStateAndRef: StateAndRef<Obligation<*>>,
         settlementMethod: OffLedgerPayment<*>,
         progressTracker: ProgressTracker
@@ -39,6 +37,6 @@ class MakeManualPayment<T : TokenType>(
         if (obligation.settlementMethod == null || obligation.settlementMethod !is ManualSettlement)
             throw FlowException("settlementMethod of ManualSettlement must be provided for manual payment")
         sleep(Duration.ofMillis(1))
-        return ManualPayment(paymentReference, amount as Amount<FiatCurrency>, PaymentStatus.SENT) as Payment<T>
+        return ManualPayment("", amount as Amount<FiatCurrency>, PaymentStatus.SENT) as Payment<T>
     }
 }

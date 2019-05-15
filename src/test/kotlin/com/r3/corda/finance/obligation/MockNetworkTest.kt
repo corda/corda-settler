@@ -100,7 +100,7 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
     /** Add settlement instructions to existing obligation. */
     fun StartedMockNode.addSettlementInstructions(linearId: UniqueIdentifier, settlementMethod: SettlementMethod): CordaFuture<WireTransaction> {
         return transaction {
-            val flow = UpdateSettlementMethod(linearId, settlementMethod)
+            val flow = UpdateSettlementMethod.Initiator(linearId, settlementMethod)
             startFlow(flow)
         }
     }

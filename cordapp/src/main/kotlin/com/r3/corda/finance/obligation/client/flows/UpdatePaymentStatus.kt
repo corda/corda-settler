@@ -45,7 +45,7 @@ object UpdatePaymentStatus {
 
         @Suspendable
         override fun call(): WireTransaction {
-            progressTracker.currentStep = OffLedgerSettleObligation.Companion.INITIALISING
+            progressTracker.currentStep = INITIALISING
             val obligationStateAndRef = getLinearStateById<Obligation<*>>(linearId, serviceHub)
                     ?: throw IllegalArgumentException("LinearId not recognised.")
             val obligationState = obligationStateAndRef.state.data
@@ -63,7 +63,8 @@ object UpdatePaymentStatus {
                     ?: throw FlowException("No available notary.")
             val utx = TransactionBuilder(notary = notary).apply {
                 addInputState(obligationStateAndRef)
-                addCommand(ObligationCommands.UpdatePayment(payment.paymentReference), ourIdentity.owningKey)
+                val signers = obligationState.participants.map { it.owningKey }
+                addCommand(ObligationCommands.UpdatePayment(payment.paymentReference), signers)
                 addOutputState(obligationState, ObligationContract.CONTRACT_REF)
             }
 

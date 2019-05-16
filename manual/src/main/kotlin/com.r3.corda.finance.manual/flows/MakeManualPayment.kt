@@ -37,6 +37,6 @@ class MakeManualPayment<T : TokenType>(
         if (obligation.settlementMethod == null || obligation.settlementMethod !is ManualSettlement)
             throw FlowException("settlementMethod of ManualSettlement must be provided for manual payment")
         sleep(Duration.ofMillis(1))
-        return ManualPayment("", amount as Amount<FiatCurrency>, PaymentStatus.SENT) as Payment<T>
+        return ManualPayment((obligation.payments.size + 1).toString(), amount as Amount<FiatCurrency>, PaymentStatus.SENT) as Payment<T>
     }
 }

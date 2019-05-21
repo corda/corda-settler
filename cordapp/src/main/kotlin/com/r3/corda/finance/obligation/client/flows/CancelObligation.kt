@@ -53,7 +53,7 @@ object CancelObligation {
             val signers = obligation.participants.map { it.owningKey }
             val utx = TransactionBuilder(notary = notary).apply {
                 addInputState(obligationStateAndRef)
-                addCommand(ObligationCommands.Cancel(), signers)
+                addCommand(ObligationCommands.Cancel(obligation.linearId), signers)
             }
 
             // Get the counterparty and our signing key.

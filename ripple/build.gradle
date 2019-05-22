@@ -10,8 +10,8 @@ dependencies {
     testCompile "junit:junit:$junit_version"
 
     // Tokens SDK.
-    cordaCompile "com.r3.tokens-sdk:contract:2.0-SNAPSHOT"
-    cordaCompile "com.r3.tokens-sdk:money:2.0-SNAPSHOT"
+    cordaCompile "com.r3.tokens-sdk:contract:1.0-RC01"
+    cordaCompile "com.r3.tokens-sdk:money:1.0-RC01"
 
     // Jackson.
     compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.9.5"

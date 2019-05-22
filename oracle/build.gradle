@@ -23,8 +23,8 @@ dependencies {
     cordaCompile project(":cordapp")
 
     // Tokens SDK.
-    cordaCompile "com.r3.tokens-sdk:contract:2.0-SNAPSHOT"
-    cordaCompile "com.r3.tokens-sdk:money:2.0-SNAPSHOT"
+    cordaCompile "com.r3.tokens-sdk:contract:1.0-RC01"
+    cordaCompile "com.r3.tokens-sdk:money:1.0-RC01"
 }
 
 cordapp {

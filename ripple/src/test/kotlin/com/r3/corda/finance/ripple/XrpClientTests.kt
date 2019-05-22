@@ -4,8 +4,8 @@ import com.r3.corda.finance.ripple.services.ReadWriteXRPClient
 import com.r3.corda.finance.ripple.services.XRPClientForVerification
 import com.r3.corda.finance.ripple.types.IncorrectSequenceNumberException
 import com.r3.corda.finance.ripple.types.TransactionNotFoundException
-import com.r3.corda.finance.ripple.utilities.XRP
 import com.r3.corda.finance.ripple.utilities.toXRPAmount
+import com.r3.corda.sdk.token.money.XRP
 import com.ripple.core.coretypes.AccountID
 import com.ripple.core.coretypes.Amount
 import com.ripple.core.coretypes.hash.Hash256

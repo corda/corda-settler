@@ -3,7 +3,6 @@ package com.r3.corda.finance.obligation.oracle.services
 import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
 import com.r3.corda.finance.obligation.oracle.flows.VerifySettlement
 import com.r3.corda.finance.obligation.states.Obligation
-import com.r3.corda.finance.obligation.types.DigitalCurrency
 import com.r3.corda.finance.ripple.services.XRPClientForVerification
 import com.r3.corda.finance.ripple.types.TransactionNotFoundException
 import com.r3.corda.finance.ripple.types.XrpPayment
@@ -61,7 +60,7 @@ class XrpOracleService(val services: AppServiceHub) : SingletonSerializeAsToken(
             }
         }
         // All nodes should report the same result.
-        val destinationCorrect = results.all { it.destination == obligation.settlementMethod?.accountToPay }
+        val destinationCorrect = results.all { it.destination.toString() == obligation.settlementMethod?.accountToPay }
         // Using delivered amount instead of amount.
         // See https://developers.ripple.com/partial-payments.html#partial-payments-exploit for further info.
         val amountCorrect = results.all { it.meta.deliveredAmount == xrpPayment.amount.toXRPAmount() }

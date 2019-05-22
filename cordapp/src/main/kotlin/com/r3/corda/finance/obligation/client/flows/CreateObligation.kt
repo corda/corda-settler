@@ -59,6 +59,7 @@ object CreateObligation {
 
         @Suspendable
         private fun createAnonymousObligation(): Pair<Obligation<T>, PublicKey> {
+            // TODO: Update to use the new confidential identities constrcutor.
             val txKeys = subFlow(SwapIdentitiesFlow(counterparty))
             // SwapIdentityFlow should return two keys.
             check(txKeys.size == 2) { "Something went wrong when generating confidential identities." }
@@ -122,6 +123,7 @@ object CreateObligation {
 
             // Step 6. Finalise and return the transaction.
             progressTracker.currentStep = FINALISING
+            // TODO: Update to use teh new FinalityFlow constructor throughout.
             val ntx = subFlow(FinalityFlow(stx, FINALISING.childProgressTracker()))
             return ntx.tx
         }

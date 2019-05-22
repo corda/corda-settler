@@ -10,8 +10,8 @@ import com.r3.corda.finance.obligation.types.PaymentStatus
 import com.r3.corda.finance.ripple.services.XRPService
 import com.r3.corda.finance.ripple.types.XrpPayment
 import com.r3.corda.finance.ripple.types.XrpSettlement
-import com.r3.corda.finance.ripple.utilities.XRP
 import com.r3.corda.sdk.token.contracts.types.TokenType
+import com.r3.corda.sdk.token.money.XRP
 import com.ripple.core.coretypes.AccountID
 import net.corda.core.flows.FinalityFlow
 import net.corda.core.identity.Party
@@ -38,7 +38,7 @@ class XRPObligationTestsWithOracle : AbstractObligationTestsWithOracle<XrpSettle
             else -> throw IllegalArgumentException("Unsupported party $party")
         }
         val xrpAddress = AccountID.fromString(addressString)
-        return XrpSettlement(xrpAddress, O.legalIdentity())
+        return XrpSettlement(xrpAddress.toString(), O.legalIdentity())
     }
 
     @Test

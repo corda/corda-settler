@@ -8,7 +8,6 @@ import com.r3.corda.finance.ripple.types.TransactionNotFoundException
 import com.r3.corda.finance.ripple.types.XrpPayment
 import com.r3.corda.finance.ripple.utilities.hasSucceeded
 import com.r3.corda.finance.ripple.utilities.toXRPAmount
-import com.r3.corda.sdk.token.money.DigitalCurrency
 import com.typesafe.config.ConfigFactory
 import net.corda.core.crypto.SecureHash
 import net.corda.core.node.AppServiceHub
@@ -60,7 +59,7 @@ class XrpOracleService(val services: AppServiceHub) : SingletonSerializeAsToken(
             }
         }
         // All nodes should report the same result.
-        val destinationCorrect = results.all { it.destination == obligation.settlementMethod?.accountToPay }
+        val destinationCorrect = results.all { it.destination.toString() == obligation.settlementMethod?.accountToPay }
         // Using delivered amount instead of amount.
         // See https://developers.ripple.com/partial-payments.html#partial-payments-exploit for further info.
         val amountCorrect = results.all { it.meta.deliveredAmount == xrpPayment.amount.toXRPAmount() }

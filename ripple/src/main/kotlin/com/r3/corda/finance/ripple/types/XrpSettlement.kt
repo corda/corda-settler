@@ -2,7 +2,6 @@ package com.r3.corda.finance.ripple.types
 
 import com.r3.corda.finance.obligation.types.OffLedgerPayment
 import com.r3.corda.finance.ripple.flows.MakeXrpPayment
-import com.ripple.core.coretypes.AccountID
 import net.corda.core.identity.Party
 
 /**
@@ -15,7 +14,7 @@ import net.corda.core.identity.Party
  * - a payment settlementStatus
  */
 data class XrpSettlement(
-        override val accountToPay: AccountID,
+        override val accountToPay: String,
         override val settlementOracle: Party,
         override val paymentFlow: Class<MakeXrpPayment<*>> = MakeXrpPayment::class.java
 ) : OffLedgerPayment<MakeXrpPayment<*>> {

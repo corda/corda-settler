@@ -14,4 +14,4 @@ fun Int.toXRPAmount(): XRPAmount = XRPAmount.fromString(toString())
 
 fun SecureHash.toXRPHash(): Hash256 = Hash256.fromHex(toString())
 
-val DEFAULT_XRP_FEE = XRPAmount.fromString("1000") 
+val DEFAULT_XRP_FEE = XRPAmount.fromString("1000")

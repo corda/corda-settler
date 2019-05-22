@@ -59,7 +59,7 @@ object CreateObligation {
 
         @Suspendable
         private fun createAnonymousObligation(lenderFlow: FlowSession): Pair<Obligation<T>, PublicKey> {
-	    // TODO: Update to use the new confidential identities constrcutor.
+	    // TODO: Update to use the new confidential identities constructor.
             val txKeys = subFlow(SwapIdentitiesFlow(lenderFlow))
             // SwapIdentityFlow should return two keys.
             check(txKeys.size == 2) { "Something went wrong when generating confidential identities." }

@@ -38,7 +38,7 @@ class XRPObligationTestsWithOracle : AbstractObligationTestsWithOracle<XrpSettle
             else -> throw IllegalArgumentException("Unsupported party $party")
         }
         val xrpAddress = AccountID.fromString(addressString)
-	return XrpSettlement(xrpAddress.toString(), O.legalIdentity())
+        return XrpSettlement(xrpAddress.toString(), O.legalIdentity())
     }
 
     @Test

@@ -69,7 +69,7 @@ class MakeXrpPayment<T : TokenType>(
                 // Always use the sequence number provided. It will never be null at this point.
                 sequence = seqNo!!,
                 source = xrpService.address,
-		destination = AccountID.fromString((settlementMethod as XrpSettlement).accountToPay),
+                destination = AccountID.fromString((settlementMethod as XrpSettlement).accountToPay),
                 amount = amount.toXRPAmount(),
                 fee = DEFAULT_XRP_FEE,
                 linearId = SecureHash.sha256(obligation.linearId.id.toString()).toXRPHash()

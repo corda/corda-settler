@@ -32,7 +32,7 @@ class CommonObligationTestsWithOracle : MockNetworkTest(numberOfNodes = 3) {
     @Test
     fun `newly created obligation is stored in vaults of participants`() {
         // Create obligation.
-	val newTransaction = A.createObligation(10000 of XRP, B, CreateObligation.InitiatorRole.OBLIGOR).getOrThrow()
+        val newTransaction = A.createObligation(10000 of XRP, B, CreateObligation.InitiatorRole.OBLIGOR).getOrThrow()
         val obligation = newTransaction.singleOutput<Obligation<TokenType>>()
         val obligationId = obligation.linearId()
 

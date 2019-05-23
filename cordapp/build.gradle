@@ -1,5 +1,3 @@
-publishing.publications.mavenJava.artifactId = "settler-cordapp"
-
 apply plugin: 'kotlin'
 apply plugin: 'net.corda.plugins.cordapp'
 

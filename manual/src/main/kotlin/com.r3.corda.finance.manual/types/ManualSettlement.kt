@@ -15,6 +15,6 @@ data class ManualSettlement(
     override val paymentFlow: Class<MakeManualPayment<*>> = MakeManualPayment::class.java
 
     override fun toString(): String {
-        return "Pay manually $accountToPay and use $settlementOracle as settlement Oracle."
+        return "Pay manually $accountToPay."
     }
 }

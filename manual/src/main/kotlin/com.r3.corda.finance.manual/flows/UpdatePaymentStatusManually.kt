@@ -1,4 +1,4 @@
-package com.r3.corda.finance.obligation.client.flows
+package com.r3.corda.finance.manual.flows
 
 import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.finance.obligation.client.getLinearStateById
@@ -15,7 +15,7 @@ import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.transactions.WireTransaction
 import net.corda.core.utilities.ProgressTracker
 
-object UpdatePaymentStatus {
+object UpdatePaymentStatusManually {
 
     @InitiatingFlow
     @StartableByRPC

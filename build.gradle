@@ -96,6 +96,11 @@ configurations {
     integrationTestRuntime.extendsFrom testRuntime
 }
 
+task integrationTest(type: Test, dependsOn: []) {
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+}
+
 dependencies {
     // Kotlin.
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
@@ -122,11 +127,6 @@ dependencies {
     cordapp "com.r3.tokens-sdk:money:1.0-RC01"
 
     testCompile project(path: ':cordapp', configuration: 'testOutput')
-}
-
-task integrationTest(type: Test, dependsOn: []) {
-    testClassesDirs = sourceSets.integrationTest.output.classesDirs
-    classpath = sourceSets.integrationTest.runtimeClasspath
 }
 
 task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {

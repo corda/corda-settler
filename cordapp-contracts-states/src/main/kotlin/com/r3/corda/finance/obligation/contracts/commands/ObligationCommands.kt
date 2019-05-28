@@ -1,8 +1,8 @@
-package com.r3.corda.finance.obligation.commands
+package com.r3.corda.finance.obligation.contracts.commands
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import com.r3.corda.finance.obligation.types.PaymentReference
+import com.r3.corda.finance.obligation.contracts.types.PaymentReference
 import com.r3.corda.sdk.token.contracts.types.TokenType
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.CommandData

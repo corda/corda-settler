@@ -1,12 +1,13 @@
 package com.r3.corda.finance.obligation.oracle.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.commands.ObligationCommands
 import com.r3.corda.finance.obligation.contracts.ObligationContract
-import com.r3.corda.finance.obligation.flows.AbstractSendToSettlementOracle
+import com.r3.corda.finance.obligation.contracts.commands.ObligationCommands
+import com.r3.corda.finance.obligation.contracts.flows.AbstractSendToSettlementOracle
+import com.r3.corda.finance.obligation.contracts.states.Obligation
+import com.r3.corda.finance.obligation.contracts.types.PaymentStatus
+import com.r3.corda.finance.obligation.contracts.types.SettlementOracleResult
 import com.r3.corda.finance.obligation.oracle.services.XrpOracleService
-import com.r3.corda.finance.obligation.states.Obligation
-import com.r3.corda.finance.obligation.types.*
 import com.r3.corda.finance.ripple.types.XrpPayment
 import com.r3.corda.finance.ripple.types.XrpSettlement
 import com.r3.corda.finance.swift.services.SWIFTService

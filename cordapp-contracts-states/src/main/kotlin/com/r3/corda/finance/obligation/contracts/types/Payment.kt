@@ -1,4 +1,4 @@
-package com.r3.corda.finance.obligation.types
+package com.r3.corda.finance.obligation.contracts.types
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.r3.corda.sdk.token.contracts.types.TokenType

@@ -1,11 +1,11 @@
 package com.r3.corda.finance.swift.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.client.flows.MakeOffLedgerPayment
-import com.r3.corda.finance.obligation.states.Obligation
-import com.r3.corda.finance.obligation.types.OffLedgerPayment
-import com.r3.corda.finance.obligation.types.Payment
-import com.r3.corda.finance.obligation.types.PaymentStatus
+import com.r3.corda.finance.obligation.contracts.states.Obligation
+import com.r3.corda.finance.obligation.contracts.types.OffLedgerPayment
+import com.r3.corda.finance.obligation.contracts.types.Payment
+import com.r3.corda.finance.obligation.contracts.types.PaymentStatus
+import com.r3.corda.finance.obligation.workflows.flows.MakeOffLedgerPayment
 import com.r3.corda.finance.swift.services.SWIFTService
 import com.r3.corda.finance.swift.types.SWIFTPaymentResponse
 import com.r3.corda.finance.swift.types.SwiftPayment

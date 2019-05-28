@@ -1,7 +1,7 @@
-package com.r3.corda.finance.obligation.types
+package com.r3.corda.finance.obligation.contracts.types
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import com.r3.corda.finance.obligation.flows.AbstractMakeOffLedgerPayment
+import com.r3.corda.finance.obligation.contracts.flows.AbstractMakeOffLedgerPayment
 import com.r3.corda.sdk.token.contracts.types.TokenType
 import net.corda.core.identity.Party
 import net.corda.core.serialization.CordaSerializable

@@ -1,4 +1,4 @@
-package com.r3.corda.finance.obligation
+package com.r3.corda.finance.obligation.contracts
 
 import net.corda.core.contracts.ContractState
 import net.corda.core.transactions.LedgerTransaction

@@ -1,6 +1,6 @@
 package com.r3.corda.finance.swift.types
 
-import com.r3.corda.finance.obligation.types.OffLedgerPayment
+import com.r3.corda.finance.obligation.contracts.types.OffLedgerPayment
 import com.r3.corda.finance.swift.flows.MakeSWIFTPayment
 import net.corda.core.identity.Party
 

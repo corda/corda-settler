@@ -7,7 +7,6 @@ import net.corda.core.node.services.CordaService
 import net.corda.core.serialization.SingletonSerializeAsToken
 import sun.security.provider.X509Factory
 import java.io.ByteArrayInputStream
-import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.security.KeyFactory
@@ -59,13 +58,12 @@ class SWIFTService(val appServiceHub : AppServiceHub) : SingletonSerializeAsToke
         get() = _config.getString("debtorBicfi") ?: throw IllegalArgumentException("debtorBicfi must be provided")
 
     /**
-     * Attempts to load service configuration from cordapps/config with a fallback to classpath
+     * Attempts to load SWIFT configuration file.
      */
     private fun loadConfig() : Config {
+        // TODO:
         val fileName = "swift.conf"
-        val defaultLocation = (Paths.get("cordapps").resolve("config").resolve(fileName)).toFile()
-        return if (defaultLocation.exists()) ConfigFactory.parseFile(defaultLocation)
-        else ConfigFactory.parseFile(File(SWIFTClient::class.java.classLoader.getResource(fileName).toURI()))
+        return ConfigFactory.parseResources(fileName)
     }
 
     fun swiftClient() = SWIFTClient(apiUrl, apiKey, privateKey(), certificate())

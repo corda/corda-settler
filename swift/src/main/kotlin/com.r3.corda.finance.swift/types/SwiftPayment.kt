@@ -1,8 +1,8 @@
 package com.r3.corda.finance.swift.types
 
-import com.r3.corda.finance.obligation.types.Payment
-import com.r3.corda.finance.obligation.types.PaymentReference
-import com.r3.corda.finance.obligation.types.PaymentStatus
+import com.r3.corda.finance.obligation.contracts.types.Payment
+import com.r3.corda.finance.obligation.contracts.types.PaymentReference
+import com.r3.corda.finance.obligation.contracts.types.PaymentStatus
 import com.r3.corda.sdk.token.money.FiatCurrency
 import net.corda.core.contracts.Amount
 

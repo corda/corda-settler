@@ -1,6 +1,6 @@
 package com.r3.corda.finance.ripple.types
 
-import com.r3.corda.finance.obligation.types.OffLedgerPayment
+import com.r3.corda.finance.obligation.contracts.types.OffLedgerPayment
 import com.r3.corda.finance.ripple.flows.MakeXrpPayment
 import net.corda.core.identity.Party
 

@@ -1,4 +1,4 @@
-package com.r3.corda.finance.obligation.types
+package com.r3.corda.finance.obligation.contracts.types
 
 import com.r3.corda.sdk.token.contracts.types.TokenType
 import net.corda.core.serialization.CordaSerializable

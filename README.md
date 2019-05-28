@@ -351,6 +351,7 @@ not need to sign.
 
 ## TODO
 
+* The SWIFT and Ripple modules need to be split into contracts and workflow JARs
 * Need to re-implement this with the human computer interaction API when
   it is available as currently, parties auto accept any change to obligations,
   instead, we want to give them the opportunity to assent to a change,

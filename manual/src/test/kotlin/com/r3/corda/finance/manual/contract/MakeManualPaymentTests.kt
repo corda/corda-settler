@@ -18,7 +18,7 @@ import net.corda.testing.node.ledger
 import org.junit.Test
 import java.time.Instant
 
-class ManualSettlementTests {
+class MakeManualPaymentTests {
     private val ledger = MockServices()
     private val alice = TestIdentity(ALICE_NAME)
     private val bob = TestIdentity(BOB_NAME)

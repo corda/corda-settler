@@ -45,8 +45,12 @@ class ObligationContract : Contract {
         }
     }
 
-    private fun checkPropertyInvariants(input: Obligation<*>, output: Obligation<*>, properties: Set<KProperty1<Obligation<*>, Any?>>): Boolean {
-        return properties.all { property -> property.get(input) == property.get(output) }
+    private fun checkPropertyInvariants(input: Obligation<*>, output: Obligation<*>, properties: Set<KProperty1<Obligation<*>, Any?>>) {
+        return properties.forEach { property ->
+            if (property.get(input) != property.get(output))
+                throw IllegalArgumentException("Property invariant failed between input and output for field ${property.name}: " +
+                        "${property.get(input)} -> ${property.get(output)}")
+        }
     }
 
     /** CREATION. */
@@ -253,7 +257,10 @@ class ObligationContract : Contract {
         )
         checkPropertyInvariants(input, output, invariantProperties)
         val inputPayment = input.payments.single { it.paymentReference == command.value.ref }
+        val outputPayment = output.payments.single { it.paymentReference == command.value.ref }
         require(inputPayment.status == PaymentStatus.SENT) { "Only payments with a SENT status can be updated." }
+        require(inputPayment.amount == outputPayment.amount) { "Updated payments must have same amounts." }
+        require(inputPayment.paymentReference == outputPayment.paymentReference) { "Updated payments must have same payment references." }
+        require(input.payments.size == output.payments.size) { "Input and output obligations must have same number of payments." }
     }
-
 }

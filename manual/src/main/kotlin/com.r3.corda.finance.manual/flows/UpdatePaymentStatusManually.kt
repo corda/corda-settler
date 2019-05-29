@@ -55,10 +55,10 @@ object UpdatePaymentStatusManually {
             check(ourIdentity == obligee) { "This flow can only be started by the obligee. " }
             val obligor = serviceHub.identityService.requireWellKnownPartyFromAnonymous(os.obligor)
             val payment = obligationState.payments.find { it.paymentReference == paymentReference }
-            check(payment != null) { "Could not find payment with reference '$paymentReference'" }
+                    ?: throw IllegalArgumentException("Could not find payment with reference '$paymentReference'")
 
             progressTracker.currentStep = BUILDING
-            payment!!.status = status
+            payment.status = status
             val notary = serviceHub.networkMapCache.notaryIdentities.firstOrNull()
                     ?: throw FlowException("No available notary.")
             val utx = TransactionBuilder(notary = notary).apply {

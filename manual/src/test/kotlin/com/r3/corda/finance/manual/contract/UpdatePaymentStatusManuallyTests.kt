@@ -18,7 +18,7 @@ import net.corda.testing.node.ledger
 import org.junit.Test
 import java.time.Instant
 
-class MakeManualPaymentTests {
+class UpdatePaymentStatusManuallyTests {
     private val ledger = MockServices()
     private val alice = TestIdentity(ALICE_NAME)
     private val bob = TestIdentity(BOB_NAME)
@@ -35,17 +35,18 @@ class MakeManualPaymentTests {
             bob.party,
             null,
             now,
-            ManualSettlement("Checking", "Pay to the order of 'R3'")
+            ManualSettlement("Checking", "Pay to the order of 'R3'"),
+            listOf(ManualPayment("1", Amount(10000, currency)))
     )
 
     @Test
-    fun `make manual payment succeeds`() {
+    fun `update payment status succeeds`() {
         ledger.ledger {
             transaction {
                 attachment(contractId)
                 input(contractId, obligation)
-                output(contractId, obligation.withPayment(ManualPayment("1", Amount(10000, currency))))
-                command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.AddPayment("1"))
+                output(contractId, obligation.copy(payments = listOf(ManualPayment("1", Amount(10000, currency), PaymentStatus.SETTLED))))
+                command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.UpdatePayment("1"))
                 verifies()
             }
         }
@@ -57,10 +58,10 @@ class MakeManualPaymentTests {
             transaction {
                 attachment(contractId)
                 input(contractId, obligation)
-                output(contractId, obligation.withPayment(ManualPayment("1", Amount(10000, currency))).copy(
+                output(contractId, obligation.copy(payments = listOf(ManualPayment("1", Amount(10000, currency), PaymentStatus.SETTLED)),
                         faceAmount = Amount(1000, currency)
                 ))
-                command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.AddPayment("1"))
+                command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.UpdatePayment("1"))
                 `fails with`("Property invariant failed between input and output for field faceAmount: 100.00 CAD -> 10.00 CAD")
             }
         }
@@ -73,10 +74,10 @@ class MakeManualPaymentTests {
             transaction {
                 attachment(contractId)
                 input(contractId, obligation)
-                output(contractId, obligation.withPayment(ManualPayment("1", Amount(10000, currency))).copy(
+                output(contractId, obligation.copy(payments = listOf(ManualPayment("1", Amount(10000, currency), PaymentStatus.SETTLED)),
                         linearId = newId
                 ))
-                command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.AddPayment("1"))
+                command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.UpdatePayment("1"))
                 `fails with`("Property invariant failed between input and output for field linearId: ${obligation.linearId} -> $newId")
             }
         }
@@ -88,7 +89,7 @@ class MakeManualPaymentTests {
             transaction {
                 attachment(contractId)
                 input(contractId, obligation)
-                output(contractId, obligation.withPayment(ManualPayment("1", Amount(10000, currency))).copy(
+                output(contractId, obligation.copy(payments = listOf(ManualPayment("1", Amount(10000, currency), PaymentStatus.SETTLED)),
                         obligor = charlie.party
                 ))
                 command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.AddPayment("1"))
@@ -103,10 +104,10 @@ class MakeManualPaymentTests {
             transaction {
                 attachment(contractId)
                 input(contractId, obligation)
-                output(contractId, obligation.withPayment(ManualPayment("1", Amount(10000, currency))).copy(
+                output(contractId, obligation.copy(payments = listOf(ManualPayment("1", Amount(10000, currency), PaymentStatus.SETTLED)),
                         obligee = charlie.party
                 ))
-                command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.AddPayment("1"))
+                command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.UpdatePayment("1"))
                 `fails with`("Property invariant failed between input and output for field obligee: ${bob.party} -> ${charlie.party}")
             }
         }
@@ -118,10 +119,10 @@ class MakeManualPaymentTests {
             transaction {
                 attachment(contractId)
                 input(contractId, obligation)
-                output(contractId, obligation.withPayment(ManualPayment("1", Amount(10000, currency))).copy(
+                output(contractId, obligation.copy(payments = listOf(ManualPayment("1", Amount(10000, currency), PaymentStatus.SETTLED)),
                         dueBy = now
                 ))
-                command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.AddPayment("1"))
+                command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.UpdatePayment("1"))
                 `fails with`("Property invariant failed between input and output for field dueBy: null -> $now")
             }
         }
@@ -133,10 +134,10 @@ class MakeManualPaymentTests {
             transaction {
                 attachment(contractId)
                 input(contractId, obligation)
-                output(contractId, obligation.withPayment(ManualPayment("1", Amount(10000, currency))).copy(
+                output(contractId, obligation.copy(payments = listOf(ManualPayment("1", Amount(10000, currency), PaymentStatus.SETTLED)),
                         createdAt = now.plusMillis(100L)
                 ))
-                command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.AddPayment("1"))
+                command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.UpdatePayment("1"))
                 `fails with`("Property invariant failed between input and output for field createdAt: ${obligation.createdAt} -> ${obligation.createdAt.plusMillis(100L)}")
             }
         }
@@ -147,49 +148,52 @@ class MakeManualPaymentTests {
         ledger.ledger {
             transaction {
                 attachment(contractId)
-                input(contractId, obligation.copy(settlementMethod = null))
-                output(contractId, obligation.copy(settlementMethod = null).withPayment(ManualPayment("1", Amount(10000, currency))))
-                command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.AddPayment("1"))
-                `fails with`("There must be a settlement method specified before payments can be registered against this obligation")
+                input(contractId, obligation.copy(payments = listOf(ManualPayment("1", Amount(10000, currency), PaymentStatus.SETTLED))))
+                output(contractId, obligation.copy(payments = listOf(ManualPayment("1", Amount(10000, currency), PaymentStatus.SETTLED))))
+                command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.UpdatePayment("1"))
+                `fails with`("Only payments with a SENT status can be updated")
             }
         }
     }
 
     @Test
-    fun `make manual payment fails with no payment added to list`() {
+    fun `make manual payment fails with different payment amounts`() {
         ledger.ledger {
             transaction {
                 attachment(contractId)
                 input(contractId, obligation)
-                output(contractId, obligation)
-                command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.AddPayment("1"))
-                `fails with`("You can only add one payment at once")
+                output(contractId, obligation.copy(payments = listOf(ManualPayment("1", Amount(10001, currency), PaymentStatus.SETTLED))))
+                command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.UpdatePayment("1"))
+                `fails with`("Updated payments must have same amounts.")
             }
         }
     }
 
     @Test
-    fun `make manual payment fails with two payments added to list`() {
+    fun `make manual payment fails with different payment references`() {
         ledger.ledger {
             transaction {
                 attachment(contractId)
                 input(contractId, obligation)
-                output(contractId, obligation.withPayment(ManualPayment("1", Amount(5000, currency))).withPayment(ManualPayment("2", Amount(5000, currency))))
-                command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.AddPayment("1"))
-                `fails with`("You can only add one payment at once")
+                output(contractId, obligation.copy(payments = listOf(ManualPayment("2", Amount(10000, currency), PaymentStatus.SETTLED))))
+                command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.UpdatePayment("1"))
+                `fails with`("Collection contains no element matching the predicate")
             }
         }
     }
 
     @Test
-    fun `make manual payment fails with SETTLED payment added to list`() {
+    fun `make manual payment fails with extra payments`() {
         ledger.ledger {
             transaction {
                 attachment(contractId)
                 input(contractId, obligation)
-                output(contractId, obligation.withPayment(ManualPayment("1", Amount(5000, currency), PaymentStatus.FAILED)))
-                command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.AddPayment("1"))
-                `fails with`("Payments can only be added with a SENT status.")
+                output(contractId, obligation.copy(payments = listOf(
+                        ManualPayment("1", Amount(10000, currency), PaymentStatus.SETTLED),
+                        ManualPayment("2", Amount(10001, currency), PaymentStatus.SETTLED)
+                )))
+                command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.UpdatePayment("1"))
+                `fails with`("Input and output obligations must have same number of payments.")
             }
         }
     }

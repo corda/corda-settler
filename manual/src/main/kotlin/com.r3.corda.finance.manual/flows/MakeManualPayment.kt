@@ -14,7 +14,6 @@ import net.corda.core.contracts.Amount
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.FlowException
 import net.corda.core.utilities.ProgressTracker
-import java.time.Duration
 
 class MakeManualPayment<T : TokenType>(
         amount: Amount<T>,
@@ -36,7 +35,6 @@ class MakeManualPayment<T : TokenType>(
             throw FlowException("Manual payment amount must be in FiatCurrency")
         if (obligation.settlementMethod == null || obligation.settlementMethod !is ManualSettlement)
             throw FlowException("settlementMethod of ManualSettlement must be provided for manual payment")
-        sleep(Duration.ofMillis(1))
         return ManualPayment((obligation.payments.size + 1).toString(), amount as Amount<FiatCurrency>, PaymentStatus.SENT) as Payment<T>
     }
 }

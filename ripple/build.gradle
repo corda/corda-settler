@@ -38,5 +38,8 @@ cordapp {
     signing {
         enabled false
     }
+    sealing {
+        enabled false
+    }
 }
 

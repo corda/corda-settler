@@ -55,8 +55,8 @@ class SendToSettlementOracle(
         return session.receive<SettlementOracleResult>().unwrap {
             when (it) {
                 is SettlementOracleResult.Success -> {
-                    val stx = it.stx
-                    subFlow(FinalityFlow(stx, setOf(session), FINALISING.childProgressTracker()))
+                    it.stx
+//                    subFlow(FinalityFlow(stx, setOf(session), FINALISING.childProgressTracker()))
                 }
                 is SettlementOracleResult.Failure -> {
                     throw IllegalStateException(it.message)

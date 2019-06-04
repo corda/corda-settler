@@ -6,7 +6,8 @@ import com.r3.corda.finance.obligation.contracts.ObligationContract
 import com.r3.corda.finance.obligation.flows.AbstractSendToSettlementOracle
 import com.r3.corda.finance.obligation.oracle.services.XrpOracleService
 import com.r3.corda.finance.obligation.states.Obligation
-import com.r3.corda.finance.obligation.types.*
+import com.r3.corda.finance.obligation.types.PaymentStatus
+import com.r3.corda.finance.obligation.types.SettlementOracleResult
 import com.r3.corda.finance.ripple.types.XrpPayment
 import com.r3.corda.finance.ripple.types.XrpSettlement
 import com.r3.corda.finance.swift.services.SWIFTService

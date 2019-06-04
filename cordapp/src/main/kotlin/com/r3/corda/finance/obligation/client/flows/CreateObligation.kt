@@ -16,6 +16,7 @@ import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.transactions.WireTransaction
 import net.corda.core.utilities.ProgressTracker
 import net.corda.core.utilities.seconds
+import net.corda.core.utilities.unwrap
 import java.security.PublicKey
 import java.time.Instant
 import java.time.LocalDate
@@ -59,7 +60,7 @@ object CreateObligation {
 
         @Suspendable
         private fun createAnonymousObligation(lenderFlow: FlowSession): Pair<Obligation<T>, PublicKey> {
-	    // TODO: Update to use the new confidential identities constructor.
+	        // TODO: Update to use the new confidential identities constructor.
             val txKeys = subFlow(SwapIdentitiesFlow(lenderFlow))
             // SwapIdentityFlow should return two keys.
             check(txKeys.size == 2) { "Something went wrong when generating confidential identities." }
@@ -84,8 +85,10 @@ object CreateObligation {
             progressTracker.currentStep = INITIALISING
             val lenderFlow = initiateFlow(counterparty)
             val (obligation, signingKey) = if (anonymous) {
+                lenderFlow.send("anonymous")
                 createAnonymousObligation(lenderFlow)
             } else {
+                lenderFlow.send("normal")
                 createObligation(us = ourIdentity, them = counterparty)
             }
 
@@ -132,6 +135,8 @@ object CreateObligation {
     class Responder(val otherFlow: FlowSession) : FlowLogic<WireTransaction>() {
         @Suspendable
         override fun call(): WireTransaction {
+            val type = otherFlow.receive<String>().unwrap { it }
+            if (type == "anonymous") subFlow(SwapIdentitiesFlow(otherFlow))
             val flow = object : SignTransactionFlow(otherFlow) {
                 @Suspendable
                 override fun checkTransaction(stx: SignedTransaction) {

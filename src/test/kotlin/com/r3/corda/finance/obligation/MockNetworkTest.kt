@@ -33,6 +33,7 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
                     "com.r3.corda.finance.obligation.oracle",
                     "com.r3.corda.finance.obligation",
                     "com.r3.corda.finance.swift",
+                    "com.r3.corda.finance.manual",
                     "com.r3.corda.sdk.token.contracts",
                     "com.r3.corda.sdk.token.money"
             ),
@@ -107,7 +108,7 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
 
     /** Add settlement instructions to existing obligation. */
     fun <T : TokenType>StartedMockNode.makePayment(amount: Amount<T>, linearId: UniqueIdentifier): CordaFuture<WireTransaction> {
-        return transaction { startFlow(OffLedgerSettleObligation(amount, linearId)) }
+        return transaction { startFlow(OffLedgerSettleObligation.Initiator(amount, linearId)) }
     }
 
     fun StartedMockNode.legalIdentity() = services.myInfo.legalIdentities.first()

@@ -53,7 +53,7 @@ object CancelObligation {
             val signers = obligation.participants.map { it.owningKey }
             val utx = TransactionBuilder(notary = notary).apply {
                 addInputState(obligationStateAndRef)
-                addCommand(ObligationCommands.Cancel(), signers)
+                addCommand(ObligationCommands.Cancel(obligation.linearId), signers)
             }
 
             // Get the counterparty and our signing key.
@@ -69,18 +69,17 @@ object CancelObligation {
 
             // Get the counterparty's signature.
             progressTracker.currentStep = COLLECTING
-            val couterpartyFlow = initiateFlow(counterparty as Party)
+            val counterpartyFlow = initiateFlow(counterparty as Party)
             val stx = subFlow(CollectSignaturesFlow(
                     partiallySignedTx = ptx,
-                    sessionsToCollectFrom = setOf(couterpartyFlow),
+                    sessionsToCollectFrom = setOf(counterpartyFlow),
                     myOptionalKeys = listOf(us.owningKey),
                     progressTracker = COLLECTING.childProgressTracker()
             ))
 
             progressTracker.currentStep = FINALISING
-            return subFlow(FinalityFlow(stx, FINALISING.childProgressTracker()))
+            return subFlow(FinalityFlow(stx, setOf(counterpartyFlow), FINALISING.childProgressTracker()))
         }
-
     }
 
     @InitiatedBy(Initiator::class)
@@ -96,10 +95,7 @@ object CancelObligation {
                 }
             }
             val stx = subFlow(flow)
-            // Suspend this flow until the transaction is committed.
-            return waitForLedgerCommit(stx.id)
+            return subFlow(ReceiveFinalityFlow(otherSession, stx.id))
         }
-
     }
-
 }

@@ -26,7 +26,7 @@ object NovateObligation {
     @StartableByRPC
     class Initiator(
             val linearId: UniqueIdentifier,
-            val novationCommand: ObligationCommands.Novate
+            private val novationCommand: ObligationCommands.Novate
     ) : FlowLogic<WireTransaction>() {
 
         companion object {
@@ -126,16 +126,16 @@ object NovateObligation {
 
             // Get the counterparty's signature.
             progressTracker.currentStep = COLLECTING
-            val couterpartyFlow = initiateFlow(counterparty as Party)
+            val counterpartyFlow = initiateFlow(counterparty as Party)
             val stx = subFlow(CollectSignaturesFlow(
                     partiallySignedTx = ptx,
-                    sessionsToCollectFrom = setOf(couterpartyFlow),
+                    sessionsToCollectFrom = setOf(counterpartyFlow),
                     myOptionalKeys = listOf(us.owningKey),
                     progressTracker = COLLECTING.childProgressTracker()
             ))
 
             progressTracker.currentStep = FINALISING
-            return subFlow(FinalityFlow(stx, FINALISING.childProgressTracker())).tx
+            return subFlow(FinalityFlow(stx, setOf(counterpartyFlow), FINALISING.childProgressTracker())).tx
         }
     }
 
@@ -151,8 +151,7 @@ object NovateObligation {
                 }
             }
             val stx = subFlow(flow)
-            // Suspend this flow until the transaction is committed.
-            return waitForLedgerCommit(stx.id).tx
+            return subFlow(ReceiveFinalityFlow(otherFlow, stx.id)).tx
         }
     }
 

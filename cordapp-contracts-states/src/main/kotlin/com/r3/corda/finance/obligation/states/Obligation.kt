@@ -1,10 +1,12 @@
 package com.r3.corda.finance.obligation.states
 
+import com.r3.corda.finance.obligation.contracts.ObligationContract
 import com.r3.corda.finance.obligation.types.Payment
 import com.r3.corda.finance.obligation.types.PaymentStatus
 import com.r3.corda.finance.obligation.types.SettlementMethod
 import com.r3.corda.sdk.token.contracts.types.TokenType
 import net.corda.core.contracts.Amount
+import net.corda.core.contracts.BelongsToContract
 import net.corda.core.contracts.LinearState
 import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.crypto.toStringShort
@@ -33,6 +35,8 @@ import java.time.Instant
  * 8. Obligations are considered in default if they are not fully paid by the dueDate, if one is specified.
  *
  */
+
+@BelongsToContract(ObligationContract::class)
 data class Obligation<T : TokenType>(
         /** Obligations are always denominated in some token type as we need a reference for FX purposes. */
         val faceAmount: Amount<T>,

@@ -7,6 +7,7 @@ import com.r3.corda.sdk.token.contracts.types.TokenType
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.CommandData
 import net.corda.core.contracts.TypeOnlyCommandData
+import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.identity.AbstractParty
 import net.corda.core.identity.Party
 import java.time.Instant
@@ -59,5 +60,5 @@ interface ObligationCommands : CommandData {
     data class UpdatePayment(val ref: PaymentReference) : ObligationCommands
 
     /** Cancel the obligation - involves exiting the obligation state from the ledger. */
-    class Cancel : ObligationCommands, TypeOnlyCommandData()
+    data class Cancel(val id: UniqueIdentifier) : ObligationCommands, TypeOnlyCommandData()
 }

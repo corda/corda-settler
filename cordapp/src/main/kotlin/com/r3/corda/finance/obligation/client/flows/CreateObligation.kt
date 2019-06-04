@@ -16,6 +16,7 @@ import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.transactions.WireTransaction
 import net.corda.core.utilities.ProgressTracker
 import net.corda.core.utilities.seconds
+import net.corda.core.utilities.unwrap
 import java.security.PublicKey
 import java.time.Instant
 import java.time.LocalDate
@@ -58,9 +59,9 @@ object CreateObligation {
         override val progressTracker: ProgressTracker = tracker()
 
         @Suspendable
-        private fun createAnonymousObligation(): Pair<Obligation<T>, PublicKey> {
-            // TODO: Update to use the new confidential identities constrcutor.
-            val txKeys = subFlow(SwapIdentitiesFlow(counterparty))
+        private fun createAnonymousObligation(lenderFlow: FlowSession): Pair<Obligation<T>, PublicKey> {
+	        // TODO: Update to use the new confidential identities constructor.
+            val txKeys = subFlow(SwapIdentitiesFlow(lenderFlow))
             // SwapIdentityFlow should return two keys.
             check(txKeys.size == 2) { "Something went wrong when generating confidential identities." }
             val anonymousMe = txKeys[ourIdentity] ?: throw FlowException("Couldn't create our conf. identity.")
@@ -82,9 +83,12 @@ object CreateObligation {
         override fun call(): WireTransaction {
             // Step 1. Initialisation.
             progressTracker.currentStep = INITIALISING
+            val lenderFlow = initiateFlow(counterparty)
             val (obligation, signingKey) = if (anonymous) {
-                createAnonymousObligation()
+                lenderFlow.send("anonymous")
+                createAnonymousObligation(lenderFlow)
             } else {
+                lenderFlow.send("normal")
                 createObligation(us = ourIdentity, them = counterparty)
             }
 
@@ -113,7 +117,6 @@ object CreateObligation {
 
             // Step 5. Get the counterparty signature.
             progressTracker.currentStep = COLLECTING
-            val lenderFlow = initiateFlow(counterparty)
             val stx = subFlow(CollectSignaturesFlow(
                     partiallySignedTx = ptx,
                     sessionsToCollectFrom = setOf(lenderFlow),
@@ -123,8 +126,7 @@ object CreateObligation {
 
             // Step 6. Finalise and return the transaction.
             progressTracker.currentStep = FINALISING
-            // TODO: Update to use teh new FinalityFlow constructor throughout.
-            val ntx = subFlow(FinalityFlow(stx, FINALISING.childProgressTracker()))
+            val ntx = subFlow(FinalityFlow(stx, setOf(lenderFlow), FINALISING.childProgressTracker()))
             return ntx.tx
         }
     }
@@ -133,6 +135,8 @@ object CreateObligation {
     class Responder(val otherFlow: FlowSession) : FlowLogic<WireTransaction>() {
         @Suspendable
         override fun call(): WireTransaction {
+            val type = otherFlow.receive<String>().unwrap { it }
+            if (type == "anonymous") subFlow(SwapIdentitiesFlow(otherFlow))
             val flow = object : SignTransactionFlow(otherFlow) {
                 @Suspendable
                 override fun checkTransaction(stx: SignedTransaction) {
@@ -142,7 +146,7 @@ object CreateObligation {
             }
             val stx = subFlow(flow)
             // Suspend this flow until the transaction is committed.
-            return waitForLedgerCommit(stx.id).tx
+            return subFlow(ReceiveFinalityFlow(otherFlow, stx.id)).tx
         }
     }
 }

@@ -1,7 +1,7 @@
 buildscript {
     ext.corda_release_group = 'net.corda'
     ext.corda_release_version = '4.1-RC03'
-    ext.corda_gradle_plugins_version = '4.0.42'
+    ext.corda_gradle_plugins_version = '4.0.44'
     ext.kotlin_version = '1.2.51'
     ext.junit_version = '4.12'
     ext.quasar_version = '0.7.9'
@@ -10,6 +10,7 @@ buildscript {
         jcenter()
         mavenCentral()
         mavenLocal()
+        maven { url "http://ci-artifactory.corda.r3cev.com/artifactory/corda-releases" }
     }
 
     dependencies {
@@ -118,11 +119,14 @@ dependencies {
     cordapp project(":ripple")
     cordapp project(":oracle")
     cordapp project(":swift")
+    cordapp project(":manual")
     cordapp "com.r3.tokens-sdk:contract:1.0-RC01"
     cordapp "com.r3.tokens-sdk:money:1.0-RC01"
 
     testCompile project(path: ':cordapp', configuration: 'testOutput')
 }
+
+jar.enabled = false
 
 task integrationTest(type: Test, dependsOn: []) {
     testClassesDirs = sourceSets.integrationTest.output.classesDirs
@@ -150,6 +154,7 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
             adminAddress("localhost:10046")
         }
         cordapps = [
+                "$project.group:manual:$project.version",
                 "$project.group:swift:$project.version",
                 "$project.group:ripple:$project.version",
                 "$project.group:cordapp-contracts-states:$project.version",
@@ -167,6 +172,7 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
             adminAddress("localhost:10049")
         }
         cordapps = [
+                "$project.group:manual:$project.version",
                 "$project.group:swift:$project.version",
                 "$project.group:ripple:$project.version",
                 "$project.group:cordapp-contracts-states:$project.version",
@@ -184,6 +190,7 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
             adminAddress("localhost:10052")
         }
         cordapps = [
+                "$project.group:manual:$project.version",
                 "$project.group:swift:$project.version",
                 "$project.group:ripple:$project.version",
                 "$project.group:cordapp-contracts-states:$project.version",

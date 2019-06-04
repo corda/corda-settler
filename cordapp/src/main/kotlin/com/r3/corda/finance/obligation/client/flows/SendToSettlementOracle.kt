@@ -42,9 +42,12 @@ class SendToSettlementOracle(
         val obligationState = obligationStateAndRef.state.data
         val settlementMethod = obligationState.settlementMethod as OffLedgerPayment<*>
 
+        val settlementOracle = settlementMethod.settlementOracle
+                ?: throw IllegalArgumentException("Settlement Oracle must not be null")
+
         // Send the Oracle the ObligationContract state.
         progressTracker.currentStep = SENDING
-        val session = initiateFlow(settlementMethod.settlementOracle)
+        val session = initiateFlow(settlementOracle)
         subFlow(SendStateAndRefFlow(session, listOf(obligationStateAndRef)))
 
         // Receive a SignedTransaction from the oracle that exits the obligation, or throw an exception if we timed out.
@@ -52,8 +55,8 @@ class SendToSettlementOracle(
         return session.receive<SettlementOracleResult>().unwrap {
             when (it) {
                 is SettlementOracleResult.Success -> {
-                    val stx = it.stx
-                    subFlow(FinalityFlow(stx, FINALISING.childProgressTracker()))
+                    it.stx
+//                    subFlow(FinalityFlow(stx, setOf(session), FINALISING.childProgressTracker()))
                 }
                 is SettlementOracleResult.Failure -> {
                     throw IllegalStateException(it.message)

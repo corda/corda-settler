@@ -29,8 +29,8 @@ data class FxRate(val baseCurrency: TokenType, val counterCurrency: TokenType, v
  * The obligation could be denominated in GBP but the payment could be made in XRP.
  */
 interface OffLedgerPayment<T : AbstractMakeOffLedgerPayment> : SettlementMethod {
-    /** The Oracle used to determine if payment is made. */
-    val settlementOracle: Party
+    /** The Oracle used to determine if payment is made. Use null for manual payment verification */
+    val settlementOracle: Party?
     /** The flow used to initiate the off-ledger payment. */
     val paymentFlow: Class<T>
 }

@@ -367,6 +367,3 @@ not need to sign.
 * Add the option to use a mock Fx Oracle that just provides a single
   fixed Fx rate.
 * Make readme agnostic to payment method
-
-
-

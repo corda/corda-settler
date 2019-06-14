@@ -1,6 +1,8 @@
 buildscript {
     ext.corda_release_group = 'net.corda'
-    ext.corda_release_version = '4.1-RC03'
+    ext.corda_release_version = '4.1'
+    ext.tokens_release_group = 'com.r3.corda.lib.tokens'
+    ext.tokens_release_version = '1.0-RC03'
     ext.corda_gradle_plugins_version = '4.0.44'
     ext.kotlin_version = '1.2.51'
     ext.junit_version = '4.12'
@@ -116,17 +118,15 @@ dependencies {
     // CorDapp dependencies
     cordapp project(":cordapp")
     cordapp project(":cordapp-contracts-states")
-    cordapp project(":ripple")
+    cordapp project(":modules:ripple")
     cordapp project(":oracle")
-    cordapp project(":swift")
-    cordapp project(":manual")
-    cordapp "com.r3.tokens-sdk:contract:1.0-RC01"
-    cordapp "com.r3.tokens-sdk:money:1.0-RC01"
+    cordapp project(":modules:swift")
+    cordapp project(":modules:manual")
+    cordapp "$tokens_release_group:tokens-contracts:$tokens_release_version"
+    cordapp "$tokens_release_group:tokens-money:$tokens_release_version"
 
     testCompile project(path: ':cordapp', configuration: 'testOutput')
 }
-
-jar.enabled = false
 
 task integrationTest(type: Test, dependsOn: []) {
     testClassesDirs = sourceSets.integrationTest.output.classesDirs
@@ -135,6 +135,19 @@ task integrationTest(type: Test, dependsOn: []) {
 
 task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
     directory "./build/nodes"
+    nodeDefaults {
+        projectCordapp {
+            deploy = false
+        }
+        cordapp("$tokens_release_group:tokens-contracts:$tokens_release_version")
+        cordapp("$tokens_release_group:tokens-workflows:$tokens_release_version")
+        cordapp("$tokens_release_group:tokens-money:$tokens_release_version")
+        cordapp project(":cordapp-contracts-states")
+        cordapp project(":cordapp")
+        cordapp project(":modules:manual")
+        cordapp project(":modules:ripple")
+        cordapp project(":modules:swift")
+    }
     node {
         name "O=Notary,L=London,C=GB"
         notary = [validating : false]
@@ -153,15 +166,7 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
             address("localhost:10006")
             adminAddress("localhost:10046")
         }
-        cordapps = [
-                "$project.group:manual:$project.version",
-                "$project.group:swift:$project.version",
-                "$project.group:ripple:$project.version",
-                "$project.group:cordapp-contracts-states:$project.version",
-                "$project.group:cordapp:$project.version",
-                "com.r3.tokens-sdk:contract:1.0-RC01",
-                "com.r3.tokens-sdk:money:1.0-RC01"
-        ]
+        cordapps = []
         rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
     }
     node {
@@ -171,15 +176,7 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
             address("localhost:10009")
             adminAddress("localhost:10049")
         }
-        cordapps = [
-                "$project.group:manual:$project.version",
-                "$project.group:swift:$project.version",
-                "$project.group:ripple:$project.version",
-                "$project.group:cordapp-contracts-states:$project.version",
-                "$project.group:cordapp:$project.version",
-                "com.r3.tokens-sdk:contract:1.0-RC01",
-                "com.r3.tokens-sdk:money:1.0-RC01"
-        ]
+        cordapps = []
         rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
     }
     node {
@@ -189,16 +186,7 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
             address("localhost:10012")
             adminAddress("localhost:10052")
         }
-        cordapps = [
-                "$project.group:manual:$project.version",
-                "$project.group:swift:$project.version",
-                "$project.group:ripple:$project.version",
-                "$project.group:cordapp-contracts-states:$project.version",
-                "$project.group:oracle:$project.version",
-                "$project.group:cordapp:$project.version",
-                "com.r3.tokens-sdk:contract:1.0-RC01",
-                "com.r3.tokens-sdk:money:1.0-RC01"
-        ]
+        cordapps = ["$project.group:oracle:$project.version"]
         rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
     }
 }

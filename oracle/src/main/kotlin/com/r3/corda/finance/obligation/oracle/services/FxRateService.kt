@@ -1,10 +1,10 @@
 package com.r3.corda.finance.obligation.oracle.services
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.r3.corda.finance.obligation.types.FxRateRequest
-import com.r3.corda.finance.obligation.types.FxRateResponse
+import com.r3.corda.finance.obligation.contracts.types.FxRateRequest
+import com.r3.corda.finance.obligation.contracts.types.FxRateResponse
 import com.r3.corda.finance.ripple.utilities.mapper
-import com.r3.corda.sdk.token.contracts.types.TokenType
+import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.typesafe.config.ConfigFactory
 import net.corda.core.internal.openHttpConnection
 import net.corda.core.node.AppServiceHub

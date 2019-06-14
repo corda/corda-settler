@@ -1,19 +1,21 @@
 package com.r3.corda.finance.obligation
 
-import com.r3.corda.finance.obligation.states.Obligation
+import com.r3.corda.finance.obligation.contracts.states.Obligation
 import com.r3.corda.finance.swift.services.SWIFTClient
 import com.r3.corda.finance.swift.services.SWIFTService.Companion.certificate
 import com.r3.corda.finance.swift.services.SWIFTService.Companion.privateKey
 import com.r3.corda.finance.swift.types.SWIFTPaymentStatusType
 import com.r3.corda.finance.swift.types.SwiftPayment
 import com.r3.corda.finance.swift.types.SwiftSettlement
-import com.r3.corda.sdk.token.contracts.types.TokenType
-import com.r3.corda.sdk.token.money.GBP
+import com.r3.corda.lib.tokens.contracts.types.TokenType
+import com.r3.corda.lib.tokens.money.GBP
 import net.corda.core.identity.Party
 import net.corda.core.node.services.queryBy
+import org.junit.Ignore
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
+@Ignore("The private key is not available.")
 class SWIFTObligationTestsWithOracle : AbstractObligationTestsWithOracle<SwiftSettlement>(GBP) {
     private val creditorName = "Receiving corp"
     private val creditorLei = "6299300D2N76ADNE4Y55"
@@ -26,7 +28,7 @@ class SWIFTObligationTestsWithOracle : AbstractObligationTestsWithOracle<SwiftSe
     override fun castToSettlementType(obj : Any?) = obj as SwiftSettlement?
 
     override fun createSettlement(party : Party) =
-        SwiftSettlement(creditorIban, O.legalIdentity(), creditorName, creditorLei, creditorBicfi, remittanceInformation)
+            SwiftSettlement(creditorIban, O.legalIdentity(), creditorName, creditorLei, creditorBicfi, remittanceInformation)
 
     override fun manuallyApprovePayments(numberOfPayments : Int) {
         (0..numberOfPayments).forEach {

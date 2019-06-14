@@ -1,12 +1,12 @@
 package com.r3.corda.finance.obligation
 
-import com.r3.corda.finance.obligation.client.flows.CreateObligation
-import com.r3.corda.finance.obligation.commands.ObligationCommands
-import com.r3.corda.finance.obligation.states.Obligation
-import com.r3.corda.sdk.token.contracts.types.TokenType
-import com.r3.corda.sdk.token.contracts.utilities.of
-import com.r3.corda.sdk.token.money.USD
-import com.r3.corda.sdk.token.money.XRP
+import com.r3.corda.finance.obligation.contracts.commands.ObligationCommands
+import com.r3.corda.finance.obligation.contracts.states.Obligation
+import com.r3.corda.finance.obligation.workflows.flows.CreateObligation
+import com.r3.corda.lib.tokens.contracts.types.TokenType
+import com.r3.corda.lib.tokens.contracts.utilities.of
+import com.r3.corda.lib.tokens.money.USD
+import com.r3.corda.lib.tokens.money.XRP
 import net.corda.core.utilities.getOrThrow
 import net.corda.testing.node.StartedMockNode
 import org.junit.Before

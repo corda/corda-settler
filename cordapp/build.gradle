@@ -19,7 +19,7 @@ dependencies {
     cordaCompile project(":cordapp-contracts-states")
 
     // Tokens SDK.
-    cordaCompile "com.r3.tokens-sdk:contract:1.0-RC01"
+    cordaCompile "$tokens_release_group:tokens-contracts:$tokens_release_version"
 }
 
 cordapp {

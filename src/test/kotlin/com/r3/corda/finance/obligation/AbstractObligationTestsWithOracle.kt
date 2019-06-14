@@ -1,10 +1,10 @@
 package com.r3.corda.finance.obligation
 
-import com.r3.corda.finance.obligation.client.flows.CreateObligation
-import com.r3.corda.finance.obligation.client.flows.SendToSettlementOracle
-import com.r3.corda.finance.obligation.states.Obligation
-import com.r3.corda.finance.obligation.types.OffLedgerPayment
-import com.r3.corda.sdk.token.contracts.types.TokenType
+import com.r3.corda.finance.obligation.contracts.states.Obligation
+import com.r3.corda.finance.obligation.contracts.types.OffLedgerPayment
+import com.r3.corda.finance.obligation.workflows.flows.CreateObligation
+import com.r3.corda.finance.obligation.workflows.flows.SendToSettlementOracle
+import com.r3.corda.lib.tokens.contracts.types.TokenType
 import net.corda.core.identity.Party
 import net.corda.core.node.services.Vault
 import net.corda.core.node.services.queryBy

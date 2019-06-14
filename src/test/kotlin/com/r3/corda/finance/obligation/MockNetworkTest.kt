@@ -1,10 +1,10 @@
 package com.r3.corda.finance.obligation
 
-import com.r3.corda.finance.obligation.client.flows.*
-import com.r3.corda.finance.obligation.commands.ObligationCommands
-import com.r3.corda.finance.obligation.states.Obligation
-import com.r3.corda.finance.obligation.types.SettlementMethod
-import com.r3.corda.sdk.token.contracts.types.TokenType
+import com.r3.corda.finance.obligation.contracts.commands.ObligationCommands
+import com.r3.corda.finance.obligation.contracts.states.Obligation
+import com.r3.corda.finance.obligation.contracts.types.SettlementMethod
+import com.r3.corda.finance.obligation.workflows.flows.*
+import com.r3.corda.lib.tokens.contracts.types.TokenType
 import net.corda.core.concurrent.CordaFuture
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.LinearState
@@ -34,8 +34,8 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
                     "com.r3.corda.finance.obligation",
                     "com.r3.corda.finance.swift",
                     "com.r3.corda.finance.manual",
-                    "com.r3.corda.sdk.token.contracts",
-                    "com.r3.corda.sdk.token.money"
+                    "com.r3.corda.lib.tokens.contracts",
+                    "com.r3.corda.lib.tokens.money"
             ),
             threadPerNode = true
     )

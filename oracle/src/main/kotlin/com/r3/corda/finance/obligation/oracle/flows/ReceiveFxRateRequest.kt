@@ -1,10 +1,10 @@
 package com.r3.corda.finance.obligation.oracle.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.types.FxRateRequest
-import com.r3.corda.finance.obligation.flows.AbstractGetFxRate
+import com.r3.corda.finance.obligation.contracts.flows.AbstractGetFxRate
+import com.r3.corda.finance.obligation.contracts.types.FxRate
+import com.r3.corda.finance.obligation.contracts.types.FxRateRequest
 import com.r3.corda.finance.obligation.oracle.services.FxRateService
-import com.r3.corda.finance.obligation.types.FxRate
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
 import net.corda.core.flows.InitiatedBy

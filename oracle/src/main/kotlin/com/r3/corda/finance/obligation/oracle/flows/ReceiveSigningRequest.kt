@@ -1,7 +1,7 @@
 package com.r3.corda.finance.obligation.oracle.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.flows.AbstractGetFxOracleSignature
+import com.r3.corda.finance.obligation.contracts.flows.AbstractGetFxOracleSignature
 import net.corda.core.crypto.Crypto
 import net.corda.core.crypto.SignableData
 import net.corda.core.crypto.SignatureMetadata
@@ -9,7 +9,6 @@ import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
 import net.corda.core.flows.InitiatedBy
 import net.corda.core.transactions.FilteredTransaction
-import net.corda.core.transactions.SignedTransaction
 import net.corda.core.utilities.unwrap
 
 /** Assumption here is that the Fx rate is always correct. */

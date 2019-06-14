@@ -1,11 +1,11 @@
 package com.r3.corda.finance.obligation.contracts
 
-import com.r3.corda.finance.obligation.commands.ObligationCommands
-import com.r3.corda.finance.obligation.singleInput
-import com.r3.corda.finance.obligation.singleOutput
-import com.r3.corda.finance.obligation.states.Obligation
-import com.r3.corda.finance.obligation.types.PaymentStatus
-import com.r3.corda.sdk.token.contracts.types.TokenType
+import com.r3.corda.finance.obligation.contracts.commands.ObligationCommands
+import com.r3.corda.finance.obligation.contracts.states.Obligation
+import com.r3.corda.finance.obligation.contracts.types.PaymentStatus
+import com.r3.corda.finance.obligation.contracts.utilities.singleInput
+import com.r3.corda.finance.obligation.contracts.utilities.singleOutput
+import com.r3.corda.lib.tokens.contracts.types.TokenType
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.Contract
 import net.corda.core.contracts.ContractClassName

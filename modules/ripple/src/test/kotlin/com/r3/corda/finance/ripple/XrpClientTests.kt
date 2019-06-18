@@ -11,6 +11,7 @@ import com.ripple.core.coretypes.Amount
 import com.ripple.core.coretypes.hash.Hash256
 import com.ripple.core.coretypes.uint.UInt32
 import com.ripple.core.types.known.tx.signed.SignedTransaction
+import org.junit.Ignore
 import org.junit.Test
 import java.math.BigDecimal
 import java.net.URI
@@ -72,9 +73,10 @@ class XrpClientTests {
         assertFailsWith<IncorrectSequenceNumberException> { client.submitTransaction(signedTransaction) }
     }
 
+    @Ignore("Flakey test as Ripple reset the testnet every month so this will eventually fail.")
     @Test
     fun `get transaction info for valid transaction id`() {
-        println(client.transaction("06B7AE6CF95A6181E14635383247FB379428309F02A8279D6FD38BA268F89F12"))
+        println(client.transaction("FB54C91FEC987B405F139E9B6216CD90968E48A1CAEC18482E812D54769B7C10"))
     }
 
     @Test

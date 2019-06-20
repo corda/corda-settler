@@ -6,6 +6,7 @@ import com.r3.corda.finance.manual.types.ManualSettlement
 import com.r3.corda.finance.obligation.contracts.states.Obligation
 import com.r3.corda.finance.obligation.contracts.types.OffLedgerPayment
 import com.r3.corda.finance.obligation.contracts.types.Payment
+import com.r3.corda.finance.obligation.contracts.types.PaymentReference
 import com.r3.corda.finance.obligation.contracts.types.PaymentStatus
 import com.r3.corda.finance.obligation.workflows.flows.MakeOffLedgerPayment
 import com.r3.corda.lib.tokens.contracts.types.TokenType
@@ -17,6 +18,7 @@ import net.corda.core.utilities.ProgressTracker
 
 class MakeManualPayment<T : TokenType>(
         amount: Amount<T>,
+        private val paymentReference: PaymentReference?,
         obligationStateAndRef: StateAndRef<Obligation<*>>,
         settlementMethod: OffLedgerPayment<*>,
         progressTracker: ProgressTracker
@@ -35,6 +37,9 @@ class MakeManualPayment<T : TokenType>(
             throw FlowException("Manual payment amount must be in FiatCurrency")
         if (obligation.settlementMethod == null || obligation.settlementMethod !is ManualSettlement)
             throw FlowException("settlementMethod of ManualSettlement must be provided for manual payment")
-        return ManualPayment((obligation.payments.size + 1).toString(), amount as Amount<FiatCurrency>, PaymentStatus.SENT) as Payment<T>
+        if (obligation.payments.any { it.paymentReference == paymentReference })
+            throw FlowException("Payment reference in manual payment must be unique")
+        return ManualPayment(paymentReference ?: (obligation.payments.size + 1).toString(),
+                amount as Amount<FiatCurrency>, PaymentStatus.SENT) as Payment<T>
     }
 }

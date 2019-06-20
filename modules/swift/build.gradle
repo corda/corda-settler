@@ -20,7 +20,7 @@ dependencies {
     cordaCompile project(":cordapp")
 
     // Typesafe config.
-    compile 'com.typesafe:config:1.2.1'
+    compile 'com.typesafe:config:1.3.4'
 
     // gson
     compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.9.5"

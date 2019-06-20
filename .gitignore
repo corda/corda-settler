@@ -76,3 +76,6 @@ crashlytics-build.properties
 
 # docs related
 docs/virtualenv/
+
+# local publish scripts
+publish/

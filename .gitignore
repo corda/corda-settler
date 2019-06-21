@@ -59,9 +59,9 @@ lib/dokka.jar
 cordapp/out/
 cordapp-contracts-states/out/
 oracle/out/
-ripple/out/
-swift/out/
-manual/out/
+modules/ripple/out/
+modules/swift/out/
+modules/manual/out/
 
 # mpeltonen/sbt-idea plugin
 .idea_modules/

@@ -15,7 +15,6 @@ import com.r3.corda.finance.swift.types.SWIFTPaymentStatusType
 import com.r3.corda.finance.swift.types.SwiftPayment
 import com.r3.corda.finance.swift.types.SwiftSettlement
 import com.r3.corda.lib.tokens.contracts.types.TokenType
-import com.r3.corda.lib.tokens.money.DigitalCurrency
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.*
 import net.corda.core.transactions.SignedTransaction
@@ -37,7 +36,7 @@ class VerifySettlement(private val otherSession: FlowSession) : FlowLogic<Unit>(
     enum class VerifyResult { TIMEOUT, SUCCESS, PENDING, REJECTED }
 
     @Suspendable
-    fun verifyXrpSettlement(obligation: Obligation<DigitalCurrency>, xrpPayment: XrpPayment<DigitalCurrency>): VerifyResult {
+    fun verifyXrpSettlement(obligation: Obligation<TokenType>, xrpPayment: XrpPayment<TokenType>): VerifyResult {
         val oracleService = serviceHub.cordaService(XrpOracleService::class.java)
         // We wait for a couple of sessions before checking for settlement (The ripple nodes need to catch-up).
         sleep(Duration.ofSeconds(INITIAL_TIME_TO_WAIT_FOR_SETTLEMENT))
@@ -55,7 +54,7 @@ class VerifySettlement(private val otherSession: FlowSession) : FlowLogic<Unit>(
     }
 
     @Suspendable
-    fun verifySwiftSettlement(swiftPayment: SwiftPayment): VerifyResult {
+    fun verifySwiftSettlement(swiftPayment: SwiftPayment<TokenType>): VerifyResult {
         val oracleService = serviceHub.cordaService(SWIFTService::class.java)
         while (true) {
             val paymentStatus = oracleService.swiftClient().getPaymentStatus(swiftPayment.paymentReference)
@@ -115,7 +114,7 @@ class VerifySettlement(private val otherSession: FlowSession) : FlowLogic<Unit>(
 
         // 4. Handle different settlement methods.
         val verifyResult = when (settlementMethod) {
-            is XrpSettlement -> verifyXrpSettlement(obligation as Obligation<DigitalCurrency>, lastPayment as XrpPayment<DigitalCurrency>)
+            is XrpSettlement -> verifyXrpSettlement(obligation, lastPayment as XrpPayment<TokenType>)
             is SwiftSettlement -> verifySwiftSettlement(lastPayment as SwiftPayment)
             else -> throw IllegalStateException("Invalid settlement method $settlementMethod.")
         }

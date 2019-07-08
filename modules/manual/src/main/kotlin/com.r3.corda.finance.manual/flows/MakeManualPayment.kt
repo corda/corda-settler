@@ -10,7 +10,6 @@ import com.r3.corda.finance.obligation.contracts.types.PaymentReference
 import com.r3.corda.finance.obligation.contracts.types.PaymentStatus
 import com.r3.corda.finance.obligation.workflows.flows.MakeOffLedgerPayment
 import com.r3.corda.lib.tokens.contracts.types.TokenType
-import com.r3.corda.lib.tokens.money.FiatCurrency
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.FlowException
@@ -33,13 +32,11 @@ class MakeManualPayment<T : TokenType>(
 
     @Suspendable
     override fun makePayment(obligation: Obligation<*>, amount: Amount<T>): Payment<T> {
-        if (amount.token !is FiatCurrency)
-            throw FlowException("Manual payment amount must be in FiatCurrency")
         if (obligation.settlementMethod == null || obligation.settlementMethod !is ManualSettlement)
             throw FlowException("settlementMethod of ManualSettlement must be provided for manual payment")
         if (obligation.payments.any { it.paymentReference == paymentReference })
             throw FlowException("Payment reference in manual payment must be unique")
         return ManualPayment(paymentReference ?: (obligation.payments.size + 1).toString(),
-                amount as Amount<FiatCurrency>, PaymentStatus.SENT) as Payment<T>
+                amount as Amount<TokenType>, PaymentStatus.SENT) as Payment<T>
     }
 }

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.fuel.httpPost
 import com.r3.corda.finance.swift.types.*
-import com.r3.corda.lib.tokens.money.FiatCurrency
+import com.r3.corda.lib.tokens.contracts.types.TokenType
 import net.corda.core.contracts.Amount
 import net.corda.core.flows.FlowException
 import org.bouncycastle.cert.jcajce.JcaCertStore
@@ -36,7 +36,7 @@ class SWIFTClient(
      */
     fun makePayment(e2eId : String,
                     executionDate : Date,
-                    amount : Amount<FiatCurrency>,
+                    amount: Amount<TokenType>,
                     debtorName : String,
                     debtorLei : String,
                     debtorIban : String,
@@ -86,7 +86,7 @@ class SWIFTClient(
 
     private fun submitPaymentInstruction(e2eId : String,
                                          executionDate : Date,
-                                         amount : Amount<FiatCurrency>,
+                                         amount: Amount<TokenType>,
                                          debtorName : String,
                                          debtorLei : String,
                                          debtorIban : String,

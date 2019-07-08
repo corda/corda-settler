@@ -6,6 +6,7 @@ import com.r3.corda.finance.obligation.contracts.ObligationContract
 import com.r3.corda.finance.obligation.contracts.commands.ObligationCommands
 import com.r3.corda.finance.obligation.contracts.states.Obligation
 import com.r3.corda.finance.obligation.contracts.types.PaymentStatus
+import com.r3.corda.lib.tokens.contracts.utilities.of
 import com.r3.corda.lib.tokens.money.FiatCurrency
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.UniqueIdentifier
@@ -44,7 +45,7 @@ class MakeManualPaymentTests {
             transaction {
                 attachment(contractId)
                 input(contractId, obligation)
-                output(contractId, obligation.withPayment(ManualPayment("1", Amount(10000, currency))))
+                output(contractId, obligation.withPayment(ManualPayment("1", 100 of currency)))
                 command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.AddPayment("1"))
                 verifies()
             }
@@ -57,11 +58,11 @@ class MakeManualPaymentTests {
             transaction {
                 attachment(contractId)
                 input(contractId, obligation)
-                output(contractId, obligation.withPayment(ManualPayment("1", Amount(10000, currency))).copy(
+                output(contractId, obligation.withPayment(ManualPayment("1", 100 of currency)).copy(
                         faceAmount = Amount(1000, currency)
                 ))
                 command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.AddPayment("1"))
-                `fails with`("Property invariant failed between input and output for field faceAmount: 100.00 CAD -> 10.00 CAD")
+                `fails with`("Property invariant failed between input and output for field faceAmount: 100.00 TokenType(tokenIdentifier='CAD', fractionDigits=2) -> 10.00 TokenType(tokenIdentifier='CAD', fractionDigits=2)")
             }
         }
     }
@@ -73,7 +74,7 @@ class MakeManualPaymentTests {
             transaction {
                 attachment(contractId)
                 input(contractId, obligation)
-                output(contractId, obligation.withPayment(ManualPayment("1", Amount(10000, currency))).copy(
+                output(contractId, obligation.withPayment(ManualPayment("1", 100 of currency)).copy(
                         linearId = newId
                 ))
                 command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.AddPayment("1"))
@@ -88,7 +89,7 @@ class MakeManualPaymentTests {
             transaction {
                 attachment(contractId)
                 input(contractId, obligation)
-                output(contractId, obligation.withPayment(ManualPayment("1", Amount(10000, currency))).copy(
+                output(contractId, obligation.withPayment(ManualPayment("1", 100 of currency)).copy(
                         obligor = charlie.party
                 ))
                 command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.AddPayment("1"))
@@ -103,7 +104,7 @@ class MakeManualPaymentTests {
             transaction {
                 attachment(contractId)
                 input(contractId, obligation)
-                output(contractId, obligation.withPayment(ManualPayment("1", Amount(10000, currency))).copy(
+                output(contractId, obligation.withPayment(ManualPayment("1", 100 of currency)).copy(
                         obligee = charlie.party
                 ))
                 command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.AddPayment("1"))
@@ -118,7 +119,7 @@ class MakeManualPaymentTests {
             transaction {
                 attachment(contractId)
                 input(contractId, obligation)
-                output(contractId, obligation.withPayment(ManualPayment("1", Amount(10000, currency))).copy(
+                output(contractId, obligation.withPayment(ManualPayment("1", 100 of currency)).copy(
                         dueBy = now
                 ))
                 command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.AddPayment("1"))
@@ -133,7 +134,7 @@ class MakeManualPaymentTests {
             transaction {
                 attachment(contractId)
                 input(contractId, obligation)
-                output(contractId, obligation.withPayment(ManualPayment("1", Amount(10000, currency))).copy(
+                output(contractId, obligation.withPayment(ManualPayment("1", 100 of currency)).copy(
                         createdAt = now.plusMillis(100L)
                 ))
                 command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.AddPayment("1"))
@@ -174,7 +175,7 @@ class MakeManualPaymentTests {
             transaction {
                 attachment(contractId)
                 input(contractId, obligation)
-                output(contractId, obligation.withPayment(ManualPayment("1", Amount(5000, currency))).withPayment(ManualPayment("2", Amount(5000, currency))))
+                output(contractId, obligation.withPayment(ManualPayment("1", 50 of currency)).withPayment(ManualPayment("2", Amount(5000, currency))))
                 command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.AddPayment("1"))
                 `fails with`("You can only add one payment at once")
             }
@@ -187,7 +188,7 @@ class MakeManualPaymentTests {
             transaction {
                 attachment(contractId)
                 input(contractId, obligation)
-                output(contractId, obligation.withPayment(ManualPayment("1", Amount(5000, currency), PaymentStatus.FAILED)))
+                output(contractId, obligation.withPayment(ManualPayment("1", 50 of currency, PaymentStatus.FAILED)))
                 command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.AddPayment("1"))
                 `fails with`("Payments can only be added with a SENT status.")
             }

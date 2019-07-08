@@ -8,7 +8,7 @@ import com.r3.corda.finance.ripple.types.TransactionNotFoundException
 import com.r3.corda.finance.ripple.types.XrpPayment
 import com.r3.corda.finance.ripple.utilities.hasSucceeded
 import com.r3.corda.finance.ripple.utilities.toXRPAmount
-import com.r3.corda.lib.tokens.money.DigitalCurrency
+import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.typesafe.config.ConfigFactory
 import net.corda.core.crypto.SecureHash
 import net.corda.core.node.AppServiceHub
@@ -25,7 +25,7 @@ class XrpOracleService(val services: AppServiceHub) : SingletonSerializeAsToken(
     private val clientsForVerification = nodes.map { nodeUri -> XRPClientForVerification(nodeUri) }
 
     /** Check that the last ledger sequence has not passed. */
-    private fun isPastLastLedger(payment: XrpPayment<DigitalCurrency>): Boolean {
+    private fun isPastLastLedger(payment: XrpPayment<TokenType>): Boolean {
         return clientsForVerification.all { client ->
             client.ledgerIndex().ledgerCurrentIndex > payment.lastLedgerSequence
         }
@@ -39,8 +39,8 @@ class XrpOracleService(val services: AppServiceHub) : SingletonSerializeAsToken(
     }
 
     private fun checkObligeeReceivedPayment(
-            xrpPayment: XrpPayment<DigitalCurrency>,
-            obligation: Obligation<DigitalCurrency>
+            xrpPayment: XrpPayment<TokenType>,
+            obligation: Obligation<TokenType>
     ): Boolean {
         // Query all the ripple nodes.
         val results = clientsForVerification.map { client ->
@@ -70,8 +70,8 @@ class XrpOracleService(val services: AppServiceHub) : SingletonSerializeAsToken(
     }
 
     fun hasPaymentSettled(
-            xrpPayment: XrpPayment<DigitalCurrency>,
-            obligation: Obligation<DigitalCurrency>
+            xrpPayment: XrpPayment<TokenType>,
+            obligation: Obligation<TokenType>
     ): VerifySettlement.VerifyResult {
         val upToDate = checkServersAreUpToDate()
 

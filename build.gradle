@@ -2,7 +2,7 @@ buildscript {
     ext.corda_release_group = 'net.corda'
     ext.corda_release_version = '4.1'
     ext.tokens_release_group = 'com.r3.corda.lib.tokens'
-    ext.tokens_release_version = '1.0-RC03'
+    ext.tokens_release_version = '1.0'
     ext.corda_gradle_plugins_version = '4.0.44'
     ext.kotlin_version = '1.2.51'
     ext.junit_version = '4.12'
@@ -20,7 +20,6 @@ buildscript {
         classpath "net.corda.plugins:cordapp:$corda_gradle_plugins_version"
         classpath "net.corda.plugins:cordformation:$corda_gradle_plugins_version"
         classpath "net.corda.plugins:quasar-utils:$corda_gradle_plugins_version"
-        classpath "net.corda.plugins:cordapp:$corda_gradle_plugins_version"
     }
 }
 
@@ -50,7 +49,8 @@ allprojects {
         maven { url 'https://repo.gradle.org/gradle/libs-releases' }
         maven { url "http://ci-artifactory.corda.r3cev.com/artifactory/corda-dev" }
         maven { url "http://ci-artifactory.corda.r3cev.com/artifactory/corda-releases" }
-        maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda-tokens-dev/' }
+        maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda-lib' }
+        maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda-lib-dev' }
     }
 
     tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {

@@ -11,7 +11,6 @@ import com.r3.corda.finance.swift.types.SWIFTPaymentResponse
 import com.r3.corda.finance.swift.types.SwiftPayment
 import com.r3.corda.finance.swift.types.SwiftSettlement
 import com.r3.corda.lib.tokens.contracts.types.TokenType
-import com.r3.corda.lib.tokens.money.FiatCurrency
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.FlowException
@@ -34,9 +33,6 @@ class MakeSWIFTPayment<T : TokenType>(
         if (obligation.dueBy == null)
             throw FlowException("Due date must be provided for SWIFT payment")
 
-        if (amount.token !is FiatCurrency)
-            throw FlowException("Amount for SWIFT payment must be in FiatCurrency")
-
         if (obligation.settlementMethod == null || obligation.settlementMethod !is SwiftSettlement)
             throw FlowException("settlementMethod of SwiftSettlement must be provided for SWIFT payment")
 
@@ -47,7 +43,7 @@ class MakeSWIFTPayment<T : TokenType>(
                 // we need to let API consumers to provide their own e2e ids as strings, which would also give us idempotence out-of-the-box
                 obligation.linearId.toString(),
                 Date.from(obligation.dueBy),
-                amount as Amount<FiatCurrency>,
+                amount as Amount<TokenType>,
                 swiftService.debtorName,
                 swiftService.debtorLei,
                 swiftService.debtorIban,
@@ -69,11 +65,9 @@ class MakeSWIFTPayment<T : TokenType>(
 
     @Suspendable
     override fun makePayment(obligation: Obligation<*>, amount: Amount<T>): Payment<T> {
-        if (amount.token !is FiatCurrency)
-            throw FlowException("SWIFT payment amount must be in FiatCurrency")
         val paymentResponse = createAndSignAndSubmitPayment(obligation, amount)
         val paymentReference = paymentResponse.uetr
         sleep(Duration.ofMillis(1))
-        return SwiftPayment(paymentReference, amount as Amount<FiatCurrency>, PaymentStatus.SENT) as Payment<T>
+        return SwiftPayment(paymentReference, amount as Amount<TokenType>, PaymentStatus.SENT) as Payment<T>
     }
 }

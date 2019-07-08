@@ -6,6 +6,7 @@ import com.r3.corda.finance.obligation.contracts.ObligationContract
 import com.r3.corda.finance.obligation.contracts.commands.ObligationCommands
 import com.r3.corda.finance.obligation.contracts.states.Obligation
 import com.r3.corda.finance.obligation.contracts.types.PaymentStatus
+import com.r3.corda.lib.tokens.contracts.utilities.of
 import com.r3.corda.lib.tokens.money.FiatCurrency
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.UniqueIdentifier
@@ -45,7 +46,7 @@ class UpdatePaymentStatusManuallyTests {
             transaction {
                 attachment(contractId)
                 input(contractId, obligation)
-                output(contractId, obligation.copy(payments = listOf(ManualPayment("1", Amount(10000, currency), PaymentStatus.SETTLED))))
+                output(contractId, obligation.copy(payments = listOf(ManualPayment("1", 100 of currency, PaymentStatus.SETTLED))))
                 command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.UpdatePayment("1"))
                 verifies()
             }
@@ -58,11 +59,11 @@ class UpdatePaymentStatusManuallyTests {
             transaction {
                 attachment(contractId)
                 input(contractId, obligation)
-                output(contractId, obligation.copy(payments = listOf(ManualPayment("1", Amount(10000, currency), PaymentStatus.SETTLED)),
-                        faceAmount = Amount(1000, currency)
+                output(contractId, obligation.copy(payments = listOf(ManualPayment("1", 100 of currency, PaymentStatus.SETTLED)),
+                        faceAmount = 10 of currency
                 ))
                 command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.UpdatePayment("1"))
-                `fails with`("Property invariant failed between input and output for field faceAmount: 100.00 CAD -> 10.00 CAD")
+                `fails with`("Property invariant failed between input and output for field faceAmount: 100.00 TokenType(tokenIdentifier='CAD', fractionDigits=2) -> 10.00 TokenType(tokenIdentifier='CAD', fractionDigits=2)")
             }
         }
     }
@@ -74,7 +75,7 @@ class UpdatePaymentStatusManuallyTests {
             transaction {
                 attachment(contractId)
                 input(contractId, obligation)
-                output(contractId, obligation.copy(payments = listOf(ManualPayment("1", Amount(10000, currency), PaymentStatus.SETTLED)),
+                output(contractId, obligation.copy(payments = listOf(ManualPayment("1", 100 of currency, PaymentStatus.SETTLED)),
                         linearId = newId
                 ))
                 command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.UpdatePayment("1"))
@@ -89,7 +90,7 @@ class UpdatePaymentStatusManuallyTests {
             transaction {
                 attachment(contractId)
                 input(contractId, obligation)
-                output(contractId, obligation.copy(payments = listOf(ManualPayment("1", Amount(10000, currency), PaymentStatus.SETTLED)),
+                output(contractId, obligation.copy(payments = listOf(ManualPayment("1", 100 of currency, PaymentStatus.SETTLED)),
                         obligor = charlie.party
                 ))
                 command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.AddPayment("1"))
@@ -104,7 +105,7 @@ class UpdatePaymentStatusManuallyTests {
             transaction {
                 attachment(contractId)
                 input(contractId, obligation)
-                output(contractId, obligation.copy(payments = listOf(ManualPayment("1", Amount(10000, currency), PaymentStatus.SETTLED)),
+                output(contractId, obligation.copy(payments = listOf(ManualPayment("1", 100 of currency, PaymentStatus.SETTLED)),
                         obligee = charlie.party
                 ))
                 command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.UpdatePayment("1"))
@@ -119,7 +120,7 @@ class UpdatePaymentStatusManuallyTests {
             transaction {
                 attachment(contractId)
                 input(contractId, obligation)
-                output(contractId, obligation.copy(payments = listOf(ManualPayment("1", Amount(10000, currency), PaymentStatus.SETTLED)),
+                output(contractId, obligation.copy(payments = listOf(ManualPayment("1", 100 of currency, PaymentStatus.SETTLED)),
                         dueBy = now
                 ))
                 command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.UpdatePayment("1"))
@@ -134,7 +135,7 @@ class UpdatePaymentStatusManuallyTests {
             transaction {
                 attachment(contractId)
                 input(contractId, obligation)
-                output(contractId, obligation.copy(payments = listOf(ManualPayment("1", Amount(10000, currency), PaymentStatus.SETTLED)),
+                output(contractId, obligation.copy(payments = listOf(ManualPayment("1", 100 of currency, PaymentStatus.SETTLED)),
                         createdAt = now.plusMillis(100L)
                 ))
                 command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.UpdatePayment("1"))
@@ -148,8 +149,8 @@ class UpdatePaymentStatusManuallyTests {
         ledger.ledger {
             transaction {
                 attachment(contractId)
-                input(contractId, obligation.copy(payments = listOf(ManualPayment("1", Amount(10000, currency), PaymentStatus.SETTLED))))
-                output(contractId, obligation.copy(payments = listOf(ManualPayment("1", Amount(10000, currency), PaymentStatus.SETTLED))))
+                input(contractId, obligation.copy(payments = listOf(ManualPayment("1", 100 of currency, PaymentStatus.SETTLED))))
+                output(contractId, obligation.copy(payments = listOf(ManualPayment("1", 100 of currency, PaymentStatus.SETTLED))))
                 command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.UpdatePayment("1"))
                 `fails with`("Only payments with a SENT status can be updated")
             }
@@ -162,7 +163,7 @@ class UpdatePaymentStatusManuallyTests {
             transaction {
                 attachment(contractId)
                 input(contractId, obligation)
-                output(contractId, obligation.copy(payments = listOf(ManualPayment("1", Amount(10001, currency), PaymentStatus.SETTLED))))
+                output(contractId, obligation.copy(payments = listOf(ManualPayment("1", 100.01 of currency, PaymentStatus.SETTLED))))
                 command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.UpdatePayment("1"))
                 `fails with`("Updated payments must have same amounts.")
             }
@@ -175,7 +176,7 @@ class UpdatePaymentStatusManuallyTests {
             transaction {
                 attachment(contractId)
                 input(contractId, obligation)
-                output(contractId, obligation.copy(payments = listOf(ManualPayment("2", Amount(10000, currency), PaymentStatus.SETTLED))))
+                output(contractId, obligation.copy(payments = listOf(ManualPayment("2", 100 of currency, PaymentStatus.SETTLED))))
                 command(listOf(alice.publicKey, bob.publicKey), ObligationCommands.UpdatePayment("1"))
                 `fails with`("Collection contains no element matching the predicate")
             }

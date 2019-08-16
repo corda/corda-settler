@@ -49,7 +49,7 @@ class SWIFTObligationTestsWithOracleManual : AbstractObligationTestsWithOracle<S
             // we know that there is only one obligation there
             val swiftObligation = A.services.vaultService.queryBy<Obligation<TokenType>>().states.single()
             val lastPayment = swiftObligation.state.data.payments.last() as SwiftPayment
-            swiftClient.updatePaymentStatus(lastPayment.paymentReference, SWIFTPaymentStatusType.ACCC, lastPayment.amount.quantity.toString())
+            swiftClient.updatePaymentStatus(lastPayment.paymentReference, SWIFTPaymentStatusType.ACCC, lastPayment.amount.toDecimal().toPlainString())
         }, delay, TimeUnit.SECONDS)
     }
 }

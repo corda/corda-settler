@@ -63,9 +63,9 @@ class VerifySettlement(private val otherSession: FlowSession) : FlowLogic<Unit>(
             when (paymentStatus.transactionStatus.status) {
                 SWIFTPaymentStatusType.RJCT -> return VerifyResult.REJECTED
                 SWIFTPaymentStatusType.ACCC -> {
-                    val originalAmt = swiftPayment.amount
-                    val confirmedAmt = amount(paymentStatus.transactionStatus.confirmedAmount.toBigDecimal(), originalAmt.token)
-                    if (originalAmt != confirmedAmt) throw FlowException("SWIFT recorded the wrong amount.")
+//                    val originalAmt = swiftPayment.amount
+//                    val confirmedAmt = amount(paymentStatus.transactionStatus.confirmedAmount.toBigDecimal(), originalAmt.token)
+//                    if (originalAmt != confirmedAmt) throw FlowException("SWIFT recorded the wrong amount.")
                     if (paymentStatus.transactionStatus.signatureStatus != "Signed") throw FlowException("SWIFT payment not signed.")
                     return VerifyResult.SUCCESS
                 }

@@ -15,6 +15,7 @@ import com.r3.corda.finance.swift.types.SWIFTPaymentStatusType
 import com.r3.corda.finance.swift.types.SwiftPayment
 import com.r3.corda.finance.swift.types.SwiftSettlement
 import com.r3.corda.lib.tokens.contracts.types.TokenType
+import com.r3.corda.lib.tokens.contracts.utilities.amount
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.*
 import net.corda.core.transactions.SignedTransaction
@@ -58,9 +59,16 @@ class VerifySettlement(private val otherSession: FlowSession) : FlowLogic<Unit>(
         val oracleService = serviceHub.cordaService(SWIFTService::class.java)
         while (true) {
             val paymentStatus = oracleService.swiftClient().getPaymentStatus(swiftPayment.paymentReference)
+
             when (paymentStatus.transactionStatus.status) {
                 SWIFTPaymentStatusType.RJCT -> return VerifyResult.REJECTED
-                SWIFTPaymentStatusType.ACCC -> return VerifyResult.SUCCESS
+                SWIFTPaymentStatusType.ACCC -> {
+                    val originalAmt = swiftPayment.amount
+                    val confirmedAmt = amount(paymentStatus.transactionStatus.confirmedAmount.toBigDecimal(), originalAmt.token)
+                    if (originalAmt != confirmedAmt) throw FlowException("SWIFT recorded the wrong amount.")
+                    if (paymentStatus.transactionStatus.signatureStatus != "Signed") throw FlowException("SWIFT payment not signed.")
+                    return VerifyResult.SUCCESS
+                }
                 // TODO: we need to come up with some more clever way of waiting for the status to be updated. Maybe exponential back-off
                 SWIFTPaymentStatusType.ACSP -> sleep(Duration.ofSeconds(RETRY_TIME_TO_WAIT_FOR_SETTLEMENT))
                 else -> throw FlowException("Invalid payment status ${paymentStatus.transactionStatus}")

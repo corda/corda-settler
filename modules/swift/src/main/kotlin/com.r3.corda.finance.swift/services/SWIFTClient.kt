@@ -222,8 +222,8 @@ class SWIFTClient(
     /**
      * TODO: This method should be eventually removed. This API is open for testing only.
      */
-    fun updatePaymentStatus(uetr : String, status : SWIFTPaymentStatusType) {
-        val checkStatusUrl = "$apiUrl/payment_initiation/$uetr/tracker_status?newstatus=$status"
+    fun updatePaymentStatus(uetr : String, status : SWIFTPaymentStatusType, confirmedAmount: String) {
+        val checkStatusUrl = "$apiUrl/payment_initiation/$uetr/tracker_status?newstatus=$status&confirmed_amount=$confirmedAmount"
 
         SWIFTClient.logger.info(messageWithParams("Updating payment status.", "UETR" to uetr))
         val (_, res, _) = checkStatusUrl

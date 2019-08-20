@@ -120,7 +120,13 @@ data class SWIFTUnsignedPayload(
 
 data class SWIFTTransactionStatus(
         @JsonProperty("status")
-        val status : SWIFTPaymentStatusType)
+        val status : SWIFTPaymentStatusType,
+        @JsonProperty("signature_status")
+        val signatureStatus: String,
+        @JsonProperty("confirmed_amount")
+        val confirmedAmount: String
+)
+
 
 enum class SWIFTPaymentStatusType {
         RJCT, ACSP, ACCC

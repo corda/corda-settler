@@ -1,6 +1,5 @@
 package com.r3.corda.lib.settler.ripple.services
 
-import com.r3.corda.finance.ripple.types.*
 import com.r3.corda.lib.settler.ripple.types.*
 import com.r3.corda.lib.settler.ripple.utilities.deserialize
 import com.r3.corda.lib.settler.ripple.utilities.makeRequest

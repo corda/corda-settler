@@ -1,8 +1,8 @@
 package com.r3.corda.lib.settler.workflows.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.contracts.flows.AbstractSendToSettlementOracle
-import com.r3.corda.finance.obligation.contracts.states.Obligation
+import com.r3.corda.lib.obligation.states.Obligation
+import com.r3.corda.lib.settler.api.AbstractSendToSettlementOracle
 import com.r3.corda.lib.settler.contracts.types.OffLedgerPayment
 import com.r3.corda.lib.settler.contracts.types.SettlementOracleResult
 import com.r3.corda.lib.settler.workflows.getLinearStateById

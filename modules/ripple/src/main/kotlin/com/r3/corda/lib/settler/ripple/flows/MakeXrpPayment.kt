@@ -1,12 +1,11 @@
 package com.r3.corda.lib.settler.ripple.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.contracts.states.Obligation
+import com.r3.corda.lib.obligation.states.Obligation
+import com.r3.corda.lib.obligation.types.PaymentStatus
 import com.r3.corda.lib.settler.contracts.types.OffLedgerPayment
-import com.r3.corda.lib.settler.contracts.types.PaymentStatus
 import com.r3.corda.lib.settler.workflows.flows.MakeOffLedgerPayment
 import com.r3.corda.lib.settler.ripple.services.XRPService
-import com.r3.corda.finance.ripple.types.*
 import com.r3.corda.lib.settler.ripple.types.*
 import com.r3.corda.lib.settler.ripple.utilities.DEFAULT_XRP_FEE
 import com.r3.corda.lib.settler.ripple.utilities.toXRPAmount

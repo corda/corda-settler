@@ -16,6 +16,12 @@ dependencies {
 
     // Tokens SDK.
     cordaCompile "$tokens_release_group:tokens-contracts:$tokens_release_version"
+
+    // Obligation
+    cordaCompile "$obligation_release_group:obligation-contracts:$obligation_release_version"
+
+    // Project dependencies.
+    cordaCompile project(":workflows-api")
 }
 
 cordapp {

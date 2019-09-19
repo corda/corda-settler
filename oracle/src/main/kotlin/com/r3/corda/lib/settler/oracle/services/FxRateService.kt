@@ -1,8 +1,8 @@
 package com.r3.corda.lib.settler.oracle.services
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.r3.corda.lib.settler.contracts.types.FxRateRequest
-import com.r3.corda.lib.settler.contracts.types.FxRateResponse
+import com.r3.corda.lib.obligation.types.FxRateRequest
+import com.r3.corda.lib.obligation.types.FxRateResponse
 import com.r3.corda.lib.settler.ripple.utilities.mapper
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.typesafe.config.ConfigFactory
@@ -10,6 +10,7 @@ import net.corda.core.internal.openHttpConnection
 import net.corda.core.node.AppServiceHub
 import net.corda.core.node.services.CordaService
 import net.corda.core.serialization.SingletonSerializeAsToken
+import java.math.BigDecimal
 import java.net.URI
 import java.util.*
 
@@ -47,13 +48,13 @@ class FxRateService(val services: AppServiceHub) : SingletonSerializeAsToken() {
         }
     }
 
-    private fun parseResponse(response: String, request: FxRateRequest): Double {
+    private fun parseResponse(response: String, request: FxRateRequest): BigDecimal {
         val jsonObject: JsonNode = mapper.readTree(response)
         checkForErrors(jsonObject)
         val base = Currency.getInstance(request.baseCurrency.tokenIdentifier).symbol
         val baseCurrencyNode = jsonObject.get(base)
         val counter = Currency.getInstance(request.counterCurrency.tokenIdentifier).symbol
-        return baseCurrencyNode.get(counter).asDouble()
+        return BigDecimal(baseCurrencyNode.get(counter).asDouble())
     }
 
     fun getRate(request: FxRateRequest): FxRateResponse {

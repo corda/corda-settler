@@ -1,8 +1,8 @@
 package com.r3.corda.lib.settler.manual.types
 
-import com.r3.corda.lib.settler.contracts.types.Payment
-import com.r3.corda.lib.settler.contracts.types.PaymentReference
-import com.r3.corda.lib.settler.contracts.types.PaymentStatus
+import com.r3.corda.lib.obligation.types.Payment
+import com.r3.corda.lib.obligation.types.PaymentReference
+import com.r3.corda.lib.obligation.types.PaymentStatus
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import net.corda.core.contracts.Amount
 

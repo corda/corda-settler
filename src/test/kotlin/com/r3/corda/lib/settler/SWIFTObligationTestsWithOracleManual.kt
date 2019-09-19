@@ -1,6 +1,6 @@
 package com.r3.corda.lib.settler
 
-import com.r3.corda.finance.obligation.contracts.states.Obligation
+import com.r3.corda.lib.obligation.states.Obligation
 import com.r3.corda.lib.settler.swift.services.SWIFTService
 import com.r3.corda.lib.settler.swift.types.SWIFTPaymentStatusType
 import com.r3.corda.lib.settler.swift.types.SwiftPayment
@@ -9,7 +9,6 @@ import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.money.GBP
 import net.corda.core.identity.Party
 import net.corda.core.node.services.queryBy
-import org.junit.Ignore
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -48,7 +47,7 @@ class SWIFTObligationTestsWithOracleManual : AbstractObligationTestsWithOracle<S
             val swiftClient = A.services.cordaService(SWIFTService::class.java).swiftClient()
             // we know that there is only one obligation there
             val swiftObligation = A.services.vaultService.queryBy<Obligation<TokenType>>().states.single()
-            val lastPayment = swiftObligation.state.data.payments.last() as SwiftPayment
+            val lastPayment = swiftObligation.state.data.payments.last() as SwiftPayment<*>
             swiftClient.updatePaymentStatus(lastPayment.paymentReference, SWIFTPaymentStatusType.ACCC, lastPayment.amount.toDecimal().toPlainString())
         }, delay, TimeUnit.SECONDS)
     }

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.fuel.httpPost
-import com.r3.corda.finance.swift.types.*
 import com.r3.corda.lib.settler.swift.types.*
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import net.corda.core.contracts.Amount

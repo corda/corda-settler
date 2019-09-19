@@ -1,9 +1,11 @@
 package com.r3.corda.lib.settler
 
-import com.r3.corda.finance.obligation.contracts.commands.ObligationCommands
-import com.r3.corda.finance.obligation.contracts.states.Obligation
-import com.r3.corda.lib.settler.contracts.types.Payment
-import com.r3.corda.lib.settler.contracts.types.PaymentStatus
+import com.r3.corda.lib.obligation.commands.ObligationCommands
+import com.r3.corda.lib.obligation.contracts.ObligationContract
+import com.r3.corda.lib.obligation.states.Obligation
+import com.r3.corda.lib.obligation.types.Payment
+import com.r3.corda.lib.obligation.types.PaymentStatus
+import com.r3.corda.lib.obligation.workflows.InitiatorRole
 import com.r3.corda.lib.settler.workflows.flows.SendToSettlementOracle
 import com.r3.corda.lib.settler.ripple.services.XRPService
 import com.r3.corda.lib.settler.ripple.types.XrpPayment
@@ -42,7 +44,7 @@ class XRPObligationTestsWithOracle : AbstractObligationTestsWithOracle<XrpSettle
     @Test
     fun `Payment not made by deadline`() {
         // Create obligation.
-        val newObligation = A.createObligation(AMOUNT(10000, currency), B, CreateObligation.InitiatorRole.OBLIGOR).getOrThrow()
+        val newObligation = A.createObligation(AMOUNT(10000, currency), B, InitiatorRole.OBLIGOR).getOrThrow()
         val obligation = newObligation.singleOutput<Obligation<TokenType>>()
         val obligationId = obligation.linearId()
 

@@ -1,9 +1,12 @@
 package com.r3.corda.lib.settler
 
-import com.r3.corda.finance.obligation.contracts.commands.ObligationCommands
-import com.r3.corda.finance.obligation.contracts.states.Obligation
-import com.r3.corda.lib.settler.contracts.types.SettlementMethod
-import com.r3.corda.finance.obligation.workflows.flows.*
+import com.r3.corda.lib.obligation.commands.ObligationCommands
+import com.r3.corda.lib.obligation.states.Obligation
+import com.r3.corda.lib.obligation.types.SettlementMethod
+import com.r3.corda.lib.obligation.workflows.CancelObligationInitiator
+import com.r3.corda.lib.obligation.workflows.CreateObligation
+import com.r3.corda.lib.obligation.workflows.InitiatorRole
+import com.r3.corda.lib.obligation.workflows.NovateObligation
 import com.r3.corda.lib.settler.workflows.flows.OffLedgerSettleObligation
 import com.r3.corda.lib.settler.workflows.flows.UpdateSettlementMethod
 import com.r3.corda.lib.tokens.contracts.types.TokenType
@@ -37,6 +40,7 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
                     "",
                     "",
                     "com.r3.corda.lib.tokens.contracts",
+                    "com.r3.corda.lib.ci",
                     "com.r3.corda.lib.tokens.money"
             ),
             threadPerNode = true
@@ -72,11 +76,11 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
     fun <T : TokenType> StartedMockNode.createObligation(
             faceAmount: Amount<T>,
             counterparty: StartedMockNode,
-            role: CreateObligation.InitiatorRole,
+            role: InitiatorRole,
             dueBy: Instant = Instant.now().plusSeconds(10000)
     ): CordaFuture<WireTransaction> {
         return transaction {
-            val flow = CreateObligation.Initiator(faceAmount, role, counterparty.legalIdentity(), dueBy)
+            val flow = CreateObligation(faceAmount, role, counterparty.legalIdentity(), dueBy)
             startFlow(flow)
         }
     }
@@ -84,7 +88,7 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
     /** Cancel an obligation. */
     fun StartedMockNode.cancelObligation(linearId: UniqueIdentifier): CordaFuture<SignedTransaction> {
         return transaction {
-            val flow = CancelObligation.Initiator(linearId)
+            val flow = CancelObligationInitiator(linearId)
             startFlow(flow)
         }
     }
@@ -95,7 +99,7 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
             novationCommand: ObligationCommands.Novate
     ): CordaFuture<WireTransaction> {
         return transaction {
-            val flow = NovateObligation.Initiator(linearId, novationCommand)
+            val flow = NovateObligation(linearId, novationCommand)
             startFlow(flow)
         }
     }

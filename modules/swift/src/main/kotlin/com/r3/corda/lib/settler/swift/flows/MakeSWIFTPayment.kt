@@ -1,10 +1,10 @@
 package com.r3.corda.lib.settler.swift.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.finance.obligation.contracts.states.Obligation
+import com.r3.corda.lib.obligation.states.Obligation
+import com.r3.corda.lib.obligation.types.Payment
+import com.r3.corda.lib.obligation.types.PaymentStatus
 import com.r3.corda.lib.settler.contracts.types.OffLedgerPayment
-import com.r3.corda.lib.settler.contracts.types.Payment
-import com.r3.corda.lib.settler.contracts.types.PaymentStatus
 import com.r3.corda.lib.settler.workflows.flows.MakeOffLedgerPayment
 import com.r3.corda.lib.settler.swift.services.SWIFTService
 import com.r3.corda.lib.settler.swift.types.SWIFTPaymentResponse

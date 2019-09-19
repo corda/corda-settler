@@ -1,6 +1,7 @@
 include ':contracts'
 include ':oracle'
 include ':workflows'
+include ':workflows-api'
 include ':modules:ripple'
 include ':modules:swift'
 include ':modules:manual'

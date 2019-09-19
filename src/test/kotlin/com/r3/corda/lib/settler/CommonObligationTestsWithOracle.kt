@@ -1,7 +1,8 @@
 package com.r3.corda.lib.settler
 
-import com.r3.corda.finance.obligation.contracts.commands.ObligationCommands
-import com.r3.corda.finance.obligation.contracts.states.Obligation
+import com.r3.corda.lib.obligation.commands.ObligationCommands
+import com.r3.corda.lib.obligation.states.Obligation
+import com.r3.corda.lib.obligation.workflows.InitiatorRole
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.contracts.utilities.of
 import com.r3.corda.lib.tokens.money.USD
@@ -31,7 +32,7 @@ class CommonObligationTestsWithOracle : MockNetworkTest(numberOfNodes = 3) {
     @Test
     fun `newly created obligation is stored in vaults of participants`() {
         // Create obligation.
-        val newTransaction = A.createObligation(10000 of XRP, B, CreateObligation.InitiatorRole.OBLIGOR).getOrThrow()
+        val newTransaction = A.createObligation(10000 of XRP, B, InitiatorRole.OBLIGOR).getOrThrow()
         val obligation = newTransaction.singleOutput<Obligation<TokenType>>()
         val obligationId = obligation.linearId()
 
@@ -44,11 +45,11 @@ class CommonObligationTestsWithOracle : MockNetworkTest(numberOfNodes = 3) {
     @Test
     fun `novate obligation currency`() {
         // Create obligation.
-        val newTransaction = A.createObligation(10000.USD, B, CreateObligation.InitiatorRole.OBLIGOR).getOrThrow()
+        val newTransaction = A.createObligation(10000.USD, B, InitiatorRole.OBLIGOR).getOrThrow()
         val obligation = newTransaction.singleOutput<Obligation<TokenType>>()
         val obligationId = obligation.linearId()
 
-        val novationCommand = ObligationCommands.Novate.UpdateFaceAmountToken<TokenType, TokenType>(
+        val novationCommand = ObligationCommands.Novate.UpdateFaceAmountToken(
                 oldToken = USD,
                 newToken = XRP,
                 oracle = O.legalIdentity(),

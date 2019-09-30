@@ -1,10 +1,12 @@
 buildscript {
     ext.corda_release_group = 'net.corda'
-    ext.corda_release_version = '4.1'
+    ext.corda_release_version = '4.3-RC01'
     ext.tokens_release_group = 'com.r3.corda.lib.tokens'
-    ext.tokens_release_version = '1.0'
+    ext.tokens_release_version = '1.1-SNAPSHOT'
+    ext.confidential_id_release_group = 'com.r3.corda.lib.ci'
+    ext.confidential_id_release_version = '1.0-RC03'
     ext.obligation_release_group = 'com.r3.corda.lib.obligation'
-    ext.obligation_release_version = '1.0'
+    ext.obligation_release_version = '1.y'
     ext.corda_gradle_plugins_version = '4.0.44'
     ext.kotlin_version = '1.2.51'
     ext.junit_version = '4.12'
@@ -129,6 +131,8 @@ dependencies {
     cordapp "$tokens_release_group:tokens-workflows:$tokens_release_version"
     cordapp "$obligation_release_group:obligation-contracts:$obligation_release_version"
     cordapp "$obligation_release_group:obligation-workflows:$obligation_release_version"
+    cordapp "$obligation_release_group:obligation-workflows-api:$obligation_release_version"
+    cordapp "$confidential_id_release_group:ci-workflows:$confidential_id_release_version"
     testCompile project(path: ':workflows', configuration: 'testOutput')
 }
 

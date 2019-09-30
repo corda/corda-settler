@@ -33,20 +33,18 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
     protected val network = MockNetwork(
             cordappPackages = listOf(
                     "com.r3.corda.lib.tokens.money",
-                    "com.r3.corda.lib.ci",
+                    "com.r3.corda.lib.tokens.contracts",
+                    "com.r3.corda.lib.ci.workflows",
                     "com.r3.corda.lib.obligation.contracts",
                     "com.r3.corda.lib.obligation.oracle.flows",
                     "com.r3.corda.lib.obligation.api",
                     "com.r3.corda.lib.obligation.workflows",
-                    "com.r3.corda.finance.obligation",
-                    "com.r3.corda.finance.obligation.client",
-                    "com.r3.corda.finance.ripple",
-                    "com.r3.corda.finance.obligation.oracle",
-                    "com.r3.corda.finance.obligation",
-                    "",
-                    "com.r3.corda.lib.tokens.contracts",
-                    "com.r3.corda.lib.ci",
-                    "com.r3.corda.lib.tokens.money"
+                    "com.r3.corda.lib.settler.swift",
+                    "com.r3.corda.lib.settler.oracle",
+                    "com.r3.corda.lib.settler.ripple",
+                    "com.r3.corda.lib.settler.manual",
+                    "com.r3.corda.lib.settler.api",
+                    "com.r3.corda.lib.settler.workflows"
             ),
             threadPerNode = true
     )
@@ -78,8 +76,8 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
     }
 
     /** Create a new obligation with the supplied parameters. */
-    fun <T : TokenType> StartedMockNode.createObligation(
-            faceAmount: Amount<T>,
+    fun StartedMockNode.createObligation(
+            faceAmount: Amount<TokenType>,
             counterparty: StartedMockNode,
             role: InitiatorRole,
             dueBy: Instant = Instant.now().plusSeconds(10000)

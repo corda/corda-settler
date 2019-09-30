@@ -31,7 +31,6 @@ import com.ripple.core.coretypes.Amount as RippleAmount
 // Address     rNmkj4AtjEHJh3D9hMRC4rS3CXQ9mX4S4b
 // Secret      ssn8cYYksFFexYq97sw9UnvLnMKgh
 // Balance     10,000 XRP
-
 class MakeXrpPayment<T : TokenType>(
         amount: Amount<T>,
         obligationStateAndRef: StateAndRef<Obligation<*>>,

@@ -4,7 +4,7 @@ buildscript {
     ext.tokens_release_group = 'com.r3.corda.lib.tokens'
     ext.tokens_release_version = '1.0'
     ext.obligation_release_group = 'com.r3.corda.lib.obligation'
-    ext.obligation_release_version = '1.0-SNAPSHOT'
+    ext.obligation_release_version = '1.0'
     ext.corda_gradle_plugins_version = '4.0.44'
     ext.kotlin_version = '1.2.51'
     ext.junit_version = '4.12'

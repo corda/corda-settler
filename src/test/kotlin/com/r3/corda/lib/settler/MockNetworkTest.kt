@@ -3,7 +3,7 @@ package com.r3.corda.lib.settler
 import com.r3.corda.lib.obligation.commands.ObligationCommands
 import com.r3.corda.lib.obligation.states.Obligation
 import com.r3.corda.lib.obligation.types.SettlementMethod
-import com.r3.corda.lib.obligation.workflows.CancelObligationInitiator
+import com.r3.corda.lib.obligation.workflows.CancelObligation
 import com.r3.corda.lib.obligation.workflows.CreateObligation
 import com.r3.corda.lib.obligation.workflows.InitiatorRole
 import com.r3.corda.lib.obligation.workflows.NovateObligation
@@ -32,12 +32,17 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
 
     protected val network = MockNetwork(
             cordappPackages = listOf(
+                    "com.r3.corda.lib.tokens.money",
+                    "com.r3.corda.lib.ci",
+                    "com.r3.corda.lib.obligation.contracts",
+                    "com.r3.corda.lib.obligation.oracle.flows",
+                    "com.r3.corda.lib.obligation.api",
+                    "com.r3.corda.lib.obligation.workflows",
                     "com.r3.corda.finance.obligation",
                     "com.r3.corda.finance.obligation.client",
                     "com.r3.corda.finance.ripple",
                     "com.r3.corda.finance.obligation.oracle",
                     "com.r3.corda.finance.obligation",
-                    "",
                     "",
                     "com.r3.corda.lib.tokens.contracts",
                     "com.r3.corda.lib.ci",
@@ -88,7 +93,7 @@ abstract class MockNetworkTest(val numberOfNodes: Int) {
     /** Cancel an obligation. */
     fun StartedMockNode.cancelObligation(linearId: UniqueIdentifier): CordaFuture<SignedTransaction> {
         return transaction {
-            val flow = CancelObligationInitiator(linearId)
+            val flow = CancelObligation(linearId)
             startFlow(flow)
         }
     }

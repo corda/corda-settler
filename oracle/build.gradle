@@ -20,6 +20,9 @@ dependencies {
     cordaCompile project(":modules:swift")
     cordaCompile project(":workflows")
 
+    // Obligation
+    cordaCompile "$obligation_release_group:obligation-workflows-api:$obligation_release_version"
+
     // Tokens SDK.
     cordaCompile "$tokens_release_group:tokens-contracts:$tokens_release_version"
     cordaCompile "$tokens_release_group:tokens-money:$tokens_release_version"

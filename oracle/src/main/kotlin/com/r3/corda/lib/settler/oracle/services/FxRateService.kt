@@ -1,8 +1,6 @@
 package com.r3.corda.lib.settler.oracle.services
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.r3.corda.lib.obligation.types.FxRateRequest
-import com.r3.corda.lib.obligation.types.FxRateResponse
 import com.r3.corda.lib.settler.ripple.utilities.mapper
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.typesafe.config.ConfigFactory

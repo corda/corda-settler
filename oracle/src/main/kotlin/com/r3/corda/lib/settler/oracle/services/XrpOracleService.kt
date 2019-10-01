@@ -1,7 +1,7 @@
 package com.r3.corda.lib.settler.oracle.services
 
 import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
-import com.r3.corda.lib.obligation.states.Obligation
+import com.r3.corda.lib.obligation.contracts.states.Obligation
 import com.r3.corda.lib.settler.oracle.flows.VerifySettlement
 import com.r3.corda.lib.settler.ripple.services.XRPClientForVerification
 import com.r3.corda.lib.settler.ripple.types.TransactionNotFoundException

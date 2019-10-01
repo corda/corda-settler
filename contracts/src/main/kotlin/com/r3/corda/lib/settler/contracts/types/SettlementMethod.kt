@@ -1,6 +1,6 @@
 package com.r3.corda.lib.settler.contracts.types
 
-import com.r3.corda.lib.obligation.types.SettlementMethod
+import com.r3.corda.lib.obligation.contracts.types.SettlementMethod
 import com.r3.corda.lib.settler.api.AbstractMakeOffLedgerPayment
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import net.corda.core.identity.Party

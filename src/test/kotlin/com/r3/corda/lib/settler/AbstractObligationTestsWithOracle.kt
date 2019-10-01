@@ -1,6 +1,6 @@
 package com.r3.corda.lib.settler
 
-import com.r3.corda.lib.obligation.states.Obligation
+import com.r3.corda.lib.obligation.contracts.states.Obligation
 import com.r3.corda.lib.obligation.workflows.InitiatorRole
 import com.r3.corda.lib.settler.contracts.types.OffLedgerPayment
 import com.r3.corda.lib.settler.workflows.flows.SendToSettlementOracle

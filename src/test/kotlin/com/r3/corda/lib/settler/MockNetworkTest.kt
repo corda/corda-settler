@@ -1,8 +1,8 @@
 package com.r3.corda.lib.settler
 
-import com.r3.corda.lib.obligation.commands.ObligationCommands
-import com.r3.corda.lib.obligation.states.Obligation
-import com.r3.corda.lib.obligation.types.SettlementMethod
+import com.r3.corda.lib.obligation.contracts.commands.ObligationCommands
+import com.r3.corda.lib.obligation.contracts.states.Obligation
+import com.r3.corda.lib.obligation.contracts.types.SettlementMethod
 import com.r3.corda.lib.obligation.workflows.CancelObligation
 import com.r3.corda.lib.obligation.workflows.CreateObligation
 import com.r3.corda.lib.obligation.workflows.InitiatorRole

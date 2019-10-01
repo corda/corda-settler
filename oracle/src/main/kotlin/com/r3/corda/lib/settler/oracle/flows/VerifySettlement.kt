@@ -1,10 +1,10 @@
 package com.r3.corda.lib.settler.oracle.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.lib.obligation.commands.ObligationCommands
 import com.r3.corda.lib.obligation.contracts.ObligationContract
-import com.r3.corda.lib.obligation.states.Obligation
-import com.r3.corda.lib.obligation.types.PaymentStatus
+import com.r3.corda.lib.obligation.contracts.commands.ObligationCommands
+import com.r3.corda.lib.obligation.contracts.states.Obligation
+import com.r3.corda.lib.obligation.contracts.types.PaymentStatus
 import com.r3.corda.lib.settler.api.AbstractSendToSettlementOracle
 import com.r3.corda.lib.settler.contracts.types.SettlementOracleResult
 import com.r3.corda.lib.settler.oracle.services.XrpOracleService

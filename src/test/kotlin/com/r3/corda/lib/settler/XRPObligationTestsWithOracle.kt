@@ -1,15 +1,15 @@
 package com.r3.corda.lib.settler
 
-import com.r3.corda.lib.obligation.commands.ObligationCommands
 import com.r3.corda.lib.obligation.contracts.ObligationContract
-import com.r3.corda.lib.obligation.states.Obligation
-import com.r3.corda.lib.obligation.types.Payment
-import com.r3.corda.lib.obligation.types.PaymentStatus
+import com.r3.corda.lib.obligation.contracts.commands.ObligationCommands
+import com.r3.corda.lib.obligation.contracts.states.Obligation
+import com.r3.corda.lib.obligation.contracts.types.Payment
+import com.r3.corda.lib.obligation.contracts.types.PaymentStatus
 import com.r3.corda.lib.obligation.workflows.InitiatorRole
-import com.r3.corda.lib.settler.workflows.flows.SendToSettlementOracle
 import com.r3.corda.lib.settler.ripple.services.XRPService
 import com.r3.corda.lib.settler.ripple.types.XrpPayment
 import com.r3.corda.lib.settler.ripple.types.XrpSettlement
+import com.r3.corda.lib.settler.workflows.flows.SendToSettlementOracle
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.money.XRP
 import com.ripple.core.coretypes.AccountID

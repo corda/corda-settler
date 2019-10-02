@@ -30,11 +30,10 @@ class XRPObligationTestsWithOracle : AbstractObligationTestsWithOracle<XrpSettle
         return xrpService.client.ledgerIndex().ledgerCurrentIndex
     }
 
-
     override fun createSettlement(party : Party) : XrpSettlement {
         val addressString = when (party) {
-            O.legalIdentity() -> "ra6mzL1Xy9aN5eRdjzn9CHTMwcczG1uMpN"
-            A.legalIdentity() -> "rNmkj4AtjEHJh3D9hMRC4rS3CXQ9mX4S4b"
+            O.legalIdentity() -> "rBcn2bttPXN81zcdHkEnMc9raBSH86Kit1"
+            A.legalIdentity() -> "rpAeoNUAdEoTAWtXjKcEgGxWWdvfJCxhdZ"
             else -> throw IllegalArgumentException("Unsupported party $party")
         }
         val xrpAddress = AccountID.fromString(addressString)
@@ -44,7 +43,7 @@ class XRPObligationTestsWithOracle : AbstractObligationTestsWithOracle<XrpSettle
     @Test
     fun `Payment not made by deadline`() {
         // Create obligation.
-        val newObligation = A.createObligation(AMOUNT(10000, currency), B, InitiatorRole.OBLIGOR).getOrThrow()
+        val newObligation = A.createObligation(AMOUNT(1000, currency), B, InitiatorRole.OBLIGOR).getOrThrow()
         val obligation = newObligation.singleOutput<Obligation<TokenType>>()
         val obligationId = obligation.linearId()
 

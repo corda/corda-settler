@@ -44,7 +44,7 @@ abstract class AbstractObligationTestsWithOracle<out T : OffLedgerPayment<*>>(
     @Test
     fun `create new obligation and add settlement instructions`() {
         // Create obligation.
-        val newObligation = A.createObligation(AMOUNT(10000, currency), B, InitiatorRole.OBLIGOR).getOrThrow()
+        val newObligation = A.createObligation(AMOUNT(1000, currency), B, InitiatorRole.OBLIGOR).getOrThrow()
         val obligation = newObligation.singleOutput<Obligation<TokenType>>()
         val obligationId = obligation.linearId()
 
@@ -159,7 +159,7 @@ abstract class AbstractObligationTestsWithOracle<out T : OffLedgerPayment<*>>(
     @Test
     fun `No payments made`() {
         // Create obligation.
-        val newObligation = A.createObligation(AMOUNT(10000, currency), B, InitiatorRole.OBLIGOR).getOrThrow()
+        val newObligation = A.createObligation(AMOUNT(1000, currency), B, InitiatorRole.OBLIGOR).getOrThrow()
         val obligation = newObligation.singleOutput<Obligation<TokenType>>()
         val obligationId = obligation.linearId()
 
@@ -178,7 +178,7 @@ abstract class AbstractObligationTestsWithOracle<out T : OffLedgerPayment<*>>(
     @Test
     fun `create obligation then cancel it`() {
         // Create obligation.
-        val newTransaction = A.createObligation(AMOUNT(10000, currency), B, InitiatorRole.OBLIGOR).getOrThrow()
+        val newTransaction = A.createObligation(AMOUNT(1000, currency), B, InitiatorRole.OBLIGOR).getOrThrow()
         val obligation = newTransaction.singleOutput<Obligation<TokenType>>()
         val obligationId = obligation.linearId()
 

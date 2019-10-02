@@ -5,9 +5,9 @@ import com.r3.corda.lib.settler.ripple.services.XRPClientForVerification
 import com.r3.corda.lib.settler.ripple.types.IncorrectSequenceNumberException
 import com.r3.corda.lib.settler.ripple.types.TransactionNotFoundException
 import com.r3.corda.lib.settler.ripple.utilities.toXRPAmount
-import com.r3.corda.lib.tokens.money.XRP
 import com.ripple.core.coretypes.AccountID
 import com.ripple.core.coretypes.Amount
+import com.ripple.core.coretypes.Currency.XRP
 import com.ripple.core.coretypes.hash.Hash256
 import com.ripple.core.coretypes.uint.UInt32
 import com.ripple.core.types.known.tx.signed.SignedTransaction
@@ -30,28 +30,28 @@ class XrpClientTests {
         @JvmStatic
         private val client = TestXRPClient(
                 nodeUri = nodeUri,
-                secret = "ssn8cYYksFFexYq97sw9UnvLnMKgh",
-                address = AccountID.fromString("rNmkj4AtjEHJh3D9hMRC4rS3CXQ9mX4S4b")
+                secret = "snJ9VCQ2pkDrZTGa5WVBbFnWEaHVB",
+                address = AccountID.fromString("rsH5JfiWwEpcmFyWrK8xPCeXVGALTgww4w")
         )
     }
 
     @Test
     fun `get account info`() {
         val client = XRPClientForVerification(nodeUri = nodeUri)
-        val accountId = AccountID.fromString("r3kmLJN5D28dHuH8vZNUZpMC43pEHpaocV")
+        val accountId = AccountID.fromString("rsH5JfiWwEpcmFyWrK8xPCeXVGALTgww4w")
         client.accountInfo(accountId)
     }
 
     @Test
     fun `get next sequence number`() {
-        client.nextSequenceNumber(AccountID.fromString("rNmkj4AtjEHJh3D9hMRC4rS3CXQ9mX4S4b"))
+        client.nextSequenceNumber(AccountID.fromString("rsH5JfiWwEpcmFyWrK8xPCeXVGALTgww4w"))
     }
 
     private fun createAndSignTx(sequenceNumber: UInt32): SignedTransaction {
         val payment = client.createPayment(
                 sequence = sequenceNumber,
-                source = AccountID.fromString("rNmkj4AtjEHJh3D9hMRC4rS3CXQ9mX4S4b"),
-                destination = AccountID.fromString("ra6mzL1Xy9aN5eRdjzn9CHTMwcczG1uMpN"),
+                source = AccountID.fromString("rsH5JfiWwEpcmFyWrK8xPCeXVGALTgww4w"),
+                destination = AccountID.fromString("rwiFDaFBAKidbEHgnE5rL9GtVJiybeTyw8"),
                 amount = Amount.fromString("10000"),
                 fee = Amount.fromString("1000"),
                 linearId = Hash256.fromHex("B55A46422EC5BD69F21BF6C365EC86091D3C3DF73D4004A0A27FFDD6D719F8E5")
@@ -62,7 +62,7 @@ class XrpClientTests {
 
     @Test
     fun `create, sign and submit payment successfully`() {
-        val sequenceNumber = client.nextSequenceNumber(AccountID.fromString("rNmkj4AtjEHJh3D9hMRC4rS3CXQ9mX4S4b"))
+        val sequenceNumber = client.nextSequenceNumber(AccountID.fromString("rsH5JfiWwEpcmFyWrK8xPCeXVGALTgww4w"))
         val signedTransaction = createAndSignTx(sequenceNumber)
         println(client.submitTransaction(signedTransaction))
     }

@@ -1,8 +1,12 @@
 buildscript {
     ext.corda_release_group = 'net.corda'
-    ext.corda_release_version = '4.1'
+    ext.corda_release_version = '4.3-RC01'
     ext.tokens_release_group = 'com.r3.corda.lib.tokens'
-    ext.tokens_release_version = '1.0'
+    ext.tokens_release_version = '1.1-SNAPSHOT'
+    ext.confidential_id_release_group = 'com.r3.corda.lib.ci'
+    ext.confidential_id_release_version = '1.0-RC03'
+    ext.obligation_release_group = 'com.r3.corda.lib.obligation'
+    ext.obligation_release_version = '1.0-SNAPSHOT'
     ext.corda_gradle_plugins_version = '4.0.44'
     ext.kotlin_version = '1.2.51'
     ext.junit_version = '4.12'
@@ -116,16 +120,20 @@ dependencies {
     testCompile "junit:junit:$junit_version"
 
     // CorDapp dependencies
-    cordapp project(":cordapp")
-    cordapp project(":cordapp-contracts-states")
-    cordapp project(":modules:ripple")
+    cordapp project(":contracts")
     cordapp project(":oracle")
+    cordapp project(":workflows")
+    cordapp project(":modules:ripple")
     cordapp project(":modules:swift")
     cordapp project(":modules:manual")
     cordapp "$tokens_release_group:tokens-contracts:$tokens_release_version"
     cordapp "$tokens_release_group:tokens-money:$tokens_release_version"
     cordapp "$tokens_release_group:tokens-workflows:$tokens_release_version"
-    testCompile project(path: ':cordapp', configuration: 'testOutput')
+    cordapp "$obligation_release_group:obligation-contracts:$obligation_release_version"
+    cordapp "$obligation_release_group:obligation-workflows:$obligation_release_version"
+    cordapp "$obligation_release_group:obligation-workflows-api:$obligation_release_version"
+    cordapp "$confidential_id_release_group:ci-workflows:$confidential_id_release_version"
+    testCompile project(path: ':workflows', configuration: 'testOutput')
 }
 
 task integrationTest(type: Test, dependsOn: []) {
@@ -142,8 +150,8 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
         cordapp("$tokens_release_group:tokens-contracts:$tokens_release_version")
         cordapp("$tokens_release_group:tokens-workflows:$tokens_release_version")
         cordapp("$tokens_release_group:tokens-money:$tokens_release_version")
-        cordapp project(":cordapp-contracts-states")
-        cordapp project(":cordapp")
+        cordapp project(":contracts")
+        cordapp project(":workflows")
         cordapp project(":modules:manual")
         cordapp project(":modules:ripple")
         cordapp project(":modules:swift")

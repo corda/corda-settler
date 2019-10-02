@@ -9,10 +9,7 @@ dependencies {
     testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
     testCompile "junit:junit:$junit_version"
     testCompile "$corda_release_group:corda-node-driver:$corda_release_version"
-
-    // Tokens SDK.
-    cordaCompile "$tokens_release_group:tokens-contracts:$tokens_release_version"
-    cordaCompile "$tokens_release_group:tokens-money:$tokens_release_version"
+    testCompile "$tokens_release_group:tokens-money:$tokens_release_version"
 
     // Jackson.
     compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.9.5"

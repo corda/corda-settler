@@ -12,7 +12,7 @@ Additionally, a SWIFT certificate (swiftCert.pem) & SWIFT private key (swiftKey.
 Test will not run unless @Ignore decorator is commented out.
 */
 
-//@Ignore("The private key is not available.")
+@Ignore("The private key is not available.")
 class SWIFTObligationTestsWithOracleAutomatic : AbstractObligationTestsWithOracle<SwiftSettlement>(GBP) {
     private val creditorName = "Receiving corp"
     private val creditorLei = "6299300D2N76ADNE4Y55"

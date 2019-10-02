@@ -1,15 +1,15 @@
 package com.r3.corda.lib.settler.ripple.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.lib.obligation.states.Obligation
-import com.r3.corda.lib.obligation.types.PaymentStatus
+import com.r3.corda.lib.obligation.contracts.states.Obligation
+import com.r3.corda.lib.obligation.contracts.types.PaymentStatus
 import com.r3.corda.lib.settler.contracts.types.OffLedgerPayment
-import com.r3.corda.lib.settler.workflows.flows.MakeOffLedgerPayment
 import com.r3.corda.lib.settler.ripple.services.XRPService
 import com.r3.corda.lib.settler.ripple.types.*
 import com.r3.corda.lib.settler.ripple.utilities.DEFAULT_XRP_FEE
 import com.r3.corda.lib.settler.ripple.utilities.toXRPAmount
 import com.r3.corda.lib.settler.ripple.utilities.toXRPHash
+import com.r3.corda.lib.settler.workflows.flows.MakeOffLedgerPayment
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.ripple.core.coretypes.AccountID
 import com.ripple.core.coretypes.uint.UInt32
@@ -19,7 +19,6 @@ import net.corda.core.crypto.SecureHash
 import net.corda.core.flows.FlowException
 import net.corda.core.utilities.ProgressTracker
 import java.time.Duration
-import com.ripple.core.coretypes.Amount as RippleAmount
 
 
 // For testing.

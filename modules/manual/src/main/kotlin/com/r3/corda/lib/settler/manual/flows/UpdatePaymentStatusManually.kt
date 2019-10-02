@@ -1,11 +1,11 @@
 package com.r3.corda.lib.settler.manual.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.lib.obligation.commands.ObligationCommands
 import com.r3.corda.lib.obligation.contracts.ObligationContract
-import com.r3.corda.lib.obligation.states.Obligation
-import com.r3.corda.lib.obligation.types.PaymentReference
-import com.r3.corda.lib.obligation.types.PaymentStatus
+import com.r3.corda.lib.obligation.contracts.commands.ObligationCommands
+import com.r3.corda.lib.obligation.contracts.states.Obligation
+import com.r3.corda.lib.obligation.contracts.types.PaymentReference
+import com.r3.corda.lib.obligation.contracts.types.PaymentStatus
 import com.r3.corda.lib.settler.workflows.getLinearStateById
 import com.r3.corda.lib.settler.workflows.resolver
 import net.corda.core.contracts.UniqueIdentifier

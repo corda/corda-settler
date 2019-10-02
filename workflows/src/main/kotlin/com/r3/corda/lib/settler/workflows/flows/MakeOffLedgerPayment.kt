@@ -1,8 +1,8 @@
 package com.r3.corda.lib.settler.workflows.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.corda.lib.obligation.states.Obligation
-import com.r3.corda.lib.obligation.types.Payment
+import com.r3.corda.lib.obligation.contracts.states.Obligation
+import com.r3.corda.lib.obligation.contracts.types.Payment
 import com.r3.corda.lib.settler.api.AbstractMakeOffLedgerPayment
 import com.r3.corda.lib.settler.contracts.types.OffLedgerPayment
 import com.r3.corda.lib.tokens.contracts.types.TokenType

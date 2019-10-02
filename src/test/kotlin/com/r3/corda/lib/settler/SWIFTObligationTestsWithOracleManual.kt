@@ -1,6 +1,6 @@
 package com.r3.corda.lib.settler
 
-import com.r3.corda.lib.obligation.states.Obligation
+import com.r3.corda.lib.obligation.contracts.states.Obligation
 import com.r3.corda.lib.settler.swift.services.SWIFTService
 import com.r3.corda.lib.settler.swift.types.SWIFTPaymentStatusType
 import com.r3.corda.lib.settler.swift.types.SwiftPayment
@@ -9,6 +9,7 @@ import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.money.GBP
 import net.corda.core.identity.Party
 import net.corda.core.node.services.queryBy
+import org.junit.Ignore
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -20,7 +21,7 @@ Manual payment confirmation should only be used for testing purposes.
 Test will not run unless @Ignore decorator is commented out.
 */
 
-//@Ignore("The private key is not available.")
+@Ignore("The private key is not available.")
 class SWIFTObligationTestsWithOracleManual : AbstractObligationTestsWithOracle<SwiftSettlement>(GBP) {
     private val creditorName = "Receiving corp"
     private val creditorLei = "6299300D2N76ADNE4Y55"

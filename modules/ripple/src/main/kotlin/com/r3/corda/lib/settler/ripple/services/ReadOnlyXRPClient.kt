@@ -35,7 +35,8 @@ interface ReadOnlyXRPClient {
         val response = makeRequest(nodeUri, "tx", transactionInfoRequest)
         handleErrors(response, mapOf(
                 29 to TransactionNotFoundException::class.java,
-                72 to TransactionNotFoundException::class.java
+                72 to TransactionNotFoundException::class.java,
+                74 to TransactionNotFoundException::class.java
         ))
         return deserialize<TransactionInfoResponseObject>(response).result
     }

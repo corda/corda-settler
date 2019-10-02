@@ -1,10 +1,11 @@
 package com.r3.corda.lib.settler.manual.contract
 
+import com.r3.corda.lib.obligation.contracts.ObligationContract
+import com.r3.corda.lib.obligation.contracts.commands.ObligationCommands
+import com.r3.corda.lib.obligation.contracts.states.Obligation
+import com.r3.corda.lib.obligation.contracts.types.PaymentStatus
 import com.r3.corda.lib.settler.manual.types.ManualPayment
 import com.r3.corda.lib.settler.manual.types.ManualSettlement
-import com.r3.corda.finance.obligation.contracts.commands.ObligationCommands
-import com.r3.corda.finance.obligation.contracts.states.Obligation
-import com.r3.corda.lib.settler.contracts.types.PaymentStatus
 import com.r3.corda.lib.tokens.contracts.utilities.of
 import com.r3.corda.lib.tokens.money.FiatCurrency
 import net.corda.core.contracts.Amount

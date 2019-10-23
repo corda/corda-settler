@@ -111,6 +111,7 @@ object CreateObligation {
                 val signers = obligation.participants.map { it.owningKey }
                 addCommand(ObligationCommands.Create(), signers)
                 if (timeLimit != null) setTimeWindow(serviceHub.clock.instant(), timeLimit)
+                else setTimeWindow(serviceHub.clock.instant(), 30.seconds)
             }
 
             // Step 4. Sign the transaction.

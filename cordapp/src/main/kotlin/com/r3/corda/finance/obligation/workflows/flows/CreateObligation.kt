@@ -7,6 +7,7 @@ import com.r3.corda.finance.obligation.contracts.states.Obligation
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import net.corda.confidential.SwapIdentitiesFlow
 import net.corda.core.contracts.Amount
+import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.flows.*
 import net.corda.core.identity.AbstractParty
 import net.corda.core.identity.Party
@@ -39,6 +40,7 @@ object CreateObligation {
             private val counterparty: Party,
             private val dueBy: Instant? = null,
             private val anonymous: Boolean = true,
+            private val externalId: String? = null
             private val timeLimit: Duration? = null
     ) : FlowLogic<WireTransaction>() {
 
@@ -75,8 +77,8 @@ object CreateObligation {
         private fun createObligation(us: AbstractParty, them: AbstractParty): Pair<Obligation<T>, PublicKey> {
             check(us != them) { "You cannot create an obligation to yourself" }
             val obligation = when (role) {
-                InitiatorRole.OBLIGEE -> Obligation(amount, them, us, dueBy)
-                InitiatorRole.OBLIGOR -> Obligation(amount, us, them, dueBy)
+                InitiatorRole.OBLIGEE -> Obligation(amount, them, us, dueBy, linearId = UniqueIdentifier(externalId = externalId))
+                InitiatorRole.OBLIGOR -> Obligation(amount, us, them, dueBy, linearId = UniqueIdentifier(externalId = externalId))
             }
             return Pair(obligation, us.owningKey)
         }

@@ -4,6 +4,7 @@ import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.finance.obligation.contracts.states.Obligation
 import com.r3.corda.finance.obligation.contracts.types.OffLedgerPayment
 import com.r3.corda.finance.obligation.contracts.types.OnLedgerSettlement
+import com.r3.corda.finance.obligation.contracts.types.PaymentReference
 import com.r3.corda.finance.obligation.workflows.getLinearStateById
 import com.r3.corda.finance.obligation.workflows.resolver
 import com.r3.corda.lib.tokens.contracts.types.TokenType
@@ -22,7 +23,8 @@ object OffLedgerSettleObligation {
     @InitiatingFlow
     class Initiator<T : TokenType>(
             private val amount: Amount<T>,
-            private val linearId: UniqueIdentifier
+            private val linearId: UniqueIdentifier,
+            private val paymentReference: PaymentReference? = null
     ) : FlowLogic<WireTransaction>() {
 
         companion object {
@@ -42,6 +44,7 @@ object OffLedgerSettleObligation {
 
         private fun getFlowInstance(
                 settlementInstructions: OffLedgerPayment<*>,
+                paymentReference: PaymentReference?,
                 obligationStateAndRef: StateAndRef<Obligation<*>>,
                 progressTracker: ProgressTracker
         ): FlowLogic<SignedTransaction> {
@@ -51,18 +54,38 @@ object OffLedgerSettleObligation {
                 "Specified payment flow does not sub-class MakeOffLedgerPayment. Aborting..."
             }
 
-            val paymentFlowClassConstructor = paymentFlowClass.getDeclaredConstructor(
-                    Amount::class.java,
-                    StateAndRef::class.java,
-                    OffLedgerPayment::class.java,
-                    ProgressTracker::class.java
-            )
-            return paymentFlowClassConstructor.newInstance(
-                    amount,
-                    obligationStateAndRef,
-                    settlementInstructions,
-                    progressTracker
-            )
+            // Try a constructor with PaymentReference for manual settlement and, if not found,
+            // use the constructor without a PaymentReference
+            try {
+                val paymentFlowClassConstructor = paymentFlowClass.getDeclaredConstructor(
+                        Amount::class.java,
+                        PaymentReference::class.java,
+                        StateAndRef::class.java,
+                        OffLedgerPayment::class.java,
+                        ProgressTracker::class.java
+                )
+                return paymentFlowClassConstructor.newInstance(
+                        amount,
+                        paymentReference,
+                        obligationStateAndRef,
+                        settlementInstructions,
+                        progressTracker
+                )
+            }
+            catch (e: NoSuchMethodException) {
+                val paymentFlowClassConstructor = paymentFlowClass.getDeclaredConstructor(
+                        Amount::class.java,
+                        StateAndRef::class.java,
+                        OffLedgerPayment::class.java,
+                        ProgressTracker::class.java
+                )
+                return paymentFlowClassConstructor.newInstance(
+                        amount,
+                        obligationStateAndRef,
+                        settlementInstructions,
+                        progressTracker
+                )
+            }
         }
 
         @Suspendable
@@ -78,7 +101,7 @@ object OffLedgerSettleObligation {
             when (settlementMethod) {
                 is OnLedgerSettlement -> throw IllegalStateException("ObligationContract to be settled on-ledger. Aborting...")
                 is OffLedgerPayment<*> -> {
-                    val tx = subFlow(getFlowInstance(settlementMethod, obligationStateAndRef, PAYING.childProgressTracker()))
+                    val tx = subFlow(getFlowInstance(settlementMethod, paymentReference, obligationStateAndRef, PAYING.childProgressTracker()))
                     // Checks the payment settled only if settlementOracle != null
                     // We only supply the linear ID because this flow can be called from the shell on its own.
                     return if (settlementMethod.settlementOracle == null) tx.tx

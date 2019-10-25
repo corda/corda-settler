@@ -19,6 +19,7 @@ import net.corda.core.utilities.ProgressTracker
 import net.corda.core.utilities.seconds
 import net.corda.core.utilities.unwrap
 import java.security.PublicKey
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -40,6 +41,7 @@ object CreateObligation {
             private val dueBy: Instant? = null,
             private val anonymous: Boolean = true,
             private val externalId: String? = null
+            private val timeLimit: Duration? = null
     ) : FlowLogic<WireTransaction>() {
 
         companion object {
@@ -110,7 +112,8 @@ object CreateObligation {
                 addOutputState(obligation, ObligationContract.CONTRACT_REF)
                 val signers = obligation.participants.map { it.owningKey }
                 addCommand(ObligationCommands.Create(), signers)
-                setTimeWindow(serviceHub.clock.instant(), 30.seconds)
+                if (timeLimit != null) setTimeWindow(serviceHub.clock.instant(), timeLimit)
+                else setTimeWindow(serviceHub.clock.instant(), 30.seconds)
             }
 
             // Step 4. Sign the transaction.
